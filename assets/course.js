@@ -13,7 +13,7 @@
      Leave empty until the repo is published; the link then stays hidden. */
   var REPO_URL = 'https://github.com/DouweM/harness-engineering-with-pydantic-ai';
   /* Where the course is hosted, for page links in ask-your-agent prompts. Leave empty until it is online. */
-  var SITE_URL = 'https://harness.pydantic.work';
+  var SITE_URL = 'https://harness.pydantic.app';
 
   var PARTS = [
     { n: 1, title: 'How the model sees the world', skill: 'Design it from the model\'s side', short: 'Where ideas for a better harness come from',
