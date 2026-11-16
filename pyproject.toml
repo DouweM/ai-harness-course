@@ -1,0 +1,15 @@
+[project]
+name = "harness-engineering-with-pydantic-ai"
+version = "0.1.0"
+description = "Course code: every snippet from the chapters, runnable offline."
+requires-python = ">=3.11"
+# The versions code/part2/verify.py and code/part3/verify.py were last run against (released 12 Nov 2026).
+dependencies = [
+    "pydantic-ai==2.68.0",
+    "pydantic-ai-slim[anthropic,openai,ag-ui,ui,mcp,logfire,dbos]==2.68.0",
+    "pydantic-ai-harness[coder,logfire]==0.68.0",
+    "pytest",
+]
+
+[tool.uv]
+package = false

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The loop · Harness engineering</title>
+<meta name="description" content="Design an idea from the model's side, build it, measure it against what you have. Going round that loop on your own agent, with your own cases, is harness engineering.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="part3.css">
+</head>
+<body data-page="chapter" data-title="The loop" data-part="3" data-n="5" data-runtime="4">
+<header class="topbar" data-auto></header>
+<main>
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 3 &middot; Production, and measuring what works</p>
+        <h1>The loop</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="point">The three parts are one loop. <b>Design from what the model is missing, build one idea for it, measure it against what you have on your own cases, and let the misses become the next idea.</b></p>
+      </div>
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["You started with a token. Look at me now.", "Go round once with your own agent. I&#39;ll be in there.", "Bring the cases I got wrong. Those are the good ones."]'
+          data-tok-moods="happy,curious,happy"><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <section id="loop">
+        <h2>One loop, three steps</h2>
+        <div class="lp" data-loop data-stop>
+          <svg viewBox="-20 20 640 520" role="img" aria-label="The loop: Part 1 design it from the model's side, Part 2 build it, Part 3 measure it, with every chapter placed on it."></svg>
+          <p class="lp-info" aria-live="polite">Every dot is a chapter you've read; the filled one is this one. Tap a part to send Tok there.</p>
+          <script type="application/json">{"what": {"1": "read its page, find what it is missing, and write down a few ideas. Diagnosing a case when you have an agent; imagining its first morning when you don't.", "2": "build the idea as code you can attach, test and compare: instructions, tools, history, the answer form, capabilities.", "3": "compare it with what you have: which is better, by how much, on which cases. The misses feed the next design."}}</script>
+        </div>
+        <div class="prose measure">
+          <p>Each step is weak alone. An idea you can't try is an opinion; a change nobody measured is a demo; an eval with no idea behind it says a number moved, not why. Most laps improve an agent you already run, and the winner is often a combination of ideas. Starting from scratch is just the first lap, where you try a few directions to see where the good region is.</p>
+        </div>
+        <aside class="notes"><p>Close the course on the loop: Part 1 gives you ideas, Part 2 makes trying one cheap, Part 3 says whether it beat what you had, and by how much. The misses are the next idea.</p></aside>
+        <p class="talk-only headline">Design it, build it, measure it. The misses are the next idea.</p>
+      </section>
+
+      <section id="lap">
+        <h2>One lap, from this course</h2>
+        <ol class="steps">
+          <li><b>Design.</b> A compaction summary can drop what Dana said, like Wednesday's correction (Part 1, chapter 4). Idea: tell the model the summary may be incomplete.</li>
+          <li><b>Build.</b> <code>TieredCompaction</code> with a summary prompt that keeps every promise (Part 2, chapter 4), packaged in <code>billing_world</code> (chapter 6).</li>
+          <li><b>Measure.</b> The caveat line: GPT-6.1 Sol and Gemini 3.8 Flash went back to the full history 39 of 40 times; Claude Sonnet and Haiku 5.5, 0 of 40 (Part 3, chapter 2).</li>
+          <li><b>Next idea.</b> For the Claude family, don't rely on the summary: re-state Dana's open promises as an appended notice, the way the close notice works. Probe it with chapter 4's template. That's the next lap.</li>
+        </ol>
+        <p class="talk-only headline">A dropped correction, one capability, a split by family, and on to the next idea.</p>
+      </section>
+
+      <section id="your-agent">
+        <h2>A lap on your own agent</h2>
+        <div class="prose measure">
+          <p>One lap on an agent you already run takes a day:</p>
+        </div>
+        <ol class="steps">
+          <li><b>Pick one decision</b> someone corrects today, and export 20 or more corrections.</li>
+          <li><b>Write the evaluator</b> for the mistake that costs you.</li>
+          <li><b>Run today's version</b> as arm A and read every miss.</li>
+          <li><b>Have one idea</b> from what the misses share: what can't it see, whose voice is it, what moved?</li>
+          <li><b>Implement it</b> as one change, ideally one capability, and run it as arm B.</li>
+          <li><b>Compare, and write down</b> how much better B is on which cases, what you'd ship, what you'd watch online, and the next lap.</li>
+        </ol>
+        <p class="fine">Bring the agent's code, read access to its traces or corrections, and a model API key. Your coding agent can do the typing; "Ask your agent" below hands it this chapter.</p>
+        <aside class="notes"><p>One lap on an agent they already run. Ask each team which decision of their agent gets corrected most.</p></aside>
+        <p class="talk-only headline">One decision, 20 corrections, two arms, read every miss.</p>
+      </section>
+
+      <section id="next">
+        <h2>What's next</h2>
+        <div class="skills four">
+          <a class="skill door" href="https://pydantic.dev/docs/ai/production/"><span class="n">Ship it</span><h3>Going to production</h3><p>Durability, approvals, limits, tracing, deployment.</p></a>
+          <a class="skill door" href="https://pydantic.dev/docs/ai/capabilities/overview/"><span class="n">Build it</span><h3>Capabilities</h3><p>The unit of harness behavior, and the built-ins.</p></a>
+          <a class="skill door" href="https://pydantic.dev/docs/ai/harness/"><span class="n">Borrow it</span><h3>Pydantic AI Harness</h3><p>Compaction, memory, sandboxes, judges, managed prompts, spend limits.</p></a>
+          <a class="skill door" href="https://pydantic.dev/docs/ai/evals/evals/"><span class="n">Measure it</span><h3>Pydantic Evals</h3><p>Datasets, evaluators, experiments, online evaluation.</p></a>
+          <a class="skill door" href="https://pydantic.dev/docs/ai/integrations/logfire/"><span class="n">See it</span><h3>Logfire</h3><p>Every run as a trace, with cost; experiments side by side.</p></a>
+          <a class="skill door" href="https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/"><span class="n">Make it last</span><h3>Durable execution</h3><p>Every engine, what it wraps, how replay works.</p></a>
+          <a class="skill door" href="https://pydantic.dev/docs/ai/models/overview/"><span class="n">Choose it</span><h3>Models</h3><p>Providers, profiles, fallback, concurrency.</p></a>
+          <a class="skill door" href="https://pydantic.dev/docs/ai/overview/coding-agent-skills/"><span class="n">Hand it off</span><h3>Coding agent skills</h3><p>Teach your coding agent current Pydantic AI.</p></a>
+        </div>
+        <p class="talk-only headline">The docs pick up where the course ends.</p>
+      </section>
+
+      <div data-evolve="Tok is a colleague with a world model: one you designed, built and measured."></div>
+    </div>
+  </div>
+</main>
+<footer><div class="wrap"><p>The course's loop: design it from the model's side (Part 1), build it (Part 2), measure what works (Part 3). Docs links checked against the Pydantic AI docs navigation, 15 Nov 2026.</p>
+</div></footer>
+<script src="../assets/course.js"></script>
+<script src="part3.js"></script>
+</body>
+</html>

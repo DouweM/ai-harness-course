@@ -1,0 +1,3 @@
+waiting for a person: ['mark_paid', 'record_payment']
+tool calls that ran:  ['lookup_invoice']
+ledger writes:        []

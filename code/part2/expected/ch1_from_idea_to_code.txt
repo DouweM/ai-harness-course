@@ -1,0 +1,10 @@
+instructions: Decide whether this customer email commits to paying us.
+
+The email was received on Tuesday 2026-11-17.
+tool lookup_invoice: 'Look up one of our invoices: amount, currency and status.'
+  invoice_number: 'As written in the email, like INV-2041.'
+tool final_result: 'The final response which ends this conversation'
+  is_commitment: 'True only if the sender promises to pay.'
+  invoice_number: ''
+  due_date: "Leave empty if the email doesn't let you work it out."
+user: Hi, INV-2041 will be paid this Friday. Thanks, Dana

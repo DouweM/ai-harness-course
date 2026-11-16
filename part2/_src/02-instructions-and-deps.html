@@ -1,0 +1,103 @@
+title: Instructions and deps
+description: Instructions are the operator's voice; deps are the facts your code knows. A fact baked into a prompt string at import time goes stale while the service runs. An instructions function rebuilds it every request.
+n: 2
+runtime: 6
+---
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
+        <h1>Instructions and deps</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="point">Standing rules go in <code>instructions=</code>. <b>Facts that change go in deps, and an instructions function writes them onto the page every request.</b> A fact frozen into a string goes stale without anyone noticing.</p>
+      </div>
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["What day is it? Whatever my page says.", "My badge is rewritten every request. That is the point of it.", "If it changes mid-conversation, append it. Don&#39;t rewrite my past."]'><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <section id="baked">
+        <h2>The date that froze</h2>
+        <aside class="notes"><p>The point: facts from your app belong in deps and an instructions function, not in an f-string at import. The prediction has real stakes: a promise recorded for a Friday that already passed.</p></aside>
+        <div class="prose measure">
+          <p class="story"><span class="when">Tuesday 17 Nov, 09:02</span>Dana's email arrives. The agent's prompt was written the obvious way: an f-string with today's date, built when the module loads. The service was deployed last Thursday and hasn't restarted since.</p>
+        </div>
+        {{code ch2_instructions.py baked "code/part2/ch2_instructions.py, the obvious way" keys="STARTED =|instructions=f"}}
+        <article class="puzzle" id="p1" data-answer="b">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Which Friday gets recorded</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="What the model sees">
+              <div class="tr-title">// what the model sees on Tuesday 17 Nov</div>
+              <div class="msg sys"><span class="who">instructions</span><div class="body">Decide whether this customer email commits to paying us. <mark>Today is Thursday 2026-11-12.</mark></div></div>
+              <div class="msg sys"><span class="who">answer form</span><div class="body">is_commitment, invoice_number, due_date</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">Hi, INV-2041 will be paid this Friday. Thanks, Dana</div></div>
+              <div class="msg next"><span class="who">model, filling in due_date</span><div class="body"><span class="caret"></span></div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">What due date does the agent record?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Friday 20 Nov: the model knows dates</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Friday 13 Nov, which already passed</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Nothing: it can't tell</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What gets recorded" hidden>
+            <p class="eyebrow"><span class="dia"></span>What gets recorded</p>
+            <p class="headline">Friday 13 Nov. The reminder schedule sees a promise already broken, and Dana gets an overdue reminder on Tuesday.</p>
+            <p class="measure">The page says it is Thursday the 12th, so the model works out "this Friday" from that, as it should: in Part 1, models given the date on their page worked out the right Friday 15 times out of 15. Nothing failed loudly. The prompt was right on deploy day and has been wrong since.</p>
+          </div>
+          <div class="stage" data-label="The fix" hidden>
+            <p class="eyebrow"><span class="dia"></span>The fix: a fact from deps, every request</p>
+            {{code ch2_instructions.py deps "code/part2/ch2_instructions.py · deps and an instructions function" keys="received: date|instructions='Decide|@agent.instructions|return f'"}}
+            {{code ch2_instructions.py run "code/part2/ch2_instructions.py, both, side by side"}}
+            {{out ch2_instructions}}
+            <p class="source"><b>Offline, deterministic.</b> A <code>FunctionModel</code> stands in for the model and works out "this Friday" from the date on its page, the way models did in Part 1. Use the date the email arrived, a fact your code knows, rather than today's: a queue that works through yesterday's mail would pick the wrong week.</p>
+            <div class="tok-says"><div class="tk" data-tok="7" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>My badge said Thursday the 12th, so that was my world. Now it is rewritten every time I start.</p></div></div>
+          </div>
+          <aside class="notes"><p>Most rooms pick A. The answer is B, and nothing errors. The fix is the deps pattern: facts your code knows, written onto the page per request.</p></aside>
+        </article>
+      </section>
+
+      <section id="changes">
+        <h2>When a value changes mid-conversation</h2>
+        <div class="prose measure">
+          <p>An instructions function runs before every request, so its line is always current. For a value that can change while a conversation is open, like month-end close starting on Thursday, give it a name and <code>on_change='append'</code>: the old instructions stay as they were, and the change arrives at the end of the page, at the moment it happened. Part 1 chapter 4 showed why: rewriting the top left some models writing like their own past (Grok and Qwen 0 of 24), while appending the change worked on all six models tested (24 of 24). Chapter 3 uses this for a tool that leaves.</p>
+        </div>
+        {{code ch2_instructions.py append "code/part2/ch2_instructions.py, a value that changes · pydantic-ai 2.59+" keys="on_change='append'|return 'Month-end"}}
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>The old way</th><th>Now</th></tr></thead>
+          <tbody>
+            <tr><td>An f-string prompt, built once</td><td><code>@agent.instructions</code> from deps, every request</td></tr>
+            <tr><td>Re-render the system prompt when something changes</td><td><code>on_change='append'</code>: the change, at the end</td></tr>
+            <tr><td>Globals for clients and settings</td><td>Typed deps, swapped for fakes in a test</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="now">
+        <div class="rule">
+          <p class="eyebrow">What you can do now</p>
+          <p>Grep your prompts for f-strings and <code>.format(</code>. Every interpolated fact becomes a deps field and an instructions function; every value that can change mid-conversation gets a name and <code>on_change='append'</code>.</p>
+        </div>
+        <div class="inpai">
+          <p class="eyebrow"><span class="dia"></span>In the docs</p>
+          <ul class="docs">
+            <li><a href="https://pydantic.dev/docs/ai/core-concepts/agent/">Agents and instructions</a></li>
+            <li><a href="https://pydantic.dev/docs/ai/core-concepts/dependencies/">Dependencies</a></li>
+          </ul>
+        </div>
+      </section>
+
+      <div data-evolve="Tok gets a name badge: who it works for, and what day it is, rewritten every request."></div>
+    </div>
+  </div>

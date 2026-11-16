@@ -1,0 +1,8 @@
+model reads: {"error":"Unknown tool name: 'mark_paid'. Available tools: 'lookup_invoice'"}
+model says:  I wasn't able to mark INV-2041 as paid. Please try again later.
+ledger writes: []
+model says:  Month-end close is running, so I can mark INV-2041 paid on Monday.
+waiting for a person: [('mark_paid', {'invoice_number': 'INV-2041'})]
+ledger writes: []
+ledger up  : success Recorded 2060.00 on INV-2041.
+ledger down: failed  {"error":"Nothing was recorded: the ledger is unavailable. Tell the cu

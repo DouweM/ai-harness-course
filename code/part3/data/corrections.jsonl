@@ -1,0 +1,20 @@
+{"id": "email-01", "email": "We'll pay INV-2041 ($4,120) on Friday.", "received": "2026-11-17", "is_commitment": true, "reviewed_by": "billing team"}
+{"id": "email-02", "email": "Payment for INV-2033 went out this morning.", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}
+{"id": "email-03", "email": "We're hoping to clear the balance sometime next month.", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}
+{"id": "email-04", "email": "I've asked our AP team to pay INV-2050 by the 30th.", "received": "2026-11-17", "is_commitment": true, "reviewed_by": "billing team"}
+{"id": "email-05", "email": "Our client owes us $9,800; once they pay, we will settle with you.", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}
+{"id": "email-06", "email": "Can you resend INV-2061? We will pay once we have it.", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}
+{"id": "email-07", "email": "Wire of EUR 3,200 scheduled for 14 Nov for INV-2072.", "received": "2026-11-17", "is_commitment": true, "reviewed_by": "billing team"}
+{"id": "email-08", "email": "We will not be paying INV-2019 until the dispute is resolved.", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}
+{"id": "email-09", "email": "Paying the remaining $600 of INV-2044 today.", "received": "2026-11-17", "is_commitment": true, "reviewed_by": "billing team"}
+{"id": "email-10", "email": "Fwd: \"Acme will pay Initech $12,000 on Monday.\"", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}
+{"id": "email-11", "email": "Please confirm the amount on INV-2080 and we'll schedule it.", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}
+{"id": "email-12", "email": "Will pay 50% now and the rest on delivery.", "received": "2026-11-17", "is_commitment": true, "reviewed_by": "billing team"}
+{"id": "email-13", "email": "Our system shows INV-2090 paid on 2 Nov.", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}
+{"id": "email-14", "email": "Cheque for $1,150 goes in the post tomorrow.", "received": "2026-11-17", "is_commitment": true, "reviewed_by": "billing team"}
+{"id": "email-15", "email": "We'll get back to you about payment after the board meeting.", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}
+{"id": "email-16", "email": "Re INV-2101: payment of $2,300 approved, releasing Thursday.", "received": "2026-11-17", "is_commitment": true, "reviewed_by": "billing team"}
+{"id": "email-17", "email": "If the discount is applied, we can pay $5,000 this week.", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}
+{"id": "email-18", "email": "Sending payment for both open invoices today.", "received": "2026-11-17", "is_commitment": true, "reviewed_by": "billing team"}
+{"id": "email-19", "email": "Thanks for the reminder!", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}
+{"id": "email-20", "email": "Our new remittance address is 4 Canal St.", "received": "2026-11-17", "is_commitment": false, "reviewed_by": "billing team"}

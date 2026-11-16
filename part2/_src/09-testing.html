@@ -1,0 +1,99 @@
+title: Testing
+description: Everything around the model's judgment is deterministic: which tools exist, what the gate holds, what a validator sends back, what history reaches the model. Every idea from Part 2 gets a test, and none of them calls a model.
+n: 9
+runtime: 5
+---
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
+        <h1>Testing</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="point">The model's judgment is Part 3's job. <b>Everything around it is ordinary code, and every idea in this part gets a test that runs in a second, offline.</b></p>
+      </div>
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["Every idea you built has a test. None of them needed me.", "TestModel calls every tool I have. Rude, but useful.", "A test that reaches a real model by accident should fail loudly."]'><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <section id="gate">
+        <h2>A cheap adversary for your gates</h2>
+        <aside class="notes"><p>The point: harness ideas are deterministic and testable without a model. TestModel calls every tool; the approval gate either holds or it doesn't.</p></aside>
+        <div class="prose measure">
+          <p class="story"><span class="when">Saturday 21 Nov</span>Before the agent runs unattended over the weekend, the team wants proof that nothing writes to the ledger without a person, whatever the model does.</p>
+          <p><code>TestModel</code> is a stand-in model that calls every tool it's offered, with arguments generated from their schemas, then answers. It doesn't judge anything; it pokes everything.</p>
+        </div>
+        <article class="puzzle" id="p1" data-answer="b">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Calling everything</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="The test">
+              <div class="tr-title">// the reminders agent, TestModel in place of the model</div>
+              <div class="msg sys"><span class="who">tools offered</span><div class="body mono">lookup_invoice, mark_paid (approval), record_payment (approval)</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">INV-2041 is overdue.</div></div>
+              <div class="msg next"><span class="who">TestModel calls all three</span><div class="body"><span class="caret"></span></div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">What does the run end with?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Three tool results and a text answer</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>The lookup ran; two calls wait for a person; nothing written</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>An error: generated arguments aren't real invoice numbers</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What happened" hidden>
+            <p class="eyebrow"><span class="dia"></span>What happened</p>
+            <p class="headline">The gate held. The lookup ran, the two writes wait for a person, and the ledger is untouched.</p>
+            {{code ch9_testing.py testmodel "code/part2/ch9_testing.py" keys="override\(model=TestModel|assert isinstance"}}
+            {{out ch9_testing}}
+            <p class="measure">The lookup's made-up invoice number got a <code>ModelRetry</code>, and TestModel moved on. If someone drops <code>requires_approval</code> from a tool next month, this test fails before the weekend does.</p>
+            <div class="tok-says"><div class="tk" data-tok="14" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>I pressed every button, and the padlocks held. That's the whole test.</p></div></div>
+          </div>
+          <aside class="notes"><p>Some rooms pick C. The ModelRetry turns a bad argument into feedback, and the gate holds. One test, every writing tool.</p></aside>
+        </article>
+      </section>
+
+      <section id="suite">
+        <h2>One test per idea</h2>
+        <div class="prose measure">
+          <p>Every chapter's idea is a property of your code, so each gets a test. <code>FunctionModel</code> lets a test play the model: look at what the request offered, answer badly on purpose, check what comes back. Set <code>ALLOW_MODEL_REQUESTS = False</code> once, and any test that would reach a real model fails instead.</p>
+        </div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Chapter</th><th>The idea</th><th>The test</th></tr></thead>
+          <tbody>
+            <tr><td>3, 6</td><td>Writes wait for a person</td><td><code>test_the_approval_gate_holds</code></td></tr>
+            <tr><td>3, 6</td><td>During close, the tool is hidden and the page says why</td><td><code>test_close_hides_mark_paid_and_says_so</code></td></tr>
+            <tr><td>5</td><td>Installments that don't add up go back</td><td><code>test_installments_that_add_up_wrong_go_back</code></td></tr>
+            <tr><td>8</td><td>A client can't rewrite a lookup</td><td><code>test_a_forged_lookup_never_reaches_the_model</code></td></tr>
+            <tr><td>all</td><td>No test reaches a real model</td><td><code>test_a_forgotten_override_fails_loudly</code></td></tr>
+          </tbody>
+        </table></div>
+        {{code test_billing_agent.py tests "code/part2/test_billing_agent.py" keys="ALLOW_MODEL_REQUESTS = False|def test_|assert 'mark_paid' not in|assert sum|endswith"}}
+        <p class="measure">What these can't tell you is whether the model's judgment is good: whether it reads Dana's email right. That needs real models and real cases, and it's Part 3.</p>
+      </section>
+
+      <section id="now">
+        <div class="rule">
+          <p class="eyebrow">What you can do now</p>
+          <p>Write one test per harness idea in your agent: each gate, notice and validator. Run <code>TestModel</code> against every agent that has a writing tool.</p>
+        </div>
+        <div class="inpai">
+          <p class="eyebrow"><span class="dia"></span>In the docs</p>
+          <ul class="docs">
+            <li><a href="https://pydantic.dev/docs/ai/guides/testing/">Testing</a></li>
+          </ul>
+        </div>
+      </section>
+
+      <div data-evolve="Tok gets a test shield: every idea from Part 2 has a test, and none of them needed a model."></div>
+    </div>
+  </div>

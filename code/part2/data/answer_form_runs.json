@@ -1,0 +1,517 @@
+{
+ "recorded": "2026-11-16",
+ "email": "Correction on INV-2041: we'll pay half this Friday and the rest by the 30th. Dana",
+ "instructions": "Decide whether this customer email commits to paying us, and record the promise. The email was received on Wednesday 2026-11-18. INV-2041 is for 4120.00 USD.",
+ "runs": [
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "one",
+   "run": 0,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120.00",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 593,
+   "output_tokens": 355
+  },
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "one",
+   "run": 1,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120.00",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 593,
+   "output_tokens": 385
+  },
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "one",
+   "run": 2,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120.00",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 593,
+   "output_tokens": 361
+  },
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "one",
+   "run": 3,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120.00",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 593,
+   "output_tokens": 341
+  },
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "one",
+   "run": 4,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120.00",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 593,
+   "output_tokens": 402
+  },
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "installments",
+   "run": 0,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 638,
+   "output_tokens": 228
+  },
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "installments",
+   "run": 1,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 638,
+   "output_tokens": 216
+  },
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "installments",
+   "run": 2,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 638,
+   "output_tokens": 219
+  },
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "installments",
+   "run": 3,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 638,
+   "output_tokens": 241
+  },
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "installments",
+   "run": 4,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 638,
+   "output_tokens": 231
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "one",
+   "run": 0,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "2060",
+    "due_date": "2026-11-20"
+   },
+   "input_tokens": 162,
+   "output_tokens": 244
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "one",
+   "run": 1,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "2060",
+    "due_date": "2026-11-20"
+   },
+   "input_tokens": 162,
+   "output_tokens": 154
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "one",
+   "run": 2,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "2060",
+    "due_date": "2026-11-20"
+   },
+   "input_tokens": 162,
+   "output_tokens": 253
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "one",
+   "run": 3,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "2060",
+    "due_date": "2026-11-20"
+   },
+   "input_tokens": 162,
+   "output_tokens": 233
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "one",
+   "run": 4,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 658,
+   "output_tokens": 309
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "installments",
+   "run": 0,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 157,
+   "output_tokens": 63
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "installments",
+   "run": 1,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 157,
+   "output_tokens": 63
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "installments",
+   "run": 2,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 157,
+   "output_tokens": 63
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "installments",
+   "run": 3,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 157,
+   "output_tokens": 63
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "installments",
+   "run": 4,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 157,
+   "output_tokens": 63
+  },
+  {
+   "model": "anthropic:claude-haiku-5-5",
+   "arm": "one",
+   "run": 0,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120.00",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 593,
+   "output_tokens": 416
+  },
+  {
+   "model": "anthropic:claude-haiku-5-5",
+   "arm": "one",
+   "run": 1,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120.00",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 593,
+   "output_tokens": 706
+  },
+  {
+   "model": "anthropic:claude-haiku-5-5",
+   "arm": "one",
+   "run": 2,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120.00",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 593,
+   "output_tokens": 396
+  },
+  {
+   "model": "anthropic:claude-haiku-5-5",
+   "arm": "one",
+   "run": 3,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120.00",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 593,
+   "output_tokens": 535
+  },
+  {
+   "model": "anthropic:claude-haiku-5-5",
+   "arm": "one",
+   "run": 4,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120.00",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 593,
+   "output_tokens": 360
+  },
+  {
+   "model": "anthropic:claude-haiku-5-5",
+   "arm": "installments",
+   "run": 0,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 638,
+   "output_tokens": 303
+  },
+  {
+   "model": "anthropic:claude-haiku-5-5",
+   "arm": "installments",
+   "run": 1,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 638,
+   "output_tokens": 297
+  },
+  {
+   "model": "anthropic:claude-haiku-5-5",
+   "arm": "installments",
+   "run": 2,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 638,
+   "output_tokens": 346
+  },
+  {
+   "model": "anthropic:claude-haiku-5-5",
+   "arm": "installments",
+   "run": 3,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 638,
+   "output_tokens": 336
+  },
+  {
+   "model": "anthropic:claude-haiku-5-5",
+   "arm": "installments",
+   "run": 4,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 638,
+   "output_tokens": 308
+  }
+ ]
+}

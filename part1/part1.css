@@ -1,0 +1,87 @@
+/* Part 1 only: Tok's robot stages and the few Part 1 components the shared theme does not have. */
+
+/* ---------- the chapter-end evolution ---------- */
+.evo { margin: 36px 0 0; display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 18px; align-items: center; border: 1px solid var(--border); border-radius: var(--radius-panel); padding: 16px 18px; background: var(--surface); max-width: 760px; }
+@media (min-width: 700px) { .evo { grid-template-columns: 150px minmax(0, 1fr); } }
+.evo .evo-tok { position: relative; }
+.evo p { margin: 0 0 6px; }
+.evo .eyebrow { margin-bottom: 4px; }
+.evo.locked .evo-tok .tok-svg { opacity: .4; filter: grayscale(1); }
+.evo.just { border-color: var(--accent-strong); box-shadow: var(--shadow-card); }
+.evo.just .evo-tok::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; animation: p1ring 1.2s var(--ease) 2; pointer-events: none; }
+@keyframes p1ring { 0% { opacity: .9; transform: scale(.6); } 100% { opacity: 0; transform: scale(1.3); } }
+
+
+/* ---------- small print ---------- */
+
+/* ---------- the request stepper (chapter 1) ---------- */
+.stepper { display: grid; gap: 14px; }
+@media (min-width: 860px) { .stepper { grid-template-columns: 160px minmax(0, 1fr); align-items: start; } }
+.stepper .st-tok { max-width: 160px; margin: 0 auto; text-align: center; }
+.stepper .st-tok .tok-caption { font-family: var(--font-mono); font-size: .8125rem; }
+.stepper .st-doc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 12px; min-height: 120px; }
+.stepper .st-doc .msg { animation: rise .45s var(--ease) both; }
+.stepper .st-doc .msg.read { outline: 2px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset: 1px; }
+.stepper .st-label { font-family: var(--font-mono); font-size: .8125rem; color: var(--eyebrow); margin: 0 0 8px; text-transform: uppercase; letter-spacing: .06em; }
+.stepper .st-tok.wake .tok-svg { animation: p1wake .7s var(--ease); }
+@keyframes p1wake { 0% { opacity: 0; transform: translateY(8px) scale(.9); } 100% { opacity: 1; transform: none; } }
+
+/* ---------- lines that carried the result (chapter 5) ---------- */
+.lines { display: grid; gap: 8px; margin: 14px 0; }
+.line-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px 14px; border: 1px solid var(--border); border-left: 4px solid var(--border-strong); border-radius: 0 var(--radius-card) var(--radius-card) 0; padding: 10px 14px; background: var(--surface); }
+@media (min-width: 760px) { .line-row { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: center; } }
+.line-row .said { font-family: var(--font-mono); font-size: .875rem; color: var(--text-strong); }
+.line-row .effect { font-size: .9375rem; }
+.line-row .effect b { display: inline-block; font-family: var(--font-mono); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; padding: 1px 6px; border-radius: 3px; margin-right: 6px; }
+.line-row.big { border-left-color: var(--accent-strong); }
+.line-row.big .effect b { background: var(--surface-tint); color: var(--accent-strong); }
+.line-row.some { border-left-color: var(--violet); }
+.line-row.some .effect b { background: color-mix(in srgb, var(--violet) 18%, transparent); color: var(--violet-text); }
+.line-row.none { opacity: .78; }
+.line-row.none .effect b { background: var(--bg-alt); color: var(--text-muted); }
+.lines-filter { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 6px; }
+
+/* ---------- design generator and checklist (chapter 5) ---------- */
+.gaps { display: grid; gap: 8px; margin: 12px 0; }
+@media (min-width: 760px) { .gaps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.gap-card { text-align: left; border: 1px solid var(--border-strong); border-radius: var(--radius-card); background: var(--surface); padding: 10px 12px; min-height: 44px; cursor: pointer; color: var(--text-strong); line-height: 1.35; }
+.gap-card:hover { border-color: var(--accent-strong); }
+.gap-card[aria-pressed="true"] { background: var(--surface-tint); border-color: var(--accent-strong); }
+.gap-card small { display: block; color: var(--text-muted); font-size: .8125rem; margin-top: 2px; }
+.cands { display: grid; gap: 10px; margin: 12px 0 0; }
+@media (min-width: 900px) { .cands { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.cand { border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: var(--radius-card); padding: 12px 14px; background: var(--surface); animation: rise .4s var(--ease) both; }
+.cand h4 { margin: 0 0 6px; }
+.cand p { margin: 0 0 8px; font-size: .9375rem; }
+.cand .exp { font-size: .875rem; color: var(--text-muted); border-top: 1px dashed var(--border-strong); padding-top: 8px; margin: 0; }
+.cand .exp b { color: var(--text-strong); }
+
+/* ---------- three ways, small cards (chapter 4) ---------- */
+.three { display: grid; gap: 10px; margin: 14px 0; }
+@media (min-width: 820px) { .three { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.three > div { border: 1px solid var(--border); border-radius: var(--radius-card); padding: 12px 14px; background: var(--surface); }
+.three h4 { margin: 0 0 4px; }
+.three p { margin: 0; font-size: .9375rem; }
+
+/* sims: Tok in the belief pane */
+.simtok .tk .tok-svg { max-width: 72px; }
+
+/* small print stays out of talk mode */
+
+/* chapter 1: the zoom-out, one step at a time */
+.tokname-pill { color: var(--accent-strong); font-weight: 600; white-space: nowrap; }
+.tokname-pill::before { content: ""; display: inline-block; width: .5em; height: .5em; margin: 0 .3em .08em 0; border-radius: 2px; background: var(--accent); transform: rotate(45deg); }
+.zoom { display: grid; gap: 14px; margin-top: 8px; }
+.zstep { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 14px; align-items: start; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); padding: 14px 16px; }
+.zstep .tk { width: 64px; }
+.zstep h3 { margin: 0 0 4px; font-size: 1.0625rem; }
+.zstep h3 .n { font-family: var(--font-mono); color: var(--eyebrow); font-weight: 500; margin-right: .4em; }
+.zstep p { margin: 6px 0; }
+.zstep.last { border-color: var(--accent-strong); }
+.zstep pre.doc { margin: 8px 0; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; font-family: var(--font-mono); font-size: .8125rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.zstep pre.doc .mk { color: var(--eyebrow); }
+.zstep pre.doc .cur { display: inline-block; width: .55em; height: 1em; vertical-align: -2px; background: var(--accent); animation: blink 1s steps(2) infinite; }
+@media (prefers-reduced-motion: reduce) { .zstep pre.doc .cur { animation: none; } }
+@media (max-width: 480px) { .zstep { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 12px; } .zstep .tk { width: 44px; } }
+.bignum { font-size: clamp(2.25rem, 7vw, 3.5rem); font-weight: 700; color: var(--text-strong); line-height: 1; margin: 6px 0 4px; }
+.bignum small { display: block; font-size: .9375rem; font-weight: 400; color: var(--text-muted); margin-top: 6px; }

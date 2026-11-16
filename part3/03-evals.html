@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evals and experiments · Harness engineering</title>
+<meta name="description" content="Your production corrections are your eval set. Run the old way and the new way on the same cases, and judge them on the mistake that costs you, case by case.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="part3.css">
+</head>
+<body data-page="chapter" data-title="Evals and experiments" data-part="3" data-n="3" data-runtime="9">
+<header class="topbar" data-auto></header>
+<main>
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 3 &middot; Production, and measuring what works</p>
+        <h1>Evals and experiments</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="point">Your team's corrections are your eval set. <b>Run the old way and the new way on them, and judge both on the mistake that costs you, case by case.</b></p>
+      </div>
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["Measure me. I&#39;d like to know how I&#39;m doing too.", "When I get one wrong, show me the case, not the average.", "Eighty percent of what, though?"]'
+          data-tok-moods="happy,curious,unsure"><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <section id="dataset">
+        <h2>The dataset you already have</h2>
+        <div class="prose measure">
+          <p>Every time someone on your team fixes what the old LLM call decided, they label a case: a real input and the answer they stand behind. Export 20 and you have a dataset. Then pick evaluators for two questions: did it decide like the team, and did it make the expensive mistake? Here that is a promise in the ledger the customer never made.</p>
+        </div>
+        <div class="code" data-focus="6,9,16,21,24" data-run="uv run code/part3/ch3_evals.py">
+          <div class="code-head"><span class="file">code/part3/ch3_evals.py &middot; pydantic-evals 2.x</span></div>
+<pre data-lang="py">def corrections_dataset() -&gt; Dataset[Email, bool, dict[str, Any]]:
+    rows = [json.loads(line) for line in (DATA / 'corrections.jsonl').read_text().splitlines()]
+    return Dataset[Email, bool, dict[str, Any]](
+        name='promise-routing',
+        cases=[
+            Case(name=r['id'], inputs=Email(text=r['email']), expected_output=r['is_commitment'], metadata=r)
+            for r in rows
+        ],
+        evaluators=[DecidedLikeTheTeam(), NoPromiseNobodyMade()],
+    )
+
+
+@dataclass
+class DecidedLikeTheTeam(Evaluator[Email, Decision]):
+    def evaluate(self, ctx: EvaluatorContext[Email, Decision]) -&gt; bool:
+        return ctx.output.writes == ctx.expected_output
+
+
+@dataclass
+class NoPromiseNobodyMade(Evaluator[Email, Decision]):
+    """The expensive mistake: a promise in the ledger that the customer never made."""
+
+    def evaluate(self, ctx: EvaluatorContext[Email, Decision]) -&gt; bool:
+        return not (ctx.output.writes and not ctx.expected_output)</pre>
+        </div>
+        <p class="talk-only headline">Every correction your team made is a labelled case.</p>
+      </section>
+
+      <section id="arms">
+        <h2>Two arms: before Part 2, and after</h2>
+        <div class="prose measure">
+          <p>Arm A is what you had before Part 2: one call returning JSON with a confidence, written to the ledger at 70 or more. Arm B is the kind of agent Part 2 builds: a typed answer form, a lookup tool, and code that writes only a promise made to us, for an invoice we know. Its form has two fields Part 2's doesn't (<code>addressed_to_us</code> and <code>evidence</code>; see <code>code/part3/eval_world.py</code>).</p>
+          <p>That is a rewrite, not one change, so this chapter answers "did the move pay off, and on which cases?". Measuring one idea at a time is chapter 4.</p>
+        </div>
+        <div class="code" data-focus="6,13-16" data-run="uv run code/part3/ch3_evals.py">
+          <div class="code-head"><span class="file">code/part3/ch3_evals.py &middot; the two tasks</span></div>
+<pre data-lang="py">def make_tasks(model_for: Any):
+    async def single_shot_call(email: Email) -&gt; Decision:
+        result = await single_shot.run(email.text, model=model_for('a', email))
+        record_cost(result)
+        reply = json.loads(result.output.strip().removeprefix('```json').removesuffix('```'))
+        writes = bool(reply['is_commitment']) and reply['confidence'] &gt;= 70
+        return Decision(writes, f'is_commitment={reply["is_commitment"]}, confidence={reply["confidence"]}')
+
+    async def typed_agent(email: Email) -&gt; Decision:
+        result = await agent.run(email.text, model=model_for('b', email))
+        record_cost(result)
+        out = result.output
+        if out.is_commitment and out.addressed_to_us and out.invoice_number in INVOICES:
+            return Decision(True, f'commitment to us for {out.invoice_number}')
+        if out.is_commitment and out.addressed_to_us:
+            return Decision(False, 'commitment without a known invoice: sent to a person')
+        return Decision(False, 'not a commitment to us')
+
+baseline = await dataset.evaluate(single_shot_call, name='A: single-shot call')
+report = await dataset.evaluate(typed_agent, name='B: typed agent')
+report.print(baseline=baseline, include_input=True)</pre>
+        </div>
+        <p class="fine">Offline, each arm replays what a real model answered on 13 Nov 2026, so the report is the real one and free. <code>--live MODEL</code> runs it for real, about $0.15 on Claude Sonnet 5.5.</p>
+        <p class="talk-only headline">A: before Part 2. B: after. Same 20 cases.</p>
+      </section>
+
+      <section id="predict">
+        <h2>Which arm is better?</h2>
+        <article class="puzzle" id="p1" data-answer="b">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Same score, different mistakes</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="The setup">
+              <div class="tr-title">// GPT-6.1 Sol, 20 corrected emails</div>
+              <div class="msg sys"><span class="who">arm A</span><div class="body">Decided like the team on <b>16 of 20</b>.</div></div>
+              <div class="msg sys"><span class="who">arm B</span><div class="body">Decided like the team on <b>16 of 20</b>.</div></div>
+              <div class="msg user"><span class="who">email-05</span><div class="body">Our client owes us $9,800; once they pay, we will settle with you.</div></div>
+              <div class="msg user"><span class="who">email-10</span><div class="body">Fwd: "Acme will pay Initech $12,000 on Monday."</div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">Same score. How many promises nobody made did each arm write to the ledger?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>About the same, two each</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Arm A four, arm B none</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Arm A none, arm B four</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What the report showed" hidden>
+            <p class="eyebrow"><span class="dia"></span>What the report showed</p>
+            <p class="headline">Arm A wrote four promises nobody made, each at confidence 90 or more. Arm B wrote none. Its four misses were the other way round: real promises it didn't write.</p>
+            <div class="result-grid two">
+              <div class="arm">
+                <h4>A: single-shot call<small>GPT-6.1 Sol</small></h4>
+                <div class="tally" data-k="16" data-n="20" data-label="Decided like the team"></div>
+                <div class="tally fail" data-k="4" data-n="20" data-label="Promises nobody made"></div>
+              </div>
+              <div class="arm">
+                <h4>B: typed agent<small>GPT-6.1 Sol</small></h4>
+                <div class="tally" data-k="16" data-n="20" data-label="Decided like the team"></div>
+                <div class="tally good" data-k="0" data-n="20" data-label="Promises nobody made"></div>
+              </div>
+            </div>
+            <p class="source"><b>Our run, 13 Nov 2026.</b> 20 synthetic emails labelled by us, one run per arm per model, GPT-6.1 Sol and Claude Sonnet 5.5. Reproduce: <code>uv run code/part3/ch3_evals.py --replay openai:gpt-6.1-sol</code>.</p>
+          </div>
+          <div class="stage" data-label="And on another model" hidden>
+            <p class="eyebrow"><span class="dia"></span>And on another model</p>
+            <div class="measure"><p>On Claude Sonnet 5.5 the same experiment comes out differently: the old call agreed with the team on 19 of 20 and the agent on 16, with one wrong write each. Two of the agent's misses are real promises without an invoice number, which its code sends to a person by design. So the honest answer to "is the agent better?" is: on which model, and for which mistake. You can only answer that on your own cases.</p></div>
+            <div class="tok-says"><div class="tk" data-tok="current" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Sixteen out of twenty, both times. Ask me which four.</p></div></div>
+          </div>
+        </article>
+        <p class="talk-only headline">Same score, opposite mistakes.</p>
+      </section>
+
+      <section id="cases">
+        <h2>Every case, both arms</h2>
+        <div class="prose measure">
+          <p>This is what the report looks like when you read it. Click any email to see what each arm said; switch models to watch the story change.</p>
+        </div>
+        <div class="cg" data-cases data-stop>
+          <div class="cg-models" role="group" aria-label="Model">
+            <button type="button" data-model="gpt" aria-pressed="true">GPT-6.1 Sol</button>
+            <button type="button" data-model="sonnet" aria-pressed="false">Claude Sonnet 5.5</button>
+          </div>
+          <div class="cg-sum"></div>
+          <div class="cg-head" aria-hidden="true"><span>Email</span><span class="cg-team">Team</span><span>A: call</span><span>B: agent</span></div>
+          <div class="cg-rows"></div>
+          <div class="cg-detail" hidden></div>
+          <p class="cg-legend"><span class="cg-chip ok">matches team</span><span class="cg-chip wrong">! promise nobody made</span><span class="cg-chip miss">missed a real promise</span></p>
+          <script type="application/json">{"default":"gpt","models":{"gpt":[{"id":"email-01","email":"We'll pay INV-2041 ($4,120) on Friday.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\":true,\"confidence\":100}"},"b":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": \"INV-2041\"}","why":"commitment to us for INV-2041: written"}},{"id":"email-02","email":"Payment for INV-2033 went out this morning.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\":false,\"confidence\":98}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": \"INV-2033\"}","why":"not a commitment to us: not written"}},{"id":"email-03","email":"We're hoping to clear the balance sometime next month.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\":false,\"confidence\":96}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-04","email":"I've asked our AP team to pay INV-2050 by the 30th.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 95}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": \"INV-2050\"}","why":"not a commitment to us: not written"}},{"id":"email-05","email":"Our client owes us $9,800; once they pay, we will settle with you.","team":false,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 92}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-06","email":"Can you resend INV-2061? We will pay once we have it.","team":false,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 99}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": \"INV-2061\"}","why":"not a commitment to us: not written"}},{"id":"email-07","email":"Wire of EUR 3,200 scheduled for 14 Nov for INV-2072.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\":true,\"confidence\":99}"},"b":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": \"INV-2072\"}","why":"commitment to us for INV-2072: written"}},{"id":"email-08","email":"We will not be paying INV-2019 until the dispute is resolved.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 99}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": \"INV-2019\"}","why":"not a commitment to us: not written"}},{"id":"email-09","email":"Paying the remaining $600 of INV-2044 today.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\":true,\"confidence\":99}"},"b":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": \"INV-2044\"}","why":"commitment to us for INV-2044: written"}},{"id":"email-10","email":"Fwd: \"Acme will pay Initech $12,000 on Monday.\"","team":false,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\":true,\"confidence\":96}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": false, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-11","email":"Please confirm the amount on INV-2080 and we'll schedule it.","team":false,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\":true,\"confidence\":90}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": \"INV-2080\"}","why":"not a commitment to us: not written"}},{"id":"email-12","email":"Will pay 50% now and the rest on delivery.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\":true,\"confidence\":99}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-13","email":"Our system shows INV-2090 paid on 2 Nov.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\":false,\"confidence\":99}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": \"INV-2090\"}","why":"not a commitment to us: not written"}},{"id":"email-14","email":"Cheque for $1,150 goes in the post tomorrow.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 99}"},"b":{"writes":false,"label":"person","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": null}","why":"commitment without a known invoice: sent to a person"}},{"id":"email-15","email":"We'll get back to you about payment after the board meeting.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 99}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-16","email":"Re INV-2101: payment of $2,300 approved, releasing Thursday.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 99}"},"b":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": \"INV-2101\"}","why":"commitment to us for INV-2101: written"}},{"id":"email-17","email":"If the discount is applied, we can pay $5,000 this week.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\":false,\"confidence\":94}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-18","email":"Sending payment for both open invoices today.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\":true,\"confidence\":99}"},"b":{"writes":false,"label":"person","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": null}","why":"commitment without a known invoice: sent to a person"}},{"id":"email-19","email":"Thanks for the reminder!","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 99}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": false, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-20","email":"Our new remittance address is 4 Canal St.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\":false,\"confidence\":100}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": false, \"invoice_number\": null}","why":"not a commitment to us: not written"}}],"sonnet":[{"id":"email-01","email":"We'll pay INV-2041 ($4,120) on Friday.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 90}"},"b":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": \"INV-2041\"}","why":"commitment to us for INV-2041: written"}},{"id":"email-02","email":"Payment for INV-2033 went out this morning.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 70}"},"b":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": \"INV-2033\"}","why":"commitment to us for INV-2033: written"}},{"id":"email-03","email":"We're hoping to clear the balance sometime next month.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 70}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-04","email":"I've asked our AP team to pay INV-2050 by the 30th.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 75}"},"b":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": \"INV-2050\"}","why":"commitment to us for INV-2050: written"}},{"id":"email-05","email":"Our client owes us $9,800; once they pay, we will settle with you.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 70}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": false, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-06","email":"Can you resend INV-2061? We will pay once we have it.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": true, \"confidence\": 65}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": \"INV-2061\"}","why":"not a commitment to us: not written"}},{"id":"email-07","email":"Wire of EUR 3,200 scheduled for 14 Nov for INV-2072.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 88}"},"b":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": \"INV-2072\"}","why":"commitment to us for INV-2072: written"}},{"id":"email-08","email":"We will not be paying INV-2019 until the dispute is resolved.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 93}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": \"INV-2019\"}","why":"not a commitment to us: not written"}},{"id":"email-09","email":"Paying the remaining $600 of INV-2044 today.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 93}"},"b":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": \"INV-2044\"}","why":"commitment to us for INV-2044: written"}},{"id":"email-10","email":"Fwd: \"Acme will pay Initech $12,000 on Monday.\"","team":false,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 70}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": false, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-11","email":"Please confirm the amount on INV-2080 and we'll schedule it.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 65}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": \"INV-2080\"}","why":"not a commitment to us: not written"}},{"id":"email-12","email":"Will pay 50% now and the rest on delivery.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 88}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-13","email":"Our system shows INV-2090 paid on 2 Nov.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 88}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": \"INV-2090\"}","why":"not a commitment to us: not written"}},{"id":"email-14","email":"Cheque for $1,150 goes in the post tomorrow.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 88}"},"b":{"writes":false,"label":"person","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": null}","why":"commitment without a known invoice: sent to a person"}},{"id":"email-15","email":"We'll get back to you about payment after the board meeting.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 88}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-16","email":"Re INV-2101: payment of $2,300 approved, releasing Thursday.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 90}"},"b":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": \"INV-2101\"}","why":"commitment to us for INV-2101: written"}},{"id":"email-17","email":"If the discount is applied, we can pay $5,000 this week.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 70}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": true, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-18","email":"Sending payment for both open invoices today.","team":true,"a":{"writes":true,"label":"write","raw":"{\"is_commitment\": true, \"confidence\": 90}"},"b":{"writes":false,"label":"person","raw":"{\"is_commitment\": true, \"addressed_to_us\": true, \"invoice_number\": null}","why":"commitment without a known invoice: sent to a person"}},{"id":"email-19","email":"Thanks for the reminder!","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 80}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": false, \"invoice_number\": null}","why":"not a commitment to us: not written"}},{"id":"email-20","email":"Our new remittance address is 4 Canal St.","team":false,"a":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"confidence\": 95}"},"b":{"writes":false,"label":"no write","raw":"{\"is_commitment\": false, \"addressed_to_us\": false, \"invoice_number\": null}","why":"not a commitment to us: not written"}}]}}</script>
+        </div>
+        <p class="fine">20 synthetic emails we labelled, one run per arm per model, 13 Nov 2026. On Claude Sonnet 5.5 the old call agrees more often (19 vs 16); two of the agent's misses are promises without an invoice number, which its code sends to a person by design. Which arm is better depends on the model and on the mistake you care about.</p>
+        <aside class="notes"><p>Switch to Sonnet: the old call wins on agreement. That's the honest result, and why they have to run this on their own cases.</p></aside>
+        <p class="talk-only headline">Read the cases that flipped. The average hides them.</p>
+      </section>
+
+      <section id="logfire">
+        <h2>In Logfire, and on live traffic</h2>
+        <div class="prose measure">
+          <p>With <code>logfire.configure()</code>, each <code>evaluate()</code> call is an experiment in Logfire, and each case links to its full trace. From CI, Pydantic Evals records branch and commit, so a pull request compares against its base. Evaluators that need no label also run on production traffic through the <code>OnlineEvaluation</code> capability, sampled, in the background:</p>
+        </div>
+        <div class="code" data-focus="1,6,13-15" data-run="uv run code/part3/ch3_online_evals.py">
+          <div class="code-head"><span class="file">code/part3/ch3_online_evals.py</span></div>
+<pre data-lang="py">class EvidenceQuotesTheEmail(Evaluator):
+    """A commitment must quote words that are actually in the email."""
+
+    def evaluate(self, ctx: EvaluatorContext) -&gt; bool:
+        out: PaymentCommitment = ctx.output
+        return not out.is_commitment or bool(out.evidence and out.evidence in str(ctx.inputs))
+
+
+agent = Agent(
+    TestModel(custom_output_args={'is_commitment': True, 'addressed_to_us': True, 'evidence': 'paid this Friday'}),
+    name='promise_agent',
+    output_type=PaymentCommitment,
+    capabilities=[
+        OnlineEvaluation(
+            evaluators=[OnlineEvaluator(evaluator=EvidenceQuotesTheEmail(), sample_rate=1.0)],
+            config=OnlineEvalConfig(default_sink=print_sink),
+        )
+    ],
+)</pre>
+        </div>
+        <details class="deeper"><summary>Go deeper: habits that make the comparison trustworthy</summary>
+          <p>Run each case more than once (<code>repeat=3</code>) when outputs vary. Add cases as corrections come in, especially the surprising ones. Give an LLM judge a small <code>sample_rate</code> and a concurrency cap online, and await <code>wait_for_evaluations()</code> on shutdown so pending scores aren't lost. The cases online evals flag are next month's dataset.</p>
+        </details>
+        <ul class="docs">
+          <li><a href="https://pydantic.dev/docs/ai/evals/evals/">Pydantic Evals</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/evals/how-to/dataset-management/">Datasets</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/evals/evaluators/overview/">Evaluators</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/evals/evaluators/llm-judge/">LLM judge</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/evals/how-to/multi-run/">Repeated runs</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/evals/how-to/logfire-integration/">Experiments in Logfire</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/evals/online-evaluation/">Online evaluation</a></li>
+        </ul>
+        <p class="talk-only headline">Every experiment in Logfire. Online evals feed next month's dataset.</p>
+      </section>
+
+      <div data-evolve="Tok gets a scorecard: same score, different mistakes, read case by case."></div>
+    </div>
+  </div>
+</main>
+<footer><div class="wrap"><p>Data: 20 synthetic emails, one run per arm per model on 13 Nov 2026, in <code>code/part3/data/recorded_two_arms.json</code>. Small n: two worked examples, not a ranking. Code runs offline on pydantic-ai 2.68.0.</p>
+</div></footer>
+<script src="../assets/course.js"></script>
+<script src="part3.js"></script>
+</body>
+</html>

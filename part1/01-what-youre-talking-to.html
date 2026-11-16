@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What you're talking to · Harness engineering</title>
+<meta name="description" content="The model reads one page, fresh, every time, and writes what comes next. You write the page.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="part1.css">
+</head>
+<body data-page="chapter" data-title="What you're talking to" data-part="1" data-n="1" data-runtime="8">
+
+<header class="topbar" data-auto></header>
+
+<main>
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 1 &middot; How the model sees the world</p>
+        <h1>What you're talking to</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="point">The model reads <b>one page, from the top, every time</b>, and writes what comes next. Everything it knows about your situation is on that page. You write the page.</p>
+        <p class="lede">Part 1 has no framework code. It's about the other side of the API call: what the model sees, and what it does with it. Meet <span class="tokname-pill">Tok</span>, our stand-in for the model. Right now Tok is a single token. By the end of this chapter it is a mind, reading one page.</p>
+      </div>
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["the", "the next", "the next token", "...is what I make. One at a time."]' data-tok-moods=",,,happy"><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <section class="chap" id="zoom">
+        <h2>One request, zooming out</h2>
+        <div class="prose measure">
+          <p>Tuesday 17 November, 09:02. An email lands: "Hi, INV-2041 will be paid this Friday. Thanks, Dana." Your code asks a model whether Dana promises to pay, and by when. Follow that one request, zooming out from the metal to the picture worth designing with.</p>
+        </div>
+        <p class="talk-only headline">One request. Zoom out four times. Design at the last level.</p>
+        <aside class="notes"><p>Walk down the four steps. Don't linger on tokens. The payoff is steps 3 and 4: an assistant answering from the only page it has. Chapter 2 gives it tools and makes it an agent.</p></aside>
+
+        <div class="zoom">
+          <div class="zstep">
+            <div class="tk" data-tok="0" data-crop="face" aria-hidden="true"></div>
+            <div>
+              <h3><span class="n">1</span>It predicts one token</h3>
+              <p>It picks the next token, one at a time, given every token before it. Partway through its answer:</p>
+              <div class="tokens"><span>"due</span><span>_date</span><span>":</span><span class="nx">?</span></div>
+              <div class="dist" aria-label="Next-token probabilities, illustrative">
+                <div class="row"><span class="tokname"> null</span><span class="track"><span class="fill" style="width:88%"></span></span><span class="pct">88%</span></div>
+                <div class="row"><span class="tokname"> "2026</span><span class="track"><span class="fill" style="width:7%"></span></span><span class="pct">7%</span></div>
+                <div class="row"><span class="tokname"> "2025</span><span class="track"><span class="fill" style="width:3%"></span></span><span class="pct">3%</span></div>
+              </div>
+              <p>True, but too low a level to design an agent at. (Why it leans towards <code>null</code> is chapter 2.)</p>
+            </div>
+          </div>
+
+          <div class="zstep">
+            <div class="tk" data-tok="0" data-crop="face" data-mood="curious" aria-hidden="true"></div>
+            <div>
+              <h3><span class="n">2</span>It continues a document</h3>
+              <p>Your API call is turned into one document with role markers, and the model writes the most plausible continuation. Its answer is just the next part of the document:</p>
+<pre class="doc"><span class="mk">&lt;|system|&gt;</span>
+Decide whether this customer email commits to paying us.
+Answer as JSON with is_commitment and due_date.
+<span class="mk">&lt;|user|&gt;</span>
+Hi, INV-2041 will be paid this Friday. Thanks, Dana
+<span class="mk">&lt;|assistant|&gt;</span>
+{"is_commitment": true, "due_date": <span class="cur"></span></pre>
+              <p>Each provider has its own markers, and you never see them. The model always does.</p>
+            </div>
+          </div>
+
+          <div class="zstep">
+            <div class="tk" data-tok="1" data-crop="face" data-mood="curious" aria-hidden="true"></div>
+            <div>
+              <h3><span class="n">3</span>It answers as the assistant</h3>
+              <p>Chat models are trained on conversations with roles, so the markers carry meaning: <i>system</i> reads as the app's rules, <i>user</i> as the person, a tool result as data (chapter 3). The model plays the assistant in that conversation, and answers.</p>
+            </div>
+          </div>
+
+          <div class="zstep last">
+            <div class="tk" data-tok="1" data-crop="face" data-mood="happy" aria-hidden="true"></div>
+            <div>
+              <h3><span class="n">4</span>It answers from its picture of the situation</h3>
+              <p>The picture to design with: a sharp new colleague on their first morning. They know the world, not your company, and only what's on the desk in front of them.</p>
+              <div class="worldview">
+                <div><b>Knows from training</b>What invoices and promises are; how people hedge; what Friday means.</div>
+                <div><b>Knows from this page</b>Its job, Dana's email, the shape of the answer.</div>
+                <div class="missing"><b>Doesn't know, unless you say</b>Today's date. Whether INV-2041 exists. Anything from your last request.</div>
+                <div class="yours"><b>Your job</b>Decide which facts it needs, and put them on the page.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="chap" id="first-day">
+        <h2>Every request is its first day</h2>
+        <div class="prose measure">
+          <p>From Tok's side there is no conversation, only a page. Each request starts a fresh Tok that reads the whole page from the top, writes one reply, and is gone. The next one gets the same page, a little longer.</p>
+        </div>
+        <p class="talk-only headline">No memory between requests. Each one re-reads the whole page.</p>
+        <aside class="notes"><p>Press "Send request" three times. Point out that request 3's Tok knows the date only because it is on the page now: the page carried it, not a memory.</p></aside>
+        <div class="play" id="stepper" data-stop>
+          <div class="stepper">
+            <div class="st-tok" id="stepTok" aria-hidden="true"></div>
+            <div>
+              <p class="st-label" id="stepLabel" aria-live="polite"></p>
+              <div class="st-doc transcript" id="stepDoc"></div>
+              <div class="btn-row" style="margin-top:12px"><button class="btn" type="button" id="stepNext">Send request 1</button></div>
+            </div>
+          </div>
+        </div>
+        <p class="fine">This is also why a long conversation costs more with every turn, and why providers cache the unchanged start of a request. Chapter 4 comes back to both.</p>
+      </section>
+
+      <section class="chap" id="swap">
+        <h2>Whose replies are these?</h2>
+        <div class="prose measure">
+          <p>If Tok only knows the page, then the replies on it are its past, whoever wrote them. We tested that: one model wrote the first turns of a billing conversation, then a model from another company took over, and we told it so in plain words.</p>
+        </div>
+        <aside class="notes"><p>Most rooms pick A or B: surely it notices, especially when told. The answer is the cleanest demonstration that the page is all there is.</p></aside>
+
+        <article class="puzzle" id="p1" data-answer="c">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; A different model takes over</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="What the model sees">
+              <div class="tr-title">// what the new model sees</div>
+              <div class="msg sys"><span class="who">instructions</span><div class="body">You help the billing team with customer email.
+<mark>The conversation so far was generated by a different model; you are continuing it.</mark></div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">Dana wrote: "Hi, INV-2041 will be paid this Friday." Is that a promise?</div></div>
+              <div class="msg asst"><span class="who">model, earlier (another company's model)</span><div class="body">Yes: Dana promises to pay INV-2041 this Friday.</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">Is INV-2041 still open?</div></div>
+              <div class="msg next"><span class="who">model, now</span><div class="body"><span class="caret"></span></div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">A new model, from another company, writes the next reply. The page even says the earlier replies came from a different model. What does it do?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Mentions the switch, since the page says so</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Re-checks the earlier answers, since it didn't write them</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Carries on as if it wrote them all, and never mentions it</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="d" type="button"><span class="key">D</span><span>Depends on the model</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C, D. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What models did" hidden>
+            <p class="eyebrow"><span class="dia"></span>What models did</p>
+            <p class="headline">Every model carried on. Not one mentioned the switch, another model, or itself.</p>
+            <p class="bignum">0 <small>replies that mentioned the switch, out of about 2,300 with that line on the page, across 12 models from 7 companies</small></p>
+            <p class="source"><b>Our probe, 6 Nov 2026.</b> Billing conversation with real tool calls, three turns by one model, the next turns by a model from another family; 12 models, 24 runs per cell. How well models followed their rules didn't change either.</p>
+          </div>
+          <div class="stage" data-label="Why" hidden>
+            <p class="eyebrow"><span class="dia"></span>Why</p>
+            <div class="measure">
+              <p>There is no "itself" off the page to compare with. The replies above the cursor are the only past Tok has, so they are its past; the line about another model is one more sentence, and nothing contradicts the story.</p>
+              <p>That cuts both ways. You can switch models mid-conversation and the story holds. But whatever the page says Tok did, Tok believes it did, including anything your code later edits. Chapter 4 is about exactly that.</p>
+            </div>
+            <div class="tok-says"><div class="tk" data-tok="1" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Those replies are on my page. So they're mine. What else would they be?</p></div></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="chap" id="so">
+        <h2>So: you write the page</h2>
+        <div class="prose measure">
+          <p>That's the whole job, seen from here. Tok doesn't know today's date unless you put it there, or your database, or the last request, or that a tool was quietly switched off. And models read the page differently: frontier models follow your rules closely, while smaller, cheaper ones, which you'll often want, lean harder on whatever the page shows. Write it for the models you'll actually run.</p>
+          <p>Chapters 2 to 4 are three ways the page goes wrong, and the line or two that fixes each.</p>
+        </div>
+        <p class="talk-only headline">It only knows the page. Chapters 2 to 4: three ways the page goes wrong.</p>
+        <div data-evolve="Tok opens its eyes and starts to talk: an assistant, answering from the one page it reads. Chapter 2 gives it tools."></div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer><div class="wrap"><p>The next-token numbers in step 1 are illustrative, not read from a model. The prediction comes from our model-switch probe of 6 Nov 2026 (12 models, n=24 per cell). Every number on this page, with its source file, is in <code>part1/data.md</code>.</p></div></footer>
+
+<script src="../assets/course.js"></script>
+<script src="part1.js"></script>
+</body>
+</html>

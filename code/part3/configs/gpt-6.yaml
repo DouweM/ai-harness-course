@@ -1,0 +1,9 @@
+# Example frozen config for another family: same eval set, plus one line found by iterating on this family's misses.
+name: promise_router
+model: openai:gpt-6.1-sol
+instructions: |
+  Decide whether this customer email commits to paying us.
+  Fill evidence with the email's own words. Leave a field empty when the email doesn't say.
+  A promise to pay someone else, or one that depends on something that hasn't happened, is not a commitment to us.
+model_settings:
+  max_tokens: 2000

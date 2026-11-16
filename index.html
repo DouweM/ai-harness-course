@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harness engineering with Pydantic AI</title>
+<meta name="description" content="An interactive course: design an agent from the model's side, build it with Pydantic AI, and measure what works.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+<style>
+  .home-grid { display: grid; gap: 28px; align-items: center; }
+  @media (min-width: 900px) { .home-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 56px; } }
+  .home-grid > * { min-width: 0; }
+  .loop-wrap { position: relative; max-width: 480px; margin: 0 auto; width: 100%; }
+  .loop-tok { position: absolute; left: 50%; top: 55.5%; width: 30%; transform: translate(-50%, -50%); }
+  .loop-tok .tok-btn { width: 100%; }
+  .loop-tok-line { text-align: center; font-size: .9375rem; color: var(--text-muted); min-height: 3em; margin: 6px auto 0; max-width: 38ch; }
+  .argument { font-size: 1.125rem; max-width: 60ch; }
+  @media (min-width: 900px) { .argument { font-size: 1.1875rem; } }
+  .argument strong { color: var(--text-strong); }
+  .skill-list { list-style: none; padding: 0; margin: 18px 0 22px; display: grid; gap: 10px; max-width: 60ch; }
+  .skill-list li { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; align-items: baseline; border-top: 1px solid var(--border); padding-top: 10px; }
+  .skill-list .k { font-family: var(--font-mono); font-size: .8125rem; text-transform: uppercase; letter-spacing: .06em; color: var(--accent-strong); }
+  .skill-list b { color: var(--text-strong); font-weight: 600; }
+  .skill-list a { color: inherit; text-decoration: none; }
+  .skill-list a:hover b { color: var(--accent-strong); }
+  .band { padding: 40px 0; border-top: 1px solid var(--border); }
+  .band h2 { font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2rem); }
+  .usage { display: grid; gap: 20px; }
+  @media (min-width: 860px) { .usage { grid-template-columns: 1fr 1fr; gap: 40px; } }
+  .usage > div { min-width: 0; }
+  .usage h3 { margin-top: 0; }
+  .usage p { max-width: 60ch; }
+  .pink { color: var(--accent-strong); }
+</style>
+</head>
+<body data-page="home">
+<header class="topbar" data-auto></header>
+
+<main>
+  <section class="home-hero" data-stop>
+    <div class="wrap home-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>An interactive course</p>
+        <h1>Harness engineering with <span class="pink">Pydantic AI</span></h1>
+        <p class="argument">An agent is a model plus its <strong>harness</strong>: the instructions, the tools, the history you keep, and the code that decides what happens next. Harness engineering is improving that harness one idea at a time. You <strong>design</strong> it from the model's side, by reading its page and spotting what it is missing; you <strong>build</strong> the idea with Pydantic AI; and you <strong>measure</strong> it against what you have: which is better, by how much, on which cases. Starting from scratch is just the first lap.</p>
+        <ol class="skill-list">
+          <li><span class="k">Design it from the model's side</span><a href="#part-1"><b>Part 1: How the model sees the world.</b> What it can see, whose voice it trusts, how its world stays current. Where ideas come from.</a></li>
+          <li><span class="k">Build it with Pydantic AI</span><a href="#part-2"><b>Part 2: Building it with Pydantic AI.</b> One collections agent through one customer's week: instructions, tools, history, the answer form, then all of it as one capability.</a></li>
+          <li><span class="k">Measure what works</span><a href="#part-3"><b>Part 3: Production, and measuring what works.</b> Production, model choice, evals, and your own probes.</a></li>
+        </ol>
+        <div class="btn-row">
+          <a class="btn" href="part1/01-what-youre-talking-to.html" data-continue>Start with Part 1</a>
+        </div>
+      </div>
+      <div>
+        <div class="loop-wrap">
+          <svg class="loop" viewBox="0 0 400 380" role="img" aria-label="The loop: design it from the model's side, build it, measure it, and back again.">
+            <defs>
+              <marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker>
+            </defs>
+            <circle class="ring" cx="200" cy="210" r="140" opacity=".35"/>
+            <path class="arrow flow" d="M280.3 95.3 A 140 140 0 0 1 339.5 222.2" marker-end="url(#ah)"/>
+            <path class="arrow flow" d="M280.3 324.7 A 140 140 0 0 1 119.7 324.7" marker-end="url(#ah)"/>
+            <path class="arrow flow" d="M60.5 222.2 A 140 140 0 0 1 119.7 95.3" marker-end="url(#ah)"/>
+            <a href="#part-1"><rect class="node" x="128" y="40" width="144" height="60" rx="12"/><text class="lab" x="200" y="68">Design</text><text class="sub" x="200" y="87">Part 1</text></a>
+            <a href="#part-2"><rect class="node" x="250" y="250" width="144" height="60" rx="12"/><text class="lab" x="322" y="278">Build</text><text class="sub" x="322" y="297">Part 2</text></a>
+            <a href="#part-3"><rect class="node" x="6" y="250" width="144" height="60" rx="12"/><text class="lab" x="78" y="278">Measure</text><text class="sub" x="78" y="297">Part 3</text></a>
+          </svg>
+          <div class="loop-tok">
+            <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it." data-tok-out="#loopLine" data-tok-moods="happy,curious,,unsure,happy,worried"
+              data-tok-lines='["Hi, I&#39;m Tok, the model. I wake up inside whatever you wrote. So: what did you write?", "I can&#39;t see your database. Please put the important bits on the page.", "Today, for me, is whatever the transcript says it is.", "I don&#39;t remember the last request. Every time is my first day.", "If something changed, just tell me. One line is plenty.", "When you rewrite my past, I believe the new one. Then I apologise for things I never did."]'><span data-tok="current" data-crop="hero"></span></button>
+          </div>
+        </div>
+        <p class="loop-tok-line" id="loopLine" aria-live="polite">This is <span class="pink">Tok</span>, the model. It grows a little with every chapter you finish. Tap it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="chapters">
+    <div class="wrap">
+      <h2>The chapters</h2>
+      <p class="muted measure">Runtimes are for reading everything; skim what you already know.</p>
+      <div class="parts" data-home-parts></div>
+    </div>
+  </section>
+
+  <section class="band" id="how">
+    <div class="wrap usage">
+      <div>
+        <h3>Presenting it</h3>
+        <p>Press <kbd>P</kbd> on any page for talk mode. Prose folds away, and transcripts, predictions and results fill the screen. <kbd>&rarr;</kbd> or a clicker moves between stops and on to the next chapter, <kbd>R</kbd> reveals, <kbd>1</kbd> to <kbd>4</kbd> pick an answer for the room, <kbd>N</kbd> shows speaker notes.</p>
+        <button class="btn ghost" type="button" data-talk-start>Try talk mode</button>
+      </div>
+      <div>
+        <h3>With your coding agent</h3>
+        <p>Open your coding agent in this repo<span data-repo-link hidden> (<a data-repo-href href="#">clone it here</a>)</span>. Every chapter has an <b>Ask your agent</b> button that copies a prompt naming the chapter. Your agent reads <code>AGENTS.md</code>, which maps each chapter to notes, docs and runnable code. Ask it to go deeper, to map the chapter onto your own agent, or to run the code with you.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><p>Pydantic AI is open source (MIT). Results in this course come from our own small, dated runs on the models named; read them as big effects only, and re-run before you build on a number.</p></div></footer>
+
+<script src="assets/course.js"></script>
+</body>
+</html>

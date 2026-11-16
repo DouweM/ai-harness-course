@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter title · Harness engineering</title>
+<meta name="description" content="One sentence on what this chapter teaches.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../assets/theme.css">
+<!-- Page-only styles go here, and stay small. Anything two pages need belongs in assets/theme.css. -->
+</head>
+<!-- data-page="chapter" is all course.js needs: it finds this page in its manifest by path (partN/NN-name.html).
+     data-title / data-part / data-n / data-runtime are only a fallback for a page not in the manifest yet. -->
+<body data-page="chapter" data-title="Chapter title" data-part="2" data-n="5" data-runtime="10">
+
+<!-- course.js builds the top bar, contents drawer, talk bar, notes panel and ask dialog. -->
+<header class="topbar" data-auto></header>
+
+<main>
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
+        <h1>Chapter title, in sentence case</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="lede">Two or three sentences: what the reader will be able to do after this chapter, and why it matters.</p>
+      </div>
+      <!-- Tap Tok to cycle its lines. data-tok="current" draws Tok at the reader's evolution stage. -->
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["First line Tok says.", "Second line."]'><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <!-- Each <section> is one stop in talk mode. Prose in .prose or .measure collapses in talk mode. -->
+      <section id="idea">
+        <h2>The idea</h2>
+        <div class="prose measure">
+          <p>Explanation prose. Hidden in talk mode.</p>
+        </div>
+        <p class="talk-only headline">One big line shown only in talk mode, standing in for the prose above.</p>
+        <aside class="notes"><p>Speaker notes for this stop. Shown only in talk mode, when N is pressed.</p></aside>
+
+        <div class="code long" data-run="uv run code/part2/05_example.py">
+          <div class="code-head"><span class="file">code/part2/05_example.py &middot; pydantic-ai 1.x+</span><button class="copy" type="button">Copy</button></div>
+<pre data-lang="py">from pydantic_ai import Agent
+
+agent = Agent('anthropic:claude-sonnet-5-5', instructions='Be brief.')
+</pre>
+        </div>
+      </section>
+
+      <section id="predict-1">
+        <h2>What does the model do?</h2>
+        <!-- A prediction. data-answer is the measured answer; omit it (or add data-unmeasured) for an open question.
+             Stages reveal one at a time (talk mode) or result first then all (reading mode). -->
+        <article class="puzzle" id="p1" data-answer="b">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Short name</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="What the model sees">
+              <div class="tr-title">// what the model sees</div>
+              <div class="msg sys"><span class="who">instructions</span><div class="body">Decide whether this email commits to paying us.</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">Hi, INV-2041 will be paid this Friday.</div></div>
+              <div class="msg next"><span class="who">model</span><div class="body mono">{"due_date": <span class="caret"></span></div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">The question, in one sentence?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>First option</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Second option</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Third option</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What models did" hidden>
+            <p class="eyebrow"><span class="dia"></span>What models did</p>
+            <p class="headline">The headline result, with n and model names.</p>
+            <div class="result-grid two">
+              <div class="arm">
+                <h4>Arm A<small>what it measured</small></h4>
+                <div class="tally" data-k="5" data-n="5" data-label="Model one"></div>
+                <div class="tally" data-k="1" data-n="5" data-label="Model two"></div>
+              </div>
+              <div class="arm">
+                <h4>Arm B<small>what it measured</small></h4>
+                <div class="tally good" data-k="5" data-n="5" data-label="Model one"></div>
+                <div class="tally good" data-k="4" data-n="5" data-label="Model two"></div>
+              </div>
+            </div>
+            <p class="source"><b>Our run, 15 Nov 2026.</b> Setup, n per arm, models.</p>
+            <aside class="notes"><p>Notes for the reveal.</p></aside>
+          </div>
+          <div class="stage" data-label="Why" hidden>
+            <p class="eyebrow"><span class="dia"></span>Why</p>
+            <div class="measure"><p>The explanation. Inside a stage, prose stays visible in talk mode.</p></div>
+            <div class="tok-says"><div class="tk" data-tok="current" data-crop="face" data-mood="unsure" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Tok's view, one or two sentences.</p></div></div>
+          </div>
+        </article>
+
+        <div class="peek">
+          <button class="peek-btn" type="button" data-open-label="Hide what the model receives">Show what the model receives</button>
+          <div class="peek-body"><div class="code"><pre data-lang="json">{"name": "final_result"}</pre></div></div>
+        </div>
+      </section>
+
+      <!-- Evolution card: filled in by course.js from the manifest (the stage this chapter unlocks). -->
+      <div data-evolve="Optional sentence on what Tok gains."></div>
+
+      <!-- Optional: replace the manifest's ask-your-agent follow-ups for this page. -->
+      <ul class="ask-followups" hidden>
+        <li>Follow-up one, phrased as what the reader asks their agent.</li>
+        <li>Follow-up two.</li>
+      </ul>
+
+      <!-- course.js appends the ask-your-agent card and previous/next chapter links here (inside [data-chapter-end]). -->
+    </div>
+  </div>
+</main>
+
+<footer><div class="wrap"><p>Sources, dates and versions for the numbers on this page.</p></div></footer>
+
+<script src="../assets/course.js"></script>
+<!-- Page script after course.js, e.g. a simulator:
+<script>
+Course.registerSim('friday', { init: {...}, controls: [...], build: function (st) { return { msgs: [...], beliefs: [...], likely: {...} }; } });
+</script> -->
+</body>
+</html>

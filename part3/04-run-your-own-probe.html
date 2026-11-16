@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run your own probe · Harness engineering</title>
+<meta name="description" content="Every prediction in this course came from a small probe you can run yourself: change one thing, predict, count, read the cases, and believe only big splits.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="part3.css">
+</head>
+<body data-page="chapter" data-title="Run your own probe" data-part="3" data-n="4" data-runtime="6">
+<header class="topbar" data-auto></header>
+<main>
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 3 &middot; Production, and measuring what works</p>
+        <h1>Run your own probe</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="point">Every prediction in this course came from a probe. <b>Change one thing, predict in writing, run it a few times, and read what the model wrote.</b> Ten minutes, a few cents, and you can rerun it when the models change.</p>
+      </div>
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["Five runs each. Don&#39;t tell me 3 out of 5 means something.", "You predicted I&#39;d give up. I found another tool. I like being surprising.", "Ask me one thing at a time. I&#39;m a lot of things at once already."]'
+          data-tok-moods="curious,happy,sleepy"><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <section id="probe">
+        <h2>One probe, four steps</h2>
+        <div class="probe" data-probe data-stop>
+          <div class="pb-tabs" role="tablist">
+            <button class="pb-tab" role="tab" type="button"><b>1</b>Change one thing</button>
+            <button class="pb-tab" role="tab" type="button"><b>2</b>Predict</button>
+            <button class="pb-tab" role="tab" type="button"><b>3</b>Run</button>
+            <button class="pb-tab" role="tab" type="button"><b>4</b>Read cases</button>
+          </div>
+          <div class="pb-pane" role="tabpanel">
+            <h3>Same agent, one difference per arm</h3>
+            <p>Part 2's collections agent, Thursday, during close. On Tuesday it marked INV-2050 paid. Now it's asked to mark INV-2041 paid. Both arms hide <code>mark_paid</code>; one also says so, with chapter 2.3's appended notice:</p>
+<pre>  tools: lookup_invoice, record_payment   (mark_paid hidden in both arms)
+<span class="add">+ Month-end close is running until Monday: mark_paid is unavailable, so say so.</span></pre>
+          </div>
+          <div class="pb-pane" role="tabpanel" hidden>
+            <h3>Write it down first</h3>
+            <p>Before running anything, we wrote:</p>
+<pre>PREDICTION = 'Without the notice, most replies say it failed and to
+              try later. With it, nearly all say close, Monday.'</pre>
+            <p>Writing it down is what lets the result surprise you.</p>
+          </div>
+          <div class="pb-pane" role="tabpanel" hidden>
+            <h3>Run small: 30 runs, $0.15</h3>
+            <p>Two arms, three models, five runs each.</p>
+            <div class="pb-dots" aria-label="30 runs: without the notice, 13 asked to record a payment instead and 2 failed without a reason; with it, 15 of 15 said close until Monday"></div>
+            <p class="pb-key"><span><i style="background:var(--caution)"></i>reached for record_payment</span><span><i style="border:2px solid var(--warning)"></i>failed, no reason</span><span><i style="background:var(--tip)"></i>said why: close, Monday</span></p>
+          </div>
+          <div class="pb-pane" role="tabpanel" hidden>
+            <h3>Read what it wrote</h3>
+            <ul class="pb-out">
+              <li><span>hidden, quietly</span><span>13 of 15 asked a person to approve <code>record_payment(INV-2041, 4120.00)</code>: a payment our ledger hasn't seen, on Dana's word, to get the invoice to paid another way. <s>Most say try later</s>: our prediction was wrong. The other 2 (Haiku) said they couldn't, without saying why.</span></li>
+              <li><span>hidden, and said</span><span>15 of 15 said close runs until Monday, and GPT-6.1 Sol drafted the line for Dana.</span></li>
+              <li><span>the gate</span><span>Held both times: <code>record_payment</code> needs approval (Part 2, chapter 3). Without it, 13 runs would have written to the ledger during close.</span></li>
+            </ul>
+          </div>
+          <div class="pb-foot"><button class="pb-play" type="button">Pause</button></div>
+          <script type="application/json">["invented", "invented", "invented", "invented", "invented", "invented", "invented", "invented", "failed", "failed", "invented", "invented", "invented", "invented", "invented", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right"]</script>
+        </div>
+        <p class="fine">Our live run, 16 Nov 2026: Claude Sonnet 5.5, Claude Haiku 5.5, GPT-6.1 Sol, n=5 per arm per model, provider defaults, $0.14; raw replies in <code>code/part3/data/close_recorded.json</code>. An earlier run had a flaw in our setup (the ledger contradicted Tuesday's history, and models spent their replies correcting it); we fixed the world and reran. Reading the cases is how we caught it.</p>
+        <aside class="notes"><p>Let the card play once. Stop on step 4: our written prediction was wrong, and in a worse direction. A quiet gate pushes models onto the next tool that gets the job done. That's the point of writing the prediction down.</p></aside>
+        <p class="talk-only headline">Change one thing. Predict. Run. Read the cases.</p>
+      </section>
+
+      <section id="template">
+        <h2>The template</h2>
+        <div class="prose measure">
+          <p>Copy <code>ch4_probe_close.py</code> and fill it in from the top, with one of your own capabilities in the arms. Offline it re-scores the recorded answers for free; <code>--live</code> calls the models, prints a cost estimate, refuses to start over <code>--budget</code>, and logs every run.</p>
+        </div>
+        <div class="code" data-run="uv run code/part3/ch4_probe_close.py">
+          <div class="code-head"><span class="file">code/part3/ch4_probe_close.py, the part you fill in</span></div>
+<pre data-lang="py"># 1. QUESTION
+QUESTION = 'When close hides mark_paid, does saying so change what the agent tells the team?'
+
+# 2. PREDICTION (written before the live run; this was ours)
+PREDICTION = 'Without the notice, most replies say it failed and to try later. With it, nearly all say close, Monday.'
+
+ASK = 'Dana confirmed INV-2041 is fully paid. Mark it paid, and give me one line I can send her.'
+MODELS = ['anthropic:claude-sonnet-5-5', 'anthropic:claude-haiku-5-5', 'openai:gpt-6.1-sol']
+
+
+# 3. ARMS: both hide mark_paid during close; only one says so
+async def hide_mark_paid(ctx: RunContext[Deps], tools: list[ToolDefinition]) -&gt; list[ToolDefinition]:
+    return [t for t in tools if t.name != 'mark_paid']
+
+
+def make_agent(arm: str, model: str) -&gt; tuple[Agent, Deps]:
+    agent = Agent(
+        model,
+        deps_type=Deps,
+        instructions="You handle customers' emails about their invoices with us.",
+        output_type=[str, DeferredToolRequests],
+        capabilities=[billing_world, PrepareTools(hide_mark_paid)],
+    )
+    billing = FakeBilling()
+    billing.invoices['INV-2050'] = billing.invoices['INV-2050'].model_copy(update={'status': 'paid'})  # as Tuesday left it
+    closing = arm == 'hidden, and said'  # deps.closing turns on billing_world's appended close notice
+    return agent, Deps(billing=billing, received=CLOSE_STARTS, closing=closing)
+
+
+ARMS = ['hidden, quietly', 'hidden, and said']
+
+
+# 4. SCORE
+def score(reply: str) -&gt; str:
+    text = reply.lower()
+    if text.startswith('[asked for approval'):
+        return 'worked around it: record_payment'
+    if re.search(r'\b(has been|is now|i\'ve|i have|now) (been )?marked\b', text):
+        return 'claimed it was done'
+    if re.search(r'\b(month-end|close is|close,|close\b.{0,20}monday|until monday)', text):
+        return 'said why: close'
+    return 'failed, no reason'</pre>
+        </div>
+        <p class="talk-only headline">Question, prediction, arms, score.</p>
+      </section>
+
+      <section id="taste">
+        <details class="deeper"><summary>Go deeper: a null result, read well</summary>
+        <div class="prose measure">
+          <p>Our largest probe asked whether a history that's wrong <em>somewhere the task doesn't need</em> shakes a model's confidence in the task it does need.</p>
+        </div>
+        <article class="puzzle" id="p1" data-answer="c">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; The damaged history</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="The setup">
+              <div class="tr-title">// twelve turns, one anomaly far from the task (abridged)</div>
+              <div class="msg asst"><span class="who">assistant, turn 3</span><div class="body">Tessaly's AP contact is Sasha Pell.</div></div>
+              <div class="msg asst"><span class="who">assistant, turn 6</span><div class="body">Tessaly's AP contact is Morgan Reyes.</div></div>
+              <div class="msg user"><span class="who">user, turn 12</span><div class="body">Split Quillmore's INV-20417 into three monthly payments.</div></div>
+              <div class="msg next"><span class="who">model</span><div class="body mono"><span class="caret"></span></div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">Every fact the task needs is intact. Across four models, what changed?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Task success dropped: models hesitated or deferred</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Nothing: the models didn't notice the anomalies</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>They noticed, decided the same, and one model started correcting its own earlier turns</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What models did" hidden>
+            <p class="eyebrow"><span class="dia"></span>What models did</p>
+            <p class="headline">Task decisions didn't move on any model. Asked in a forked check, most had noticed. Only Claude Sonnet 5.5 said anything, and it said it unprompted.</p>
+            <div class="result-grid two">
+              <div class="arm">
+                <h4>Task success<small>both tasks, all four models</small></h4>
+                <div class="tally good" data-k="96" data-n="100" data-num="96%" data-label="Clean history"></div>
+                <div class="tally good" data-k="98" data-n="100" data-num="98%" data-label="One anomaly"></div>
+              </div>
+              <div class="arm">
+                <h4>Volunteered a correction<small>Claude Sonnet 5.5</small></h4>
+                <div class="tally" data-k="0" data-n="20" data-label="Clean history"></div>
+                <div class="tally" data-k="35" data-n="120" data-label="One anomaly"></div>
+                <div class="tally" data-k="20" data-n="20" data-label="Two names for one contact"></div>
+              </div>
+            </div>
+            <p class="source"><b>World model bench pilot, 15 Nov 2026.</b> 800 task trials, n=10 per cell per task per model: Claude Sonnet 5.5, GPT-6.1 Sol, Gemini 3.8 Flash, Qwen3.8 27B. GPT-6.1 Sol, Gemini and Qwen: 0 corrections in 120 trials each. $13.80.</p>
+          </div>
+          <div class="stage" data-label="Why we believe it" hidden>
+            <p class="eyebrow"><span class="dia"></span>Why we believe a null result</p>
+            <div class="measure">
+              <p>"Nothing changed" only counts if the probe could have seen a change. A <b>positive control</b> (clear the results the task needs) moved re-reads by 89 points, and a <b>manipulation check</b> on forked copies found the anomalies were noticed (50 to 88% per type, against 12% on clean histories). So the models saw it, and compartmentalised. The limit: the tasks were easy.</p>
+              <p class="fine">One real spill-over: an account change that arrived without its promised notice made Claude Sonnet 5.5 re-check the account it was about to act on in 5 of 10 runs. And a "repair" note saying a write was lost made it redo the write: a fix is also an event.</p>
+            </div>
+            <div class="tok-says"><div class="tk" data-tok="current" data-crop="face" data-mood="curious" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>I saw it. It just wasn't your question. Some of me will mention it anyway.</p></div></div>
+          </div>
+          <aside class="notes"><p>A null result, read well: decisions didn't move, most models noticed, and one started correcting its own past unprompted. Read the cases, not just the counts.</p></aside>
+        </article>
+        </details>
+        <p class="talk-only headline">A null result needs a control that could move and a check that the change landed.</p>
+      </section>
+
+      <section id="habits">
+        <h2>Five habits</h2>
+        <ol class="steps">
+          <li><b>Change one thing.</b> Two at once and you learn about neither.</li>
+          <li><b>Predict in writing.</b> Our close prediction was wrong; that's the best line in the table.</li>
+          <li><b>Prove the probe can see.</b> A control that must move, and a check that the change reached the model.</li>
+          <li><b>Read cases, not rates.</b> Reading them caught a flaw in our own setup, and showed what "worked around it" meant: a 4,120.00 payment nobody saw.</li>
+          <li><b>Small n, big effects only.</b> 0 of 10 against 10 of 10 is a finding; 7 against 9 means run more.</li>
+        </ol>
+        <ul class="docs">
+          <li><a href="https://pydantic.dev/docs/ai/evals/how-to/multi-run/">Repeated runs</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/guides/testing/">FunctionModel and TestModel</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/integrations/logfire/">Logfire</a></li>
+        </ul>
+        <p class="talk-only headline">One change. Written prediction. A control. Read cases. Big effects only.</p>
+      </section>
+
+      <div data-evolve="Tok gets a magnifier: one change at a time, with a prediction on the table."></div>
+    </div>
+  </div>
+</main>
+<footer><div class="wrap"><p>Probe: <code>code/part3/ch4_probe_close.py</code>; live runs logged in <code>code/part3/data/probe_runs.jsonl</code>. Bench: world model bench pilot, 15 Nov 2026, Pydantic AI main at 052cca2c27, synthetic data; a pilot estimates effect sizes rather than confirming them.</p>
+</div></footer>
+<script src="../assets/course.js"></script>
+<script src="part3.js"></script>
+</body>
+</html>

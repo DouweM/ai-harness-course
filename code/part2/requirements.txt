@@ -1,0 +1,4 @@
+# The versions code/part2/verify.py was last run against (released 12 Nov 2026).
+pydantic-ai-slim[anthropic,openai,ag-ui,ui,mcp,logfire]==2.68.0
+pydantic-ai-harness[coder]==0.68.0
+pytest

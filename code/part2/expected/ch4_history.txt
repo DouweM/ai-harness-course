@@ -1,0 +1,11 @@
+stored messages by Thursday night: 12
+Friday, cut to the last four messages:
+  messages on the page:  4
+  Wednesday's correction: GONE
+  starts with:            ModelResponse ['ToolCallPart']
+  oldest lookup result:   {'number': 'INV-2041', 'amount': '4120.00', 'currency': 'U
+Friday, old tool results cleared:
+  messages on the page:  13
+  Wednesday's correction: there
+  starts with:            ModelRequest ['UserPromptPart']
+  oldest lookup result:   [Cleared to save space. Call lookup_invoice again if you n

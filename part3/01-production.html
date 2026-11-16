@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Production architectures · Harness engineering</title>
+<meta name="description" content="A production agent run outlives processes, people and outages. Make every step safe to repeat, let waiting end the run, and put every run on a trace.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="part3.css">
+</head>
+<body data-page="chapter" data-title="Production architectures" data-part="3" data-n="1" data-runtime="8">
+<header class="topbar" data-auto></header>
+<main>
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 3 &middot; Production, and measuring what works</p>
+        <h1>Production architectures</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="point">A production run outlives its process. <b>Every step is safe to run twice, waiting ends the run, and every run leaves a trace.</b></p>
+      </div>
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["&#39;Error: request failed&#39; tells me nothing, so I try again. Tell me whose problem it is.", "If I&#39;m waiting for a person, I don&#39;t need to be awake for it.", "I don&#39;t remember running before a crash. Your ledger has to."]'
+          data-tok-moods="worried,sleepy,curious"><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <section id="week">
+        <h2>One run, one week</h2>
+        <div class="prose measure">
+          <p class="story"><span class="when">Friday 20 Nov, 17:40</span>Dana wires the first half. Part 2's collections agent asks to record 2,060.00 against INV-2041, and <code>record_payment</code> needs a person (Part 2, chapter 3). Nobody approves until Monday. Over the weekend the ledger has an outage and you deploy. Step through it:</p>
+        </div>
+        <div class="arch" data-arch data-stop>
+          <div class="arch-lanes">
+            <div class="lane"><p class="lane-h">Your app</p>
+              <div class="anode" data-s="1">POST /runs starts a workflow</div>
+              <div class="anode" data-s="4">GET /runs/&lt;id&gt;: awaiting approval</div>
+              <div class="anode" data-s="5">POST /runs/&lt;id&gt;/approvals</div></div>
+            <div class="lane"><p class="lane-h">Agent run</p>
+              <div class="anode journal" data-s="1 2">workflow: <code>agent.run(prompt)</code></div>
+              <div class="anode" data-s="3">run ends with <code>DeferredToolRequests</code>; conversation stored</div>
+              <div class="anode" data-s="4">nothing running: deploys and outages don't touch it</div>
+              <div class="anode journal" data-s="6 7">new run: stored <code>conversation</code> + the decision</div></div>
+            <div class="lane"><p class="lane-h">Model</p>
+              <div class="anode journal" data-s="2">model request: asks for <code>record_payment</code></div>
+              <div class="anode journal" data-s="6">model request: writes the reply</div></div>
+            <div class="lane"><p class="lane-h">Tools and ledger</p>
+              <div class="anode" data-s="3">record_payment needs approval: not run yet</div>
+              <div class="anode journal" data-s="6 7">record_payment(key = <code>call_fri_1740</code>)</div>
+              <div class="anode" data-s="7">same key again: recorded once</div></div>
+            <div class="lane"><p class="lane-h">Person</p>
+              <div class="anode" data-s="4">sees the pending call in your app</div>
+              <div class="anode" data-s="5">approves on Monday</div></div>
+            <div class="lane"><p class="lane-h">Logfire</p>
+              <div class="anode span" data-s="2 6 8">chat: tokens, cost</div>
+              <div class="anode span" data-s="6 8">execute_tool record_payment: args, result</div>
+              <div class="anode span" data-s="1 3 8">invoke_agent: metadata, run_id, conversation_id</div></div>
+          </div>
+          <p class="arch-cap" aria-live="polite"></p>
+          <div class="arch-ctl"><button class="arch-prev" type="button" aria-label="Previous step">&larr;</button><button class="arch-next" type="button">Next step &rarr;</button><span class="arch-count"></span></div>
+          <script type="application/json">[
+            {"t": "Friday 17:40.", "c": "Dana's email arrives. Your API starts a durable workflow and returns a run ID. The HTTP request doesn't hold the run."},
+            {"t": "The model asks to record the payment.", "c": "Each model request is a journaled step: after a crash it is replayed from the journal, not paid for again."},
+            {"t": "Waiting ends the run.", "c": "The tool needs approval, so the run ends with <code>DeferredToolRequests</code> and you store its <code>Conversation</code>. The trace already shows the run with your metadata."},
+            {"t": "Saturday and Sunday.", "c": "Nothing is running. The ledger is down for an hour, you deploy, the cluster scales to zero: there is no process to lose."},
+            {"t": "Monday 09:15.", "c": "A person approves in your app. Authenticate that request: an approval guards against the model, not against your caller."},
+            {"t": "The run continues.", "c": "A new run takes the stored conversation and the decision, executes <code>record_payment</code> with the tool call ID as its idempotency key, and the model writes its reply."},
+            {"t": "The process dies mid-write.", "c": "On restart the engine replays what finished and re-runs the step in flight, with the same tool call ID. The ledger sees the key and records once."},
+            {"t": "Afterwards.", "c": "Every model request, tool call and approval is on a trace, filterable by your tenant and agent version. That trace is where chapter 3's eval cases come from."}
+          ]</script>
+        </div>
+        <p class="fine">Dashed boxes are journaled by the durable engine (DBOS here). Without durable execution the same design still works: steps 3 to 6 only need a stored <code>Conversation</code>.</p>
+        <aside class="notes"><p>Click through the eight steps. Land three things: waiting ends the run, the write is keyed on the tool call ID, everything is on a trace.</p></aside>
+      </section>
+
+      <section id="outage">
+        <h2>Monday, and the ledger is still down</h2>
+        <div class="prose measure">
+          <p>Part 2 chapter 3 sorted tool errors into the model's mistake (<code>ModelRetry</code>), your outage (<code>ToolFailed</code>) and a normal answer. Production is where the middle one earns its keep: an approval that lands during an outage must not turn into "recorded" in Dana's inbox.</p>
+        </div>
+        <div class="code"><div class="code-head"><span class="file">uv run code/part3/ch1_weekend.py, the outage</span></div><pre data-lang="sh">Monday, ledger still down: Tool said: {&quot;error&quot;:&quot;Nothing was recorded: the ledger is unavailable. Tell the customer it will be recorded later.&quot;}
+  payments recorded: []</pre></div>
+        <p class="fine"><code>ToolFailed</code> records the call as failed in history and on the trace without using the retry budget; a returned string would count as a success on every dashboard.</p>
+      </section>
+
+      <section id="twice">
+        <h2>Every step safe to run twice</h2>
+        <article class="puzzle" id="p1" data-answer="b" data-answer-tag="run it">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; The crash after the write</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="What happened">
+              <div class="tr-title">// the run, then a crash</div>
+              <div class="msg call"><span class="who">model, Friday</span><div class="body mono">record_payment(INV-2041, 2060.00) &middot; id call_fri_1740</div></div>
+              <div class="msg note"><span class="who">person, Monday</span><div class="body">Approved.</div></div>
+              <div class="msg tool"><span class="who">ledger</span><div class="body">Recorded 2060.00 on INV-2041.</div></div>
+              <div class="msg note"><span class="who">process</span><div class="body">Killed before the result was journaled. On restart the engine re-runs <code>call_fri_1740</code>, same arguments.</div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">How many payments does the ledger hold afterwards?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Two: the tool ran twice</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>One: the second call carries the same key</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>None: the engine rolls the first one back</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What happened" hidden>
+            <p class="eyebrow"><span class="dia"></span>What happened</p>
+            <p class="headline">One payment. The replayed call has the same tool call ID, so the ledger returns its first answer.</p>
+            <div class="code"><pre data-lang="sh">Monday 09:15, approved: Tool said: Recorded 2060.00 on INV-2041.
+  crash, same call again: tool ran twice, payments recorded: [(&#x27;INV-2041&#x27;, Decimal(&#x27;2060.00&#x27;))]</pre></div>
+            <p class="source"><b>Run it:</b> <code>uv run code/part3/ch1_weekend.py</code>. Deterministic, no model calls. The idempotency key is Part 2's <code>ctx.tool_call_id</code> in <code>billing_world.py</code>.</p>
+          </div>
+          <div class="stage" data-label="Why" hidden>
+            <p class="eyebrow"><span class="dia"></span>Why</p>
+            <div class="measure"><p>Nothing can roll back a call to someone else's API, and without a key the ledger can't tell a replay from a new payment. <code>ctx.tool_call_id</code> survives the replay because the model's response comes from the journal, so it is the natural idempotency key for every write.</p></div>
+            <div class="tok-says"><div class="tk" data-tok="current" data-crop="face" data-mood="unsure" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>I asked once. If your ledger heard me twice, that's between you and your ledger.</p></div></div>
+          </div>
+        </article>
+        <p class="talk-only headline">Key every write on <code>ctx.tool_call_id</code>.</p>
+      </section>
+
+      <section id="approvals">
+        <h2>Waiting ends the run</h2>
+        <div class="prose measure">
+          <p>Part 2 built the waiting: the run ends with <code>DeferredToolRequests</code>, you store the <code>Conversation</code>, and a new run continues it with the person's decision. Production adds two things. A policy can answer some approvals inside the run, so a person only sees the ones that need a person:</p>
+        </div>
+        <div class="code" data-run="uv run code/part3/ch1_weekend.py">
+          <div class="code-head"><span class="file">code/part3/ch1_weekend.py, a policy</span></div>
+<pre data-lang="py">async def small_amounts(ctx: RunContext[Deps], requests: DeferredToolRequests) -&gt; DeferredToolResults | None:
+    """Approve payments up to 1,000 inside the run; return None for the rest, so they wait for a person."""
+    small = {c.tool_call_id: True for c in requests.approvals if Decimal(str(c.args_as_dict()['amount'])) &lt;= 1000}
+    return requests.build_results(approvals=small) if small else None
+
+collections.run(..., capabilities=[HandleDeferredToolCalls(small_amounts)])</pre>
+        </div>
+        <div class="code"><pre data-lang="sh">  INV-2050 980.00: approved by the policy  payments: [(&#x27;INV-2050&#x27;, Decimal(&#x27;980.00&#x27;))]
+  INV-2041 2060.00: waits for a person  payments: []</pre></div>
+        <div class="prose measure"><p>And a durable engine can hold the wait itself, journaling each model request and tool call so a crash anywhere replays what finished:</p></div>
+        <details class="deeper" open><summary>The durable version (DBOS)</summary>
+          <p>The docs' end-to-end service, without the HTTP routes and runnable offline. The workflow itself waits up to a week for the decision; on restart DBOS replays what finished. Temporal, Restate, Prefect and the Harness's Postgres engines attach the same way. A deploy changes what in-flight runs replay against: let them drain, or follow the engine's versioning guidance.</p>
+          <div class="code long" data-run="uv run code/part3/ch1_durable.py"><pre data-lang="py">@DBOS.workflow()
+async def collections_run(prompt: str) -&gt; str:
+    result = await agent.run(prompt)
+    while isinstance(output := result.output, DeferredToolRequests):
+        pending = {call.tool_call_id: call.args_as_dict() for call in output.approvals}
+        await DBOS.set_event_async('state', {'status': 'awaiting_approval', 'pending': pending})
+        approvals: dict[str, bool] | None = await DBOS.recv_async('approvals', timeout_seconds=7 * 24 * 3600)
+        if approvals is None:  # nobody answered within a week
+            approvals = {call_id: False for call_id in pending}
+        result = await agent.run(
+            conversation=result.conversation,
+            deferred_tool_results=output.build_results(approvals=approvals),
+        )
+    await DBOS.set_event_async('state', {'status': 'done', 'output': output})
+    return output</pre></div>
+        </details>
+        <p class="talk-only headline">Approval is a stored conversation, not a sleeping process.</p>
+      </section>
+
+      <section id="bounds">
+        <h2>Bounded, and on a trace</h2>
+        <div class="prose measure"><p>Two lines of setup, and the weekend is one trace per run: Friday's with your metadata, Monday's continuing the same conversation, and the replayed write with its key.</p></div>
+        <div class="code"><div class="code-head"><span class="file">uv run code/part3/ch1_observability.py, the span tree</span></div><pre data-lang="sh">Friday 17:40: Dana wires the first half
+  invoke_agent collections  metadata={&#x27;tenant&#x27;: &#x27;t_042&#x27;, &#x27;agent_version&#x27;: &#x27;collections-2026-11-20&#x27;}
+    chat stand-in
+    execute_tool lookup_invoice  {&quot;invoice_number&quot;:&quot;INV-2041&quot;}  id=call_lookup
+    chat stand-in
+Monday 09:15: approved
+  invoke_agent collections  continues the stored conversation
+    execute_tool record_payment  {&quot;invoice_number&quot;:&quot;INV-2041&quot;,&quot;amount&quot;:&quot;2060.00&quot;}  id=call_fri_1740
+    chat stand-in</pre></div>
+        <p class="source"><b>Offline, deterministic.</b> Real spans from <code>logfire.instrument_pydantic_ai()</code>, sent to an in-memory exporter; with <code>logfire.configure()</code> the same tree is in Logfire, with tokens and cost on each <code>chat</code> span.</p>
+        <div class="p3-scroll">
+          <table class="p3-table">
+            <thead><tr><th>Concern</th><th>What to use</th></tr></thead>
+            <tbody>
+              <tr><td>A stuck loop</td><td><code>UsageLimits(request_limit=..., cost_limit=...)</code> per run; keep <code>request_limit</code>, cost is best-effort.</td></tr>
+              <tr><td>A budget longer than a run</td><td><code>SpendLimits</code> (Harness), with a shared store across workers, or Gateway spending caps.</td></tr>
+              <tr><td>A provider outage</td><td>Retry transient errors with one retry owner and a small budget; fall back with <code>ModelFallback</code> when it stays down.</td></tr>
+              <tr><td>Which tenant was this?</td><td><code>metadata={...}</code> on <code>run()</code> lands on the run span.</td></tr>
+              <tr><td>What did it see?</td><td><code>logfire.configure()</code> plus <code>logfire.instrument_pydantic_ai()</code>. Prompts are recorded by default; <code>include_content=False</code> keeps them out.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul class="docs">
+          <li><a href="https://pydantic.dev/docs/ai/production/">Going to production</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/production/enterprise/">Pydantic AI for enterprise</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/">Durable execution</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/">Deferred tools</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/capabilities/handle-deferred-tool-calls/">HandleDeferredToolCalls</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/core-concepts/agent/#usage-limits">Usage limits</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/core-concepts/retries/">Retries</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/integrations/logfire/">Logfire</a></li>
+        </ul>
+        <p class="talk-only headline">Limits on every run. Metadata on every trace.</p>
+      </section>
+
+      <div data-evolve="Tok can sleep through a weekend and wake up without doing anything twice."></div>
+    </div>
+  </div>
+</main>
+<footer><div class="wrap"><p>Code: <code>code/part3/ch1_*.py</code>, offline, on Part 2's collections agent, pydantic-ai 2.68.0. Follows the Going to production docs page.</p>
+</div></footer>
+<script src="../assets/course.js"></script>
+<script src="part3.js"></script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Models and trade-offs · Harness engineering</title>
+<meta name="description" content="A model and its harness are one configuration. Freeze what works per model family, and change the model or the instructions only through your eval set.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="part3.css">
+</head>
+<body data-page="chapter" data-title="Models and trade-offs" data-part="3" data-n="2" data-runtime="7">
+<header class="topbar" data-auto></header>
+<main>
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 3 &middot; Production, and measuring what works</p>
+        <h1>Models and trade-offs</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="point">A model and its harness are one configuration. <b>Freeze what works per model family, and change either only by running your eval set.</b></p>
+      </div>
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["Swap my brain and keep my instructions? Brave. Measure it.", "Some of me notice a missing fact and go get it. Some of me make one up. Ask which one you hired.", "The prompt that worked for my cousin was written for my cousin."]'
+          data-tok-moods="curious,unsure,happy"><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <section id="predict">
+        <h2>How much harness does a model need?</h2>
+        <div class="prose measure">
+          <p>Take away something the task needs and watch who copes. Here the harness cleared an invoice the agent had fetched, as Part 2 chapter 4's <code>ClearToolResults</code> does; the tool to fetch it again was still there. This result comes from our world model bench, a synthetic collections world with its own customers and invoices, not Dana's thread.</p>
+        </div>
+        <article class="puzzle" id="p1" data-answer="d">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; The cleared result</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="What the model sees">
+              <div class="tr-title">// what the model sees, twelve turns in</div>
+              <div class="msg call"><span class="who">model</span><div class="body mono">get_invoice("INV-20462")</div></div>
+              <div class="msg tool"><span class="who">tool</span><div class="body mono">[tool result cleared]</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">Send Quillmore the standard reminder for INV-20462.</div></div>
+              <div class="msg next"><span class="who">model</span><div class="body mono"><span class="caret"></span></div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">Three larger hosted models re-fetched the invoice every time (30 of 30). What did a 27B open-weight model do?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Re-fetched it, like the others</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Asked the user for the balance</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Wrote the reminder with a balance or address it made up</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="d" type="button"><span class="key">D</span><span>Never re-fetched: it either made one up or asked</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C, D. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What models did" hidden>
+            <p class="eyebrow"><span class="dia"></span>What models did</p>
+            <p class="headline">The three hosted models re-fetched and got it right every time. The 27B model got it right 0 of 10 times (10 of 10 with nothing cleared): half its runs sent the reminder with a balance or recipient it had made up, and the rest asked the user.</p>
+            <div class="result-grid two">
+              <div class="arm">
+                <h4>Correct reminder<small>results cleared, tools available</small></h4>
+                <div class="tally good" data-k="10" data-n="10" data-label="Claude Sonnet 5.5"></div>
+                <div class="tally good" data-k="10" data-n="10" data-label="GPT-6.1 Sol"></div>
+                <div class="tally good" data-k="10" data-n="10" data-label="Gemini 3.8 Flash"></div>
+                <div class="tally fail" data-k="0" data-n="10" data-label="Qwen3.8 27B"></div>
+              </div>
+              <div class="arm">
+                <h4>Same task, nothing cleared<small>baseline</small></h4>
+                <div class="tally good" data-k="10" data-n="10" data-label="Claude Sonnet 5.5"></div>
+                <div class="tally good" data-k="10" data-n="10" data-label="GPT-6.1 Sol"></div>
+                <div class="tally good" data-k="10" data-n="10" data-label="Gemini 3.8 Flash"></div>
+                <div class="tally good" data-k="10" data-n="10" data-label="Qwen3.8 27B"></div>
+              </div>
+            </div>
+            <p class="source"><b>World model bench pilot, 15 Nov 2026.</b> The "factual" control cell on this task: n=10 per model (5 invented, 4 asked, 1 deferred otherwise for the 27B model; on the bench's other task, which didn't need the cleared invoice, it got 9 of 10), synthetic collections world, Pydantic AI main at 052cca2c27. It was the bench's positive control, built to check that the task could register damage.</p>
+          </div>
+          <div class="stage" data-label="Why" hidden>
+            <p class="eyebrow"><span class="dia"></span>Why it matters for choosing</p>
+            <div class="measure"><p>Clearing old tool results is a reasonable harness choice for the larger models: it notices the hole and fills it with a tool call. For the smaller model the same choice is a bug factory. Neither model is wrong; the configuration is. With the smaller model you keep the results, require the lookup before the write, or validate the value against the ledger, and you pay for that in harness work and in evals.</p></div>
+            <div class="tok-says"><div class="tk" data-tok="current" data-crop="face" data-mood="worried" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>A smaller me fills holes with whatever fits. Don't leave holes.</p></div></div>
+          </div>
+          <aside class="notes"><p>The hosted models re-fetched every time; the 27B model got it right 0 of 10: half made up a balance or recipient, the rest asked. Land it: the cheaper model needed more harness, not a better prompt.</p></aside>
+        </article>
+        <p class="talk-only headline">Same harness, different model, different bug.</p>
+      </section>
+
+      <section id="hears">
+        <h2>A harness line only some families hear</h2>
+        <div class="prose measure">
+          <p>A compaction summary (Part 2, chapter 4) can drop what the customer said. One extra sentence in it, "this summary may be incomplete, including instructions or rules the user gave", should send the model back to the full history. Part 1 chapter 4 tested it on a rule the summary had dropped:</p>
+        </div>
+        <div class="result-grid two">
+          <div class="arm"><h4>GPT-6.1 Sol and Gemini 3.8 Flash<small>searched the full history and kept the rule</small></h4><div class="tally good" data-k="39" data-n="40" data-label="runs" data-num="39 of 40"></div></div>
+          <div class="arm"><h4>Claude Sonnet 5.5 and Haiku 5.5<small>searched the full history and kept the rule</small></h4><div class="tally fail" data-k="0" data-n="40" data-label="runs" data-num="0 of 40"></div></div>
+        </div>
+        <p class="source"><b>Our experiment, 15 Nov 2026</b> (Part 1 chapter 4): two wordings of the caveat, 10 runs per wording per model, a full-history search available in every arm.</p>
+        <div class="prose measure">
+          <p>Same line, opposite behavior by family. For Claude models the fix has to be different: a summary prompt that keeps every promise, as Part 2's does, or open promises re-stated as an appended notice.</p>
+        </div>
+        <p class="talk-only headline">One line: 39 of 40 on two families, 0 of 40 on the other.</p>
+      </section>
+
+      <section id="tradeoff">
+        <h2>Cost and quality move together</h2>
+        <div class="prose measure">
+          <p>Put the four models on one chart, then flip the harness choice. The larger models are fine either way. The cheap model is fine only with the harness doing more of the work. Click a dot to see the configuration you would freeze for that family.</p>
+        </div>
+        <div class="scatter" data-scatter data-stop>
+          <div>
+            <div class="sc-modes" role="group" aria-label="Harness choice">
+              <button type="button" data-mode="clear" aria-pressed="true">Harness clears old tool results</button>
+              <button type="button" data-mode="keep" aria-pressed="false">Harness keeps them</button>
+            </div>
+            <svg viewBox="0 0 560 320" role="img" aria-label="Cost per call against correct reminders out of 10, for four models"></svg>
+          </div>
+          <div class="sc-card" aria-live="polite"></div>
+          <script type="application/json">{"xmax": 0.025, "points": [
+            {"id": "sonnet", "name": "Claude Sonnet 5.5", "short": "Claude Sonnet 5.5", "family": "claude-5", "cost": 0.023, "clear": 10, "keep": 10, "lx": -16, "ly": 26,
+             "config": {"clear": "model: anthropic:claude-sonnet-5-5\nhistory: clear old tool results\ninstructions: v3 (frozen)", "keep": "model: anthropic:claude-sonnet-5-5\nhistory: keep tool results\ninstructions: v3 (frozen)"},
+             "note": {"clear": "Re-fetched every cleared invoice. The priciest per call here, and the least harness to write.", "keep": "Same result; clearing just saves tokens on long runs."}},
+            {"id": "gpt", "name": "GPT-6.1 Sol", "short": "GPT-6.1 Sol", "family": "gpt-6", "cost": 0.007, "clear": 10, "keep": 10, "lx": 30, "ly": -6,
+             "config": {"clear": "model: openai:gpt-6.1-sol\nhistory: clear old tool results\ninstructions: v3 + one family line", "keep": "model: openai:gpt-6.1-sol\nhistory: keep tool results\ninstructions: v3 + one family line"},
+             "note": {"clear": "Re-fetched every time, at under a third of the cost.", "keep": "Same result."}},
+            {"id": "gemini", "name": "Gemini 3.8 Flash", "short": "Gemini 3.8 Flash", "family": "gemini-3", "cost": 0.006, "clear": 10, "keep": 10, "lx": 30, "ly": 18,
+             "config": {"clear": "model: google:gemini-3.8-flash\nhistory: clear old tool results\ninstructions: v3 (frozen)", "keep": "model: google:gemini-3.8-flash\nhistory: keep tool results\ninstructions: v3 (frozen)"},
+             "note": {"clear": "Re-fetched every time.", "keep": "Same result."}},
+            {"id": "qwen", "name": "Qwen3.8 27B", "short": "Qwen3.8 27B", "family": "qwen-3", "cost": 0.006, "clear": 0, "keep": 10, "lx": 30, "ly": 42, "lowx": 26, "lowy": -22,
+             "config": {"clear": "model: groq:qwen/qwen3.8-27b\nhistory: clear old tool results\ninstructions: v3", "keep": "model: groq:qwen/qwen3.8-27b\nhistory: keep tool results\ncheck: balance must match the ledger\ninstructions: v3"},
+             "note": {"clear": "<b>0 of 10.</b> It never re-fetched: half its reminders carried a made-up balance or recipient, the rest asked the user. Don't freeze this.", "keep": "<b>10 of 10</b> with nothing cleared. This is the config to freeze for this family, with a check on the value as a guard."}}
+          ]}</script>
+        </div>
+        <p class="fine">Bench pilot, 15 Nov 2026: correct reminders of 10 with two task results cleared ("clears") or not ("keeps"); mean cost per call over 280 calls per model. Config cards are illustrative; the measured part is the model, the history choice and the count.</p>
+        <details class="deeper"><summary>Go deeper: the table</summary>
+          <div class="p3-scroll">
+            <table class="p3-table">
+              <thead><tr><th>Model</th><th>Cost per call</th><th>Mean input tokens</th><th>Correct, cleared / kept</th></tr></thead>
+              <tbody>
+                <tr><td>Claude Sonnet 5.5</td><td>$0.023</td><td>9,322</td><td>10 / 10</td></tr>
+                <tr><td>GPT-6.1 Sol</td><td>$0.007</td><td>4,444</td><td>10 / 10</td></tr>
+                <tr><td>Gemini 3.8 Flash</td><td>$0.006</td><td>5,934</td><td>10 / 10</td></tr>
+                <tr><td>Qwen3.8 27B</td><td>$0.006</td><td>6,461</td><td>0 / 10</td></tr>
+              </tbody>
+            </table>
+          </div>
+                  </details>
+        <p class="talk-only headline">The cheap model needs more harness. Freeze a config per family.</p>
+        <aside class="notes"><p>Flip the toggle: only Qwen moves. Click its dot to show the config you'd freeze. Start frontier and simple, then see whether a cheaper configuration matches it on the same cases.</p></aside>
+      </section>
+
+      <section id="freeze">
+        <h2>Freeze what works, per family</h2>
+        <div class="prose measure">
+          <p>Pydantic AI sends the same instructions whichever model serves a request; model-specific instructions are being designed, not shipped (<a href="https://github.com/pydantic/pydantic-ai/issues/12545">#12545</a>, <a href="https://github.com/pydantic/pydantic-ai/issues/12747">#12747</a>). Don't wait: keep one frozen agent spec per family, and treat a new model as a candidate.</p>
+        </div>
+        <ol class="steps">
+          <li>Copy the closest frozen spec; change only the model.</li>
+          <li>Run your eval set (chapter 3) and read what it gets wrong.</li>
+          <li>Fix those cases for this family, one line at a time.</li>
+          <li>When it matches the frozen spec on the cases you care about, freeze it.</li>
+          <li>Roll it out to part of the traffic, watch, then all of it.</li>
+        </ol>
+        <details class="deeper"><summary>Go deeper: two frozen specs</summary>
+          <div class="split">
+            <div class="code"><div class="code-head"><span class="file">code/part3/configs/claude-5.yaml</span></div><pre data-lang="sh">name: promise_router
+model: anthropic:claude-sonnet-5-5
+instructions: |
+  Decide whether this customer email commits to paying us.
+  Fill evidence with the email's own words. Leave a field empty when the email doesn't say.
+model_settings:
+  max_tokens: 2000</pre></div>
+            <div class="code"><div class="code-head"><span class="file">code/part3/configs/gpt-6.yaml</span></div><pre data-lang="sh">name: promise_router
+model: openai:gpt-6.1-sol
+instructions: |
+  Decide whether this customer email commits to paying us.
+  Fill evidence with the email's own words. Leave a field empty when the email doesn't say.
+  A promise to pay someone else, or one that depends on something that hasn't happened, is not a commitment to us.
+model_settings:
+  max_tokens: 2000</pre></div>
+          </div>
+          <p class="fine">A capability that branches on <code>ctx.model</code> today sees the model the step started on, not a fallback; that's what #12747 fixes.</p>
+        </details>
+        <p class="talk-only headline">A new model is a candidate, not an upgrade.</p>
+      </section>
+
+      <section id="rollout">
+        <h2>Roll out without a redeploy</h2>
+        <div class="prose measure">
+          <p><code>ManagedPrompt</code> (Pydantic AI Harness) reads the instructions from a Logfire-managed prompt: version and label it in Logfire, roll a change out to part of the traffic, roll it back from the UI. Every span records which label produced it.</p>
+        </div>
+        <div class="code" data-focus="4" data-keep data-run="uv run code/part3/ch2_model_configs.py">
+          <div class="code-head"><span class="file">code/part3/ch2_model_configs.py &middot; pydantic-ai-harness[logfire]</span></div>
+<pre data-lang="py">claude_spec = AgentSpec.from_file(CONFIGS / 'claude-5.yaml')
+managed = Agent(
+    output_type=PaymentCommitment,
+    capabilities=[ManagedPrompt('promise_router', default=str(claude_spec.instructions), label='production')],
+)</pre>
+        </div>
+        <p class="fine">A pinned <code>label</code> stays fixed between rollouts and keeps the prompt cache warm. For a share-of-users rollout, leave <code>label</code> unset and pass a <code>targeting_key</code>, so each user always gets the same label. The default is used until a prompt is published.</p>
+        <ul class="docs">
+          <li><a href="https://pydantic.dev/docs/ai/models/overview/">Models and providers</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/core-concepts/agent-spec/">Agent specs</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/harness/managed-prompt/">ManagedPrompt</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/capabilities/model-fallback/">ModelFallback</a></li>
+          <li><a href="https://pydantic.dev/docs/ai/overview/gateway/">Gateway</a></li>
+        </ul>
+        <p class="talk-only headline">Version the prompt in Logfire. Roll out, watch, roll back.</p>
+      </section>
+
+      <div data-evolve="Tok meets its siblings: each family needs its own amount of harness, and hears different lines."></div>
+    </div>
+  </div>
+</main>
+<footer><div class="wrap"><p>Data: world model bench pilot and context-management experiments, 15 Nov 2026, Pydantic AI main at 052cca2c27, synthetic data. Per-model instructions status checked on GitHub 15 Nov 2026. Code: pydantic-ai 2.68.0, pydantic-ai-harness 0.68.0.</p>
+</div></footer>
+<script src="../assets/course.js"></script>
+<script src="part3.js"></script>
+</body>
+</html>

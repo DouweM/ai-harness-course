@@ -1,0 +1,101 @@
+title: The answer form
+description: The output type is the form the model fills in. When a real answer doesn't fit the form, the model squeezes it in and drops the rest. Give the form a shape that holds what customers actually say, and check it against your data.
+n: 5
+runtime: 6
+---
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
+        <h1>The answer form</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="point">The output type is the form the model fills in, and the form decides what it can say. <b>When a real answer doesn't fit, the model squeezes it in and drops the rest, without a doubt in sight.</b></p>
+      </div>
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["One box for an amount, one for a date. Dana gave me two of each.", "Give me a row per promise and I&#39;ll write them all down.", "If my numbers don&#39;t add up, tell me the real balance."]'><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <section id="split">
+        <h2>Wednesday: half now, the rest later</h2>
+        <aside class="notes"><p>The point: the form decides what the model can say. Real data: every run on every model dropped half of the promise with Tuesday's form, and every run kept both with installments.</p></aside>
+        <div class="prose measure">
+          <p class="story"><span class="when">Wednesday 18 Nov, 16:40</span>"Correction on INV-2041: we'll pay half this Friday and the rest by the 30th. Dana." The agent still has Tuesday's form: one amount, one due date.</p>
+        </div>
+        {{code ch5_answer_form.py one "code/part2/ch5_answer_form.py, Tuesday's form"}}
+        <article class="puzzle" id="p1" data-answer="c">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Two promises, one box</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="What the model sees">
+              <div class="tr-title">// what the model sees</div>
+              <div class="msg sys"><span class="who">instructions</span><div class="body">Decide whether this customer email commits to paying us, and record the promise. The email was received on Wednesday 2026-11-18. INV-2041 is for 4120.00 USD.</div></div>
+              <div class="msg sys"><span class="who">answer form</span><div class="body">is_commitment, invoice_number, <mark>amount, due_date</mark></div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">Correction on INV-2041: we'll pay half this Friday and the rest by the 30th. Dana</div></div>
+              <div class="msg next"><span class="who">model, filling in the form</span><div class="body"><span class="caret"></span></div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">Sonnet 5.5, GPT-6.1 Sol and Haiku 5.5, five runs each. What goes in the form?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>2,060 on Friday: the next thing that should happen</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>The models refuse or flag that it doesn't fit</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Each model picks one half and drops the other</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What models did" hidden>
+            <p class="eyebrow"><span class="dia"></span>What models did</p>
+            <p class="headline">All 15 runs dropped half of the promise, and none said so. The Claude models recorded 4,120 on the 30th: no Friday reminder. GPT mostly recorded 2,060 on Friday: the rest forgotten.</p>
+            <div class="result-grid two">
+              <div class="arm"><h4>One amount, one date <small>kept both halves</small></h4><div class="tally fail" data-k="0" data-n="15" data-label="runs"></div></div>
+              <div class="arm"><h4>A list of installments <small>kept both halves</small></h4><div class="tally good" data-k="15" data-n="15" data-label="runs"></div></div>
+            </div>
+            {{out ch5_answer_form 1-6}}
+            <p class="source"><b>Our run, 16 Nov 2026.</b> 5 runs per model per form, tool output, the email's date and the invoice amount in the instructions; raw outputs in <code>code/part2/data/answer_form_runs.json</code>, about $0.10 in total.</p>
+          </div>
+          <div class="stage" data-label="The fix" hidden>
+            <p class="eyebrow"><span class="dia"></span>The fix: a form that holds it, checked against the ledger</p>
+            {{code ch5_answer_form.py installments "code/part2/ch5_answer_form.py" keys="class Installment|installments: list|One per amount|@agent.output_validator|raise ModelRetry\(f'\{invoice"}}
+            <p class="measure">The type catches shape. The output validator catches facts that need your systems, like installments that add up to more than the invoice, and sends the model back with the real balance. The error becomes the next message; nobody writes a retry loop:</p>
+            {{out ch5_answer_form 7-8}}
+            <div class="tok-says"><div class="tk" data-tok="10" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>You gave me one box, so I wrote one promise in it. A row per promise, and I wrote both.</p></div></div>
+          </div>
+          <aside class="notes"><p>Most rooms pick A or B. Nobody refused, nobody flagged it: a form with one slot gets one answer. Then the fix: installments plus a validator with the real balance.</p></aside>
+        </article>
+      </section>
+
+      <section id="modes">
+        <h2>Three ways to ask for structure</h2>
+        <div class="prose measure">
+          <p>The same form can reach the model three ways. <b>Tool output</b> offers an output tool to call, works with every tool-calling model and mixes freely with other tools. <b>Native output</b> uses the provider's own structured-output mode. <b>Prompted output</b> puts the schema in the instructions and parses JSON text. A list of types is a union: one output tool per type, and the model picks. Validation, validators and retries work the same in all three.</p>
+          <p>Without a wrapper, the model profile picks: tool output on most models, but native output on Claude models when the request thinks, which Sonnet 5.5 does by default (since 2.52). Pin <code>ToolOutput(...)</code> when you need the same behavior on every model, as this course does.</p>
+        </div>
+        {{code ch5_answer_form.py modes "code/part2/ch5_answer_form.py, the three modes"}}
+      </section>
+
+      <section id="now">
+        <div class="rule">
+          <p class="eyebrow">What you can do now</p>
+          <p>Take ten real emails your agent got wrong and check each against your output type: could the right answer even be written down? Give it the shape customers actually use, plus a validator that checks it against your data.</p>
+        </div>
+        <div class="inpai">
+          <p class="eyebrow"><span class="dia"></span>In the docs</p>
+          <ul class="docs">
+            <li><a href="https://pydantic.dev/docs/ai/core-concepts/output/">Output</a></li>
+            <li><a href="https://pydantic.dev/docs/ai/core-concepts/retries/">Retries</a></li>
+          </ul>
+        </div>
+        <p class="small muted measure">Small print: a validation error goes back as the output tool's result; one retry by default, <code>retries={'output': N}</code> to raise it. When retries run out the run raises <code>UnexpectedModelBehavior</code> and your code decides what a person sees.</p>
+      </section>
+
+      <div data-evolve="Tok gets a clipboard: a row per promise, and every row gets written down."></div>
+    </div>
+  </div>

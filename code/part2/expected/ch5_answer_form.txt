@@ -1,0 +1,8 @@
+one          claude-sonnet-5-5  kept both halves 0/5  4120.00 on 2026-11-30
+one          gpt-6.1-sol        kept both halves 0/5  2060 on 2026-11-20; 4120 on 2026-11-30
+one          claude-haiku-5-5   kept both halves 0/5  4120.00 on 2026-11-30
+installments claude-sonnet-5-5  kept both halves 5/5  
+installments gpt-6.1-sol        kept both halves 5/5  
+installments claude-haiku-5-5   kept both halves 5/5  
+model reads: {"error":"INV-2041 is for 4120.00; the installments add up to 6180.00."}
+recorded:    [('2060.00', '2026-11-20'), ('2060.00', '2026-11-30')]

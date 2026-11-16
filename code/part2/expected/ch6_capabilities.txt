@@ -1,0 +1,22 @@
+Nothing packaged: the second agent gets the tool, not the rules
+  tools offered: ['mark_paid']
+  close notice:  none
+  outcome:       Done: INV-2041 is marked paid.
+  ledger writes: 1
+Move in: hide mark_paid during close
+  tools offered: none
+  close notice:  none
+  outcome:       I wasn't able to mark INV-2041 paid. Please try again later.
+  ledger writes: 0
+Move in: the close notice
+  tools offered: none
+  close notice:  on the page
+  outcome:       Close is running, so I can mark INV-2041 paid on Monday.
+  ledger writes: 0
+Move in: approval. Monday, close is over
+  tools offered: ['mark_paid']
+  close notice:  none
+  outcome:       waits for a person
+  ledger writes: 0
+['RequireWorkspace', 'Capability', 'FileSystem', 'Shell', 'RepoContext', 'SubAgents', 'ClearToolResults', 'RepairToolArguments']
+a cleared file read becomes: '[tool result cleared]', past 70% of the window

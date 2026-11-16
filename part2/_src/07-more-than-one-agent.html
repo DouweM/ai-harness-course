@@ -1,0 +1,110 @@
+title: More than one agent
+description: Use the smallest shape that does the job: a call, an agent, a workflow your code drives, or an agent that delegates. When one agent calls another, pass it the parent's usage, or a cost limit on the parent never sees what the delegate spends.
+n: 7
+runtime: 6
+---
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
+        <h1>More than one agent</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="point">Use the smallest shape that does the job. <b>When an agent delegates, hand the delegate typed facts to return, and the parent's usage to count on</b>, or your cost limit sees only half the bill.</p>
+      </div>
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["I asked my teammate. We share one budget.", "Its answer is typed facts, not a story.", "A loop is worth paying for when I have to look things up."]'><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <section id="shapes">
+        <h2>Smallest shape first</h2>
+        <aside class="notes"><p>The point: pick the smallest shape; when you delegate, return typed facts and share usage. The prediction: a cost limit that never sees the delegate's retries.</p></aside>
+        <div class="prose measure">
+          <p class="story"><span class="when">Friday 20 Nov, 14:15</span>"Also, the amount on INV-2041 looks wrong to us: we were quoted 3,900. Dana." A dispute changes everything downstream: no reminder, no recorded promise, a person on the billing team. Deciding whether an email is a dispute is a narrow job a smaller model does well.</p>
+          <p>An agent is a loop, and every turn costs a request. Four shapes, from cheapest:</p>
+        </div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>Shape</th><th>Who decides the steps</th><th>Use it for</th><th>In Pydantic AI</th></tr></thead>
+          <tbody>
+            <tr><td>One request</td><td>Nobody: there is one</td><td>Classifiers, extraction</td><td><a href="https://pydantic.dev/docs/ai/core-concepts/direct/"><code>pydantic_ai.direct</code></a>, or an agent without tools</td></tr>
+            <tr><td>An agent</td><td>The model</td><td>Looking things up and reacting</td><td><code>Agent</code></td></tr>
+            <tr><td>A workflow</td><td>Your code, which you can test</td><td>Steps you already know</td><td>Plain Python calling agents; <a href="https://pydantic.dev/docs/ai/graph/graph/">graphs</a> when you need state machines</td></tr>
+            <tr><td>An agent that delegates</td><td>The parent model</td><td>Self-contained sub-tasks with their own context</td><td>A tool that runs another agent; <a href="https://pydantic.dev/docs/ai/harness/subagents/"><code>SubAgents</code></a></td></tr>
+          </tbody>
+        </table></div>
+        {{code ch7_multi.py delegate "code/part2/ch7_multi.py, delegating as a tool" keys="class DisputeCheck|output_type=ToolOutput|@collections.tool|usage=ctx.usage"}}
+      </section>
+
+      <section id="budget">
+        <h2>One budget for the tree</h2>
+        <article class="puzzle" id="p1" data-answer="b">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Does the limit hold</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="The run">
+              <div class="tr-title">// one email, a limit of 8 requests</div>
+              <div class="msg sys"><span class="who">your code</span><div class="body mono">collections.run_sync(email, usage_limits=UsageLimits(request_limit=8))</div></div>
+              <div class="msg model"><span class="who">collections, four times</span><div class="body mono">check_for_dispute(email)</div></div>
+              <div class="msg tool"><span class="who">classifier, each time</span><div class="body">a first answer that fails validation, then a good one: 2 requests</div></div>
+              <div class="msg sys"><span class="who">the delegate tool</span><div class="body mono">await classifier.run(email_text)  # no usage=</div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">That's 13 requests in all. What happens?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>It stops at 8: limits cover the whole run</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>It finishes: the limit only counts the parent's requests</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>The classifier raises, since it has no limit</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What happened" hidden>
+            <p class="eyebrow"><span class="dia"></span>What happened</p>
+            <p class="headline">It finished. The limit counted 5 requests; 13 were sent.</p>
+            {{out ch7_multi 1-1}}
+            <p class="measure">Each agent run counts its own usage. Without <code>usage=</code>, the classifier's 8 requests happened in runs of their own, invisible to the parent's limit. A delegate stuck retrying, or a model that keeps delegating, runs up a bill your ceiling never sees.</p>
+          </div>
+          <div class="stage" data-label="The fix" hidden>
+            <p class="eyebrow"><span class="dia"></span>The fix: one line</p>
+            <p class="measure">Pass <code>usage=ctx.usage</code>, and the delegate counts on the parent's usage: the limit sees every request in the tree.</p>
+            {{out ch7_multi 2-2}}
+            <p class="source"><b>Offline, deterministic.</b> Stand-in models for both agents; the counting is Pydantic AI 2.68's real behavior. <code>SubAgents</code> forwards usage by default.</p>
+            <div class="tok-says"><div class="tk" data-tok="12" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>My teammate and I share one budget now. When it runs out, we both stop.</p></div></div>
+          </div>
+          <aside class="notes"><p>Most rooms pick A. The answer is B. One line fixes it: usage=ctx.usage.</p></aside>
+        </article>
+      </section>
+
+      <section id="handoff">
+        <h2>Handing off to a person</h2>
+        <div class="prose measure">
+          <p>A handoff doesn't need another agent. Make it an output type: the run ends with an <code>Escalation</code>, and your code routes it to the billing team's queue. Your code decides what happens next, and tests can check it.</p>
+        </div>
+        {{code ch7_multi.py handoff "code/part2/ch7_multi.py, a handoff as output" keys="class Escalation|ToolOutput\(Escalation"}}
+      </section>
+
+      <section id="now">
+        <div class="rule">
+          <p class="eyebrow">What you can do now</p>
+          <p>Find every place one of your agents runs another. Give each delegate a typed output and <code>usage=ctx.usage</code>, and set a usage limit on the outer run.</p>
+        </div>
+        <div class="inpai">
+          <p class="eyebrow"><span class="dia"></span>In the docs</p>
+          <ul class="docs">
+            <li><a href="https://pydantic.dev/docs/ai/guides/multi-agent-applications/">Multi-agent applications</a></li>
+            <li><a href="https://pydantic.dev/docs/ai/harness/subagents/">SubAgents</a></li>
+            <li><a href="https://pydantic.dev/docs/ai/core-concepts/batch/">Batch</a>, for many emails at once</li>
+          </ul>
+        </div>
+      </section>
+
+      <div data-evolve="Tok gets a teammate, and they share one budget."></div>
+    </div>
+  </div>

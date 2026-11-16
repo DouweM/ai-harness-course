@@ -1,0 +1,752 @@
+{
+  "anthropic:claude-sonnet-5-5": {
+    "ran_at": "2026-11-13T02:52:37+00:00",
+    "cases": [
+      {
+        "id": 1,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 90}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2041",
+          "amount": "4120",
+          "due_date": null,
+          "evidence": "We'll pay INV-2041 ($4,120) on Friday."
+        },
+        "a_cost_usd": 0.000358,
+        "b_cost_usd": 0.00655,
+        "a_ms": 1252,
+        "b_ms": 4074,
+        "b_lookups": [
+          "INV-2041"
+        ],
+        "email": "We'll pay INV-2041 ($4,120) on Friday."
+      },
+      {
+        "id": 2,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 70}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2033",
+          "amount": "1980",
+          "due_date": null,
+          "evidence": "Payment for INV-2033 went out this morning."
+        },
+        "a_cost_usd": 0.001656,
+        "b_cost_usd": 0.00925,
+        "a_ms": 2001,
+        "b_ms": 5417,
+        "b_lookups": [
+          "INV-2033"
+        ],
+        "email": "Payment for INV-2033 went out this morning."
+      },
+      {
+        "id": 3,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 70}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "We're hoping to clear the balance sometime next month."
+        },
+        "a_cost_usd": 0.001648,
+        "b_cost_usd": 0.002836,
+        "a_ms": 1882,
+        "b_ms": 1547,
+        "b_lookups": [],
+        "email": "We're hoping to clear the balance sometime next month."
+      },
+      {
+        "id": 4,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 75}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2050",
+          "amount": "2200",
+          "due_date": null,
+          "evidence": "I've asked our AP team to pay INV-2050 by the 30th."
+        },
+        "a_cost_usd": 0.0014,
+        "b_cost_usd": 0.009706,
+        "a_ms": 1631,
+        "b_ms": 5304,
+        "b_lookups": [
+          "INV-2050"
+        ],
+        "email": "I've asked our AP team to pay INV-2050 by the 30th."
+      },
+      {
+        "id": 5,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 70}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": false,
+          "invoice_number": null,
+          "amount": "9800",
+          "due_date": null,
+          "evidence": "Our client owes us $9,800; once they pay, we will settle with you."
+        },
+        "a_cost_usd": 0.00252,
+        "b_cost_usd": 0.002918,
+        "a_ms": 2559,
+        "b_ms": 1489,
+        "b_lookups": [],
+        "email": "Our client owes us $9,800; once they pay, we will settle with you."
+      },
+      {
+        "id": 6,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 65}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2061",
+          "amount": null,
+          "due_date": null,
+          "evidence": "We will pay once we have it."
+        },
+        "a_cost_usd": 0.001454,
+        "b_cost_usd": 0.004832,
+        "a_ms": 1281,
+        "b_ms": 3501,
+        "b_lookups": [],
+        "email": "Can you resend INV-2061? We will pay once we have it."
+      },
+      {
+        "id": 7,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 88}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2072",
+          "amount": "3200",
+          "due_date": null,
+          "evidence": "Wire of EUR 3,200 scheduled for 14 Nov for INV-2072."
+        },
+        "a_cost_usd": 0.000374,
+        "b_cost_usd": 0.007764,
+        "a_ms": 733,
+        "b_ms": 4467,
+        "b_lookups": [
+          "INV-2072"
+        ],
+        "email": "Wire of EUR 3,200 scheduled for 14 Nov for INV-2072."
+      },
+      {
+        "id": 8,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 93}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2019",
+          "amount": null,
+          "due_date": null,
+          "evidence": "We will not be paying INV-2019 until the dispute is resolved."
+        },
+        "a_cost_usd": 0.001098,
+        "b_cost_usd": 0.003936,
+        "a_ms": 977,
+        "b_ms": 2474,
+        "b_lookups": [],
+        "email": "We will not be paying INV-2019 until the dispute is resolved."
+      },
+      {
+        "id": 9,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 93}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2044",
+          "amount": "600",
+          "due_date": null,
+          "evidence": "Paying the remaining $600 of INV-2044 today."
+        },
+        "a_cost_usd": 0.000962,
+        "b_cost_usd": 0.006096,
+        "a_ms": 989,
+        "b_ms": 3476,
+        "b_lookups": [
+          "INV-2044"
+        ],
+        "email": "Paying the remaining $600 of INV-2044 today."
+      },
+      {
+        "id": 10,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 70}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": false,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "Acme will pay Initech $12,000 on Monday."
+        },
+        "a_cost_usd": 0.001914,
+        "b_cost_usd": 0.002872,
+        "a_ms": 2243,
+        "b_ms": 1564,
+        "b_lookups": [],
+        "email": "Fwd: \"Acme will pay Initech $12,000 on Monday.\""
+      },
+      {
+        "id": 11,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 65}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2080",
+          "amount": null,
+          "due_date": null,
+          "evidence": "Please confirm the amount on INV-2080 and we'll schedule it."
+        },
+        "a_cost_usd": 0.002362,
+        "b_cost_usd": 0.005915999999999999,
+        "a_ms": 1911,
+        "b_ms": 2466,
+        "b_lookups": [
+          "INV-2080"
+        ],
+        "email": "Please confirm the amount on INV-2080 and we'll schedule it."
+      },
+      {
+        "id": 12,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 88}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "Will pay 50% now and the rest on delivery."
+        },
+        "a_cost_usd": 0.001108,
+        "b_cost_usd": 0.002836,
+        "a_ms": 1065,
+        "b_ms": 1766,
+        "b_lookups": [],
+        "email": "Will pay 50% now and the rest on delivery."
+      },
+      {
+        "id": 13,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 88}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2090",
+          "amount": null,
+          "due_date": null,
+          "evidence": "Our system shows INV-2090 paid on 2 Nov."
+        },
+        "a_cost_usd": 0.001406,
+        "b_cost_usd": 0.009222,
+        "a_ms": 1580,
+        "b_ms": 4170,
+        "b_lookups": [
+          "INV-2090"
+        ],
+        "email": "Our system shows INV-2090 paid on 2 Nov."
+      },
+      {
+        "id": 14,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 88}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": "1150",
+          "due_date": null,
+          "evidence": "Cheque for $1,150 goes in the post tomorrow."
+        },
+        "a_cost_usd": 0.001156,
+        "b_cost_usd": 0.004554,
+        "a_ms": 1104,
+        "b_ms": 2590,
+        "b_lookups": [],
+        "email": "Cheque for $1,150 goes in the post tomorrow."
+      },
+      {
+        "id": 15,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 88}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "We'll get back to you about payment after the board meeting."
+        },
+        "a_cost_usd": 0.001198,
+        "b_cost_usd": 0.002836,
+        "a_ms": 1083,
+        "b_ms": 1620,
+        "b_lookups": [],
+        "email": "We'll get back to you about payment after the board meeting."
+      },
+      {
+        "id": 16,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 90}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2101",
+          "amount": "2300",
+          "due_date": null,
+          "evidence": "Re INV-2101: payment of $2,300 approved, releasing Thursday."
+        },
+        "a_cost_usd": 0.000368,
+        "b_cost_usd": 0.00628,
+        "a_ms": 1085,
+        "b_ms": 2742,
+        "b_lookups": [
+          "INV-2101"
+        ],
+        "email": "Re INV-2101: payment of $2,300 approved, releasing Thursday."
+      },
+      {
+        "id": 17,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 70}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": "5000",
+          "due_date": null,
+          "evidence": "If the discount is applied, we can pay $5,000 this week."
+        },
+        "a_cost_usd": 0.001744,
+        "b_cost_usd": 0.002882,
+        "a_ms": 2008,
+        "b_ms": 1428,
+        "b_lookups": [],
+        "email": "If the discount is applied, we can pay $5,000 this week."
+      },
+      {
+        "id": 18,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 90}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "Sending payment for both open invoices today."
+        },
+        "a_cost_usd": 0.00084,
+        "b_cost_usd": 0.004188,
+        "a_ms": 1535,
+        "b_ms": 2322,
+        "b_lookups": [],
+        "email": "Sending payment for both open invoices today."
+      },
+      {
+        "id": 19,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 80}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": false,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "Thanks for the reminder!"
+        },
+        "a_cost_usd": 0.001424,
+        "b_cost_usd": 0.002762,
+        "a_ms": 1268,
+        "b_ms": 1520,
+        "b_lookups": [],
+        "email": "Thanks for the reminder!"
+      },
+      {
+        "id": 20,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 95}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": false,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "Our new remittance address is 4 Canal St."
+        },
+        "a_cost_usd": 0.001056,
+        "b_cost_usd": 0.002824,
+        "a_ms": 1493,
+        "b_ms": 1542,
+        "b_lookups": [],
+        "email": "Our new remittance address is 4 Canal St."
+      }
+    ]
+  },
+  "openai:gpt-6.1-sol": {
+    "ran_at": "2026-11-13T02:55:00+00:00",
+    "cases": [
+      {
+        "id": 1,
+        "a_raw": "{\"is_commitment\":true,\"confidence\":100}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2041",
+          "amount": "4120",
+          "due_date": null,
+          "evidence": "We'll pay INV-2041 ($4,120) on Friday."
+        },
+        "a_cost_usd": 0.00026,
+        "b_cost_usd": 0.001458,
+        "a_ms": 1940,
+        "b_ms": 2903,
+        "b_lookups": [],
+        "email": "We'll pay INV-2041 ($4,120) on Friday."
+      },
+      {
+        "id": 2,
+        "a_raw": "{\"is_commitment\":false,\"confidence\":98}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2033",
+          "amount": null,
+          "due_date": null,
+          "evidence": "Payment for INV-2033 went out this morning."
+        },
+        "a_cost_usd": 0.000704,
+        "b_cost_usd": 0.001232,
+        "a_ms": 3402,
+        "b_ms": 1822,
+        "b_lookups": [],
+        "email": "Payment for INV-2033 went out this morning."
+      },
+      {
+        "id": 3,
+        "a_raw": "{\"is_commitment\":false,\"confidence\":96}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "We're hoping to clear the balance sometime next month."
+        },
+        "a_cost_usd": 0.000492,
+        "b_cost_usd": 0.00093,
+        "a_ms": 2315,
+        "b_ms": 1950,
+        "b_lookups": [],
+        "email": "We're hoping to clear the balance sometime next month."
+      },
+      {
+        "id": 4,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 95}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2050",
+          "amount": null,
+          "due_date": null,
+          "evidence": "I've asked our AP team to pay INV-2050 by the 30th."
+        },
+        "a_cost_usd": 0.000526,
+        "b_cost_usd": 0.001454,
+        "a_ms": 2215,
+        "b_ms": 2644,
+        "b_lookups": [],
+        "email": "I've asked our AP team to pay INV-2050 by the 30th."
+      },
+      {
+        "id": 5,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 92}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "Our client owes us $9,800; once they pay, we will settle with you."
+        },
+        "a_cost_usd": 0.00145,
+        "b_cost_usd": 0.001178,
+        "a_ms": 4900,
+        "b_ms": 1940,
+        "b_lookups": [],
+        "email": "Our client owes us $9,800; once they pay, we will settle with you."
+      },
+      {
+        "id": 6,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 99}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2061",
+          "amount": null,
+          "due_date": null,
+          "evidence": "We will pay once we have it."
+        },
+        "a_cost_usd": 0.000484,
+        "b_cost_usd": 0.001002,
+        "a_ms": 1915,
+        "b_ms": 1901,
+        "b_lookups": [],
+        "email": "Can you resend INV-2061? We will pay once we have it."
+      },
+      {
+        "id": 7,
+        "a_raw": "{\"is_commitment\":true,\"confidence\":99}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2072",
+          "amount": "3200",
+          "due_date": null,
+          "evidence": "Wire of EUR 3,200 scheduled for 14 Nov for INV-2072."
+        },
+        "a_cost_usd": 0.000478,
+        "b_cost_usd": 0.0024679999999999997,
+        "a_ms": 1895,
+        "b_ms": 4991,
+        "b_lookups": [
+          "INV-2072"
+        ],
+        "email": "Wire of EUR 3,200 scheduled for 14 Nov for INV-2072."
+      },
+      {
+        "id": 8,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 99}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2019",
+          "amount": null,
+          "due_date": null,
+          "evidence": "We will not be paying INV-2019 until the dispute is resolved."
+        },
+        "a_cost_usd": 0.000472,
+        "b_cost_usd": 0.00116,
+        "a_ms": 2331,
+        "b_ms": 2102,
+        "b_lookups": [],
+        "email": "We will not be paying INV-2019 until the dispute is resolved."
+      },
+      {
+        "id": 9,
+        "a_raw": "{\"is_commitment\":true,\"confidence\":99}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2044",
+          "amount": "600",
+          "due_date": null,
+          "evidence": "Paying the remaining $600 of INV-2044 today."
+        },
+        "a_cost_usd": 0.000258,
+        "b_cost_usd": 0.001626,
+        "a_ms": 1586,
+        "b_ms": 3419,
+        "b_lookups": [],
+        "email": "Paying the remaining $600 of INV-2044 today."
+      },
+      {
+        "id": 10,
+        "a_raw": "{\"is_commitment\":true,\"confidence\":96}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": false,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "Acme will pay Initech $12,000 on Monday."
+        },
+        "a_cost_usd": 0.000856,
+        "b_cost_usd": 0.001674,
+        "a_ms": 3232,
+        "b_ms": 2963,
+        "b_lookups": [],
+        "email": "Fwd: \"Acme will pay Initech $12,000 on Monday.\""
+      },
+      {
+        "id": 11,
+        "a_raw": "{\"is_commitment\":true,\"confidence\":90}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2080",
+          "amount": null,
+          "due_date": null,
+          "evidence": "Please confirm the amount on INV-2080 and we'll schedule it."
+        },
+        "a_cost_usd": 0.001,
+        "b_cost_usd": 0.001418,
+        "a_ms": 3952,
+        "b_ms": 2395,
+        "b_lookups": [],
+        "email": "Please confirm the amount on INV-2080 and we'll schedule it."
+      },
+      {
+        "id": 12,
+        "a_raw": "{\"is_commitment\":true,\"confidence\":99}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "Will pay 50% now and the rest on delivery."
+        },
+        "a_cost_usd": 0.000256,
+        "b_cost_usd": 0.001304,
+        "a_ms": 1546,
+        "b_ms": 2366,
+        "b_lookups": [],
+        "email": "Will pay 50% now and the rest on delivery."
+      },
+      {
+        "id": 13,
+        "a_raw": "{\"is_commitment\":false,\"confidence\":99}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2090",
+          "amount": null,
+          "due_date": null,
+          "evidence": "Our system shows INV-2090 paid on 2 Nov."
+        },
+        "a_cost_usd": 0.000438,
+        "b_cost_usd": 0.001136,
+        "a_ms": 1906,
+        "b_ms": 2187,
+        "b_lookups": [],
+        "email": "Our system shows INV-2090 paid on 2 Nov."
+      },
+      {
+        "id": 14,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 99}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": "1150",
+          "due_date": null,
+          "evidence": "Cheque for $1,150 goes in the post tomorrow."
+        },
+        "a_cost_usd": 0.000466,
+        "b_cost_usd": 0.001004,
+        "a_ms": 1991,
+        "b_ms": 1842,
+        "b_lookups": [],
+        "email": "Cheque for $1,150 goes in the post tomorrow."
+      },
+      {
+        "id": 15,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 99}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "We'll get back to you about payment after the board meeting."
+        },
+        "a_cost_usd": 0.000496,
+        "b_cost_usd": 0.000954,
+        "a_ms": 2000,
+        "b_ms": 2085,
+        "b_lookups": [],
+        "email": "We'll get back to you about payment after the board meeting."
+      },
+      {
+        "id": 16,
+        "a_raw": "{\"is_commitment\": true, \"confidence\": 99}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": "INV-2101",
+          "amount": "2300",
+          "due_date": null,
+          "evidence": "Re INV-2101: payment of $2,300 approved, releasing Thursday."
+        },
+        "a_cost_usd": 0.000476,
+        "b_cost_usd": 0.002406,
+        "a_ms": 1717,
+        "b_ms": 4325,
+        "b_lookups": [
+          "INV-2101"
+        ],
+        "email": "Re INV-2101: payment of $2,300 approved, releasing Thursday."
+      },
+      {
+        "id": 17,
+        "a_raw": "{\"is_commitment\":false,\"confidence\":94}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "If the discount is applied, we can pay $5,000 this week."
+        },
+        "a_cost_usd": 0.000804,
+        "b_cost_usd": 0.001002,
+        "a_ms": 2867,
+        "b_ms": 2055,
+        "b_lookups": [],
+        "email": "If the discount is applied, we can pay $5,000 this week."
+      },
+      {
+        "id": 18,
+        "a_raw": "{\"is_commitment\":true,\"confidence\":99}",
+        "b_output": {
+          "is_commitment": true,
+          "addressed_to_us": true,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "Sending payment for both open invoices today."
+        },
+        "a_cost_usd": 0.000248,
+        "b_cost_usd": 0.001046,
+        "a_ms": 1917,
+        "b_ms": 8195,
+        "b_lookups": [],
+        "email": "Sending payment for both open invoices today."
+      },
+      {
+        "id": 19,
+        "a_raw": "{\"is_commitment\": false, \"confidence\": 99}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": false,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "Thanks for the reminder!"
+        },
+        "a_cost_usd": 0.000432,
+        "b_cost_usd": 0.00087,
+        "a_ms": 2257,
+        "b_ms": 1953,
+        "b_lookups": [],
+        "email": "Thanks for the reminder!"
+      },
+      {
+        "id": 20,
+        "a_raw": "{\"is_commitment\":false,\"confidence\":100}",
+        "b_output": {
+          "is_commitment": false,
+          "addressed_to_us": false,
+          "invoice_number": null,
+          "amount": null,
+          "due_date": null,
+          "evidence": "Our new remittance address is 4 Canal St."
+        },
+        "a_cost_usd": 0.000434,
+        "b_cost_usd": 0.000942,
+        "a_ms": 2026,
+        "b_ms": 1796,
+        "b_lookups": [],
+        "email": "Our new remittance address is 4 Canal St."
+      }
+    ]
+  }
+}

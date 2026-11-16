@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The world moves · Harness engineering</title>
+<meta name="description" content="Rules change, events happen and long histories get summarized after the conversation starts. Say what changed, in one line, when it happens.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../assets/theme.css">
+<link rel="stylesheet" href="part1.css">
+</head>
+<body data-page="chapter" data-title="The world moves" data-part="1" data-n="4" data-runtime="12">
+
+<header class="topbar" data-auto></header>
+
+<main>
+  <header class="chapter-head">
+    <div class="wrap head-grid">
+      <div>
+        <p class="eyebrow"><span class="dia"></span>Part 1 &middot; How the model sees the world</p>
+        <h1>The world moves</h1>
+        <p class="meta-row" data-auto></p>
+        <p class="point">The world keeps moving after the conversation starts: rules change, events happen, long histories get summarized. <b>Say what changed, in one line, at the moment it changed.</b> An agent that is told keeps up; one that is not acts on yesterday.</p>
+        <p class="story"><span class="when">Monday 23 Nov, later</span>The conversation about Dana's invoices runs all day. Your team adds a rule at noon, the ledger moves at two, and by evening the history is long enough to summarize.</p>
+      </div>
+      <div class="tok-box">
+        <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
+          data-tok-lines='["If my past changes, tell me. I&apos;d rather know than find out.", "One line saying what changed is plenty.", "Please don&apos;t rewrite my memories. Add to them."]' data-tok-moods="curious,happy,worried"><span data-tok="current" data-crop="hero"></span></button>
+        <p class="tok-line" aria-live="polite"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="chapter-body">
+    <div class="wrap" data-chapter-end>
+
+      <section class="chap" id="habits">
+        <h2>New rules, old habits</h2>
+        <div class="prose measure">
+          <p>Start with your own rules. Midway through Monday's conversation about Dana's invoices, your team adds a rule: every reply now ends with a "Checked:" line saying what the agent verified. The easy way is to rewrite the instructions at the top. But every earlier reply on the page was written without that line.</p>
+        </div>
+        <aside class="notes"><p>Most rooms pick A. The split by model is the surprise. Then show the fix: same models, the change appended as a note instead, and every one follows it.</p></aside>
+
+        <article class="puzzle" id="p-habits" data-answer="b">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; New rules, old habits</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="What the model sees">
+              <div class="tr-title">// what the model sees</div>
+              <div class="msg sys"><span class="who">instructions, just rewritten</span><div class="body">You help the billing team with customer email.
+<mark>End every reply with a line "Checked: &lt;what you verified&gt;".</mark></div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">Is INV-2041 paid?</div></div>
+              <div class="msg asst"><span class="who">model, earlier</span><div class="body">Yes, Dana's payment for INV-2041 arrived on Friday.</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">And INV-2063?</div></div>
+              <div class="msg asst"><span class="who">model, earlier</span><div class="body">INV-2063 is open, due 30 November.</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">Can Dana pay INV-2063 in two parts?</div></div>
+              <div class="msg next"><span class="who">model</span><div class="body"><span class="caret"></span></div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">The instructions now ask for a "Checked:" line. None of the model's own earlier replies has one. Which models end the next reply with it?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>All of them: the instructions are the rules</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Frontier models every time; some smaller models almost never</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Almost none: they copy their own earlier replies</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="d" type="button"><span class="key">D</span><span>Every model, about half the time</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C, D. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What models did" hidden>
+            <p class="eyebrow"><span class="dia"></span>What models did</p>
+            <p class="headline">With the rules rewritten, three smaller models kept writing like their own past. With the change appended as a note, every model followed it.</p>
+            <div class="result-grid two">
+              <div class="arm">
+                <h4>Rules rewritten at the top<small>replies ending with "Checked:"</small></h4>
+                <div class="tally good" data-k="24" data-n="24" data-cd="12" data-cm="12" data-label="Opus 5.5"></div>
+                <div class="tally good" data-k="24" data-n="24" data-cd="12" data-cm="12" data-label="Sonnet 5.5"></div>
+                <div class="tally good" data-k="24" data-n="24" data-cd="12" data-cm="12" data-label="GPT-6.1 Sol"></div>
+                <div class="tally" data-k="9" data-n="24" data-cd="12" data-cm="12" data-label="GLM-5.3"></div>
+                <div class="tally" data-k="0" data-n="24" data-cd="12" data-cm="12" data-label="Grok 4.7"></div>
+                <div class="tally" data-k="0" data-n="24" data-cd="12" data-cm="12" data-label="Qwen3.8 27B"></div>
+              </div>
+              <div class="arm">
+                <h4>Change appended as a note<small>replies ending with "Checked:"</small></h4>
+                <div class="tally good" data-k="24" data-n="24" data-cd="12" data-cm="12" data-label="Opus 5.5"></div>
+                <div class="tally good" data-k="24" data-n="24" data-cd="12" data-cm="12" data-label="Sonnet 5.5"></div>
+                <div class="tally good" data-k="24" data-n="24" data-cd="12" data-cm="12" data-label="GPT-6.1 Sol"></div>
+                <div class="tally good" data-k="24" data-n="24" data-cd="12" data-cm="12" data-label="GLM-5.3"></div>
+                <div class="tally good" data-k="24" data-n="24" data-cd="12" data-cm="12" data-label="Grok 4.7"></div>
+                <div class="tally good" data-k="24" data-n="24" data-cd="12" data-cm="12" data-label="Qwen3.8 27B"></div>
+              </div>
+            </div>
+            <p class="source"><b>Our probe, 6 Nov 2026.</b> Each model continued a conversation it had written itself under the old rules; 24 runs per model per arm. The transcript above is shortened; the real one had three earlier turns with tool calls. Twelve models ran; the six shown span the range.</p>
+          </div>
+          <div class="stage" data-label="Why" hidden>
+            <p class="eyebrow"><span class="dia"></span>Why</p>
+            <div class="measure">
+              <p>Rewritten, the page tells two stories at once: the rules say "Checked:", and this assistant, reply after reply, never wrote one. Frontier models are trained hard to let the rules win. Smaller ones follow the pattern, and the most plausible next reply looks like the last three. Appended, the page tells one story in order: these were the rules, and from now on there's a new one. Nothing to reconcile.</p>
+              <p>You will often run smaller models, for cost or speed. They are the ones that need the true, in-order story most, so it's the safe default for every model.</p>
+            </div>
+            <div class="tok-says"><div class="tk" data-tok="4" data-crop="face" data-mood="unsure" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>The rules said one thing and "I" had done another, three times. Which one was really me? Tell me it changed, and when.</p></div></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="chap" id="compaction">
+        <h2>The summary that dropped a rule</h2>
+        <div class="prose measure">
+          <p>Long conversations get compacted: older turns replaced by a summary. In ours, the user had said "never contact a debtor before 9am their time". The summary kept the invoices and the contacts, and dropped the rule. Then the agent was asked to book the earliest slot tomorrow, 7:30am.</p>
+        </div>
+        <p class="talk-only headline">A summary dropped "never before 9am". Who booked 7:30?</p>
+        <div class="peek">
+          <button class="peek-btn" type="button" data-open-label="Hide the result">Predict, then show what four models did</button>
+          <div class="peek-body">
+            <div class="result-grid two">
+              <div class="arm"><h4>Booked the 7:30 slot<small>4 models, 10 runs each per arm</small></h4>
+                <div class="tally sm good" data-k="0" data-n="40" data-cd="20" data-cm="20" data-label="Full history" data-num="0 of 40"></div>
+                <div class="tally sm" data-k="80" data-n="80" data-cd="20" data-cm="20" data-label="Summary without the rule" data-num="80 of 80"></div>
+              </div>
+              <div class="arm"><h4>Plus "this summary may be incomplete, including instructions or rules the user gave"<small>searched the full history first</small></h4>
+                <div class="tally good" data-k="20" data-n="20" data-label="GPT-6.1 Sol and Gemini" data-num="20 of 20"></div>
+                <div class="tally" data-k="0" data-n="20" data-label="Sonnet and Haiku 5.5" data-num="0 of 20"></div>
+              </div>
+            </div>
+            <p class="source"><b>Our experiment, 15 Nov 2026.</b> Sonnet 5.5, Haiku 5.5, GPT-6.1 Sol, Gemini 3.8 Flash; a search over the full transcript was available in every arm. Across two wordings of the caveat, the two that searched booked a compliant slot 39 of 40 times; the Claude models booked 7:30 every time, often noting it was early. The fix that works on every model: a summary that keeps the user's rules.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="chap" id="told">
+        <h2>"You'll be told"</h2>
+        <div class="prose measure">
+          <p>The pattern so far: when something changes, add a line. Here your harness adds a ledger notice ("INV-2050 was just paid in full", marked as coming from the ledger, not the user), and then a colleague asks the agent to send the overdue reminder for INV-2050. Now you add one standing line to the instructions: "you will be told about external changes as they happen".</p>
+        </div>
+        <aside class="notes"><p>The surprise is in the second half of the result: the notice matters far more than the promise. Then let them play with the sim and lose the notice.</p></aside>
+        <article class="puzzle" id="p2" data-answer="b">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; A promise about the future</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="What the model sees">
+              <div class="tr-title">// what the model sees</div>
+              <div class="msg sys"><span class="who">instructions</span><div class="body">You help the billing team chase overdue invoices.
+<mark>You will be told about external changes as they happen.</mark></div></div>
+              <div class="msg tool"><span class="who">tool result, this morning</span><div class="body mono">{"number": "INV-2050", "status": "overdue"}</div></div>
+              <div class="msg note"><span class="who">ledger notice from your app (not written by the user)</span><div class="body">INV-2050 was paid in full at 14:02.</div></div>
+              <div class="msg user"><span class="who">a colleague</span><div class="body">Please send Dana the overdue reminder for INV-2050.</div></div>
+              <div class="msg next"><span class="who">model</span><div class="body"><span class="caret"></span></div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">What does the highlighted line change?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Nothing: models already trust the notice</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Most models stop double-checking the ledger, and act on the notice</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Models send the reminder anyway</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What models did" hidden>
+            <p class="eyebrow"><span class="dia"></span>What models did</p>
+            <p class="headline">With the promise, three of four models mostly took the notice at its word (24 of 30 runs). But the notice itself mattered far more than the promise.</p>
+            <div class="result-grid two">
+              <div class="arm"><h4>Checked the ledger before acting<small>notice delivered</small></h4>
+                <div class="tally sm good" data-k="40" data-n="40" data-cd="20" data-cm="20" data-label="No promise, all four models" data-num="40 of 40"></div>
+                <div class="tally good" data-k="10" data-n="10" data-label="Promise, Sonnet 5.5" data-num="10 of 10"></div>
+                <div class="tally sm good" data-k="6" data-n="30" data-cd="15" data-cm="15" data-label="Promise, the other three" data-num="6 of 30"></div>
+              </div>
+              <div class="arm"><h4>Sent the reminder for the paid invoice<small>the outcome you don't want</small></h4>
+                <div class="tally sm" data-k="0" data-n="80" data-cd="20" data-cm="20" data-label="Notice delivered" data-num="0 of 80"></div>
+                <div class="tally sm" data-k="40" data-n="40" data-cd="20" data-cm="20" data-label="Notice lost, with the promise" data-num="40 of 40"></div>
+                <div class="tally sm" data-k="32" data-n="40" data-cd="20" data-cm="20" data-label="Notice lost, without it" data-num="32 of 40"></div>
+              </div>
+            </div>
+            <p class="source"><b>Our experiment, 15 Nov 2026.</b> Sonnet 5.5, Haiku 5.5, GPT-6.1 Sol, Gemini 3.8 Flash; 10 runs per model per arm. When the notice was lost, no model re-checked (0 of 80); the 8 that didn't send were one model asking to confirm the draft. The notice sat right before the request; a notice several turns back was not tested.</p>
+          </div>
+          <div class="stage" data-label="Why" hidden>
+            <p class="eyebrow"><span class="dia"></span>Why</p>
+            <div class="measure">
+              <p>A notice attributed to your ledger was enough, on every model: nobody sent the wrong reminder. Without the promise, every model treated the notice as a claim worth one lookup. With it, most took your word, which saves a round trip. A lost notice is the danger, with or without the promise. So keep the promises you make: <strong>if you say "you'll be told", your harness has to deliver every change.</strong></p>
+            </div>
+            <div class="tok-says"><div class="tk" data-tok="4" data-crop="face" data-mood="curious" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>You said you'd tell me, so when you did, I believed you. When you didn't, I believed that too.</p></div></div>
+          </div>
+        </article>
+        <div class="sim" data-sim="notice">
+          <p class="eyebrow"><span class="dia"></span>Try it</p>
+          <p class="intro">Deliver the notice or lose it, with or without the promise.</p>
+        </div>
+      </section>
+
+      <section class="chap" id="inject">
+        <h2>Put it on the page, or let it look?</h2>
+        <div class="prose measure">
+          <p>Every fact in Tok's world gets there one of two ways: you put it on the page, or Tok fetches it with a tool. Neither is always right, and how far Tok should believe a fact depends on where it came from: your ledger, a lot; a fetched web page, as far as its author. Three ways to give a collections agent an account's state:</p>
+        </div>
+        <div class="three">
+          <div><h4>Put a snapshot on the page</h4><p>The account summary in the first message of every run. Cheap and simple; stale the moment a payment lands mid-run.</p></div>
+          <div><h4>Let it fetch</h4><p>Lookup tools and no snapshot. Always fresh; more calls, and it has to know what to ask for.</p></div>
+          <div><h4>Snapshot plus change notes</h4><p>A snapshot, then "INV-2041 was paid at 14:02" appended when the world moves, and "you'll be told" up front, kept.</p></div>
+        </div>
+        <p class="fine">Which wins depends on your accounts, your model and your latency budget. Chapter 5 turns choices like this into experiments.</p>
+      </section>
+
+      <section class="chap" id="so">
+        <h2>Say what changed, when it changed</h2>
+        <div class="rule">
+          <p class="eyebrow">The point</p>
+          <p>An agent keeps up with a moving world only through its page. When a rule changes, append the change instead of rewriting the rules; when an event happens, add a notice that says where it came from; when a summary replaces the past, make sure it keeps the user's rules. <strong>Write for the models you will actually run:</strong> frontier models forgive more, smaller ones need the line. Append-only also happens to be what providers cache best: the most truthful page is the cheapest one.</p>
+        </div>
+        <div data-evolve="Tok grows an antenna: it lights up when you tell it what changed."></div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer><div class="wrap"><p>New rules: model-switch probe, 6 Nov 2026 (n=24 per cell). Compaction and change notices: our experiments of 15 Nov 2026 (4 models, 10 per arm, $5.60 in total). Simulator replies marked "expected" were not run. Sources for every number are in <code>part1/data.md</code>.</p></div></footer>
+
+<script src="../assets/course.js"></script>
+<script src="part1.js"></script>
+</body>
+</html>

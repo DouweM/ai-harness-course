@@ -1,0 +1,8 @@
+# Example frozen config for one model family. Change it only through a new eval run (ch3_evals.py).
+name: promise_router
+model: anthropic:claude-sonnet-5-5
+instructions: |
+  Decide whether this customer email commits to paying us.
+  Fill evidence with the email's own words. Leave a field empty when the email doesn't say.
+model_settings:
+  max_tokens: 2000
