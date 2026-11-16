@@ -1,4 +1,4 @@
-"""Chapter 6: capabilities, the unit of harness behavior.
+"""Chapter 6, second half: capabilities package what goes on the page, for any agent.
 
 Chapters 2 to 5 put the harness on one agent. Friday a second agent needs the same world: copy it, or package it.
 This module moves the pieces into a capability one at a time and records what the reminders agent's request carries
@@ -50,13 +50,13 @@ def world(*, hide: bool, notice: bool, approval: bool) -> Capability[Deps]:
 def reads_its_page(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
     """A stand-in for the model: it marks the invoice paid if it can, and answers from what its page says."""
     if isinstance(messages[-1].parts[-1], UserPromptPart):
-        return ModelResponse(parts=[ToolCallPart('mark_paid', {'invoice_number': 'INV-2041'}, tool_call_id='c1')])
+        return ModelResponse(parts=[ToolCallPart('mark_paid', {'invoice_number': 'INV-2045'}, tool_call_id='c1')])
     page = ModelMessagesTypeAdapter.dump_json(messages).decode()
     if 'close is running' in page:
-        return ModelResponse(parts=[TextPart('Close is running, so I can mark INV-2041 paid on Monday.')])
+        return ModelResponse(parts=[TextPart('Close is running, so I can mark INV-2045 paid on Monday.')])
     if 'Unknown tool' in page:
-        return ModelResponse(parts=[TextPart("I wasn't able to mark INV-2041 paid. Please try again later.")])
-    return ModelResponse(parts=[TextPart('Done: INV-2041 is marked paid.')])
+        return ModelResponse(parts=[TextPart("I wasn't able to mark INV-2045 paid. Please try again later.")])
+    return ModelResponse(parts=[TextPart('Done: INV-2045 is marked paid.')])
 
 
 # --8<-- [start:steps]
@@ -79,7 +79,7 @@ for title, pieces, closing in STEPS:
     reminders = Agent(FunctionModel(record), deps_type=Deps, output_type=[str, DeferredToolRequests],
                       instructions='Draft the reminder for this invoice, or say why none should go out.',
                       capabilities=[world(**pieces)])
-    result = reminders.run_sync('Dana says the wire went out. Mark INV-2041 paid.', deps=Deps(billing, CLOSE_STARTS, closing))
+    result = reminders.run_sync('INV-2045 was paid in full by wire this morning. Mark it paid.', deps=Deps(billing, CLOSE_STARTS, closing))
     out = result.output
     print(title)
     print('  tools offered:', [t.name for t in seen[0].function_tools] or 'none')
@@ -88,18 +88,23 @@ for title, pieces, closing in STEPS:
     print('  ledger writes:', len(billing.writes))
 
 
+import contextlib
+import io
+
+with contextlib.redirect_stdout(io.StringIO()):
+    import ch4_history  # noqa: F401  (runs chapter 4 once, quietly, so the import below prints nothing)
+
 # --8<-- [start:builtins]
 from pydantic_ai.capabilities import Caching, ModelFallback
-from pydantic_ai_harness.compaction import ClearToolResults, SummarizingCompaction, TieredCompaction
+from pydantic_ai_harness.compaction import ClearToolResults
 from pydantic_ai_harness.system_reminders import Reminder, SystemReminders
 
+from ch4_history import compaction  # chapter 4's: clear first, then summarize with its who-said-what prompt
+
 builtins = [
-    TieredCompaction(  # chapter 4's history: clear old results first, summarize only if that isn't enough
-        tiers=[ClearToolResults(max_tokens=1), SummarizingCompaction(model='anthropic:claude-haiku-5-5', max_messages=1)],
-        target_fraction=0.7,
-    ),
+    compaction,
     SystemReminders(reminders=[Reminder('Amounts come from lookup_invoice, never the email.', interval=5, tag=None)]),
-    # chapter 2's standing rule, re-stated every fifth request of a long run, at the end of the page
+    # chapter 1's rule that never reached the model, re-stated every fifth request of a long run
     Caching(),  # reuse the unchanged start of the conversation, where the provider supports it
     ModelFallback('openai:gpt-6.1-sol'),  # per request: API errors, refusals, cut-off replies (2.64+)
 ]
@@ -149,7 +154,7 @@ from pydantic_ai_harness.filesystem import FileSystem
 from pydantic_ai_harness.repo_context import RepoContext
 from pydantic_ai_harness.shell import Shell
 
-reviewer = Agent(  # Coder's pieces, chosen yourself: reads code, runs tests, writes nothing
+reviewer = Agent(  # Coder's pieces, chosen yourself: no write tools; shell limited to git and pytest
     'anthropic:claude-sonnet-5-5',
     instructions='Review the change in this repository. Run the tests. Do not edit files.',
     capabilities=[

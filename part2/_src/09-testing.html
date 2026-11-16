@@ -26,40 +26,22 @@ runtime: 5
         <h2>A cheap adversary for your gates</h2>
         <aside class="notes"><p>The point: harness ideas are deterministic and testable without a model. TestModel calls every tool; the approval gate either holds or it doesn't.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Saturday 21 Nov</span>Before the agent runs unattended over the weekend, the team wants proof that nothing writes to the ledger without a person, whatever the model does.</p>
+          <p class="story"><span class="when">Friday 20 Nov, 17:00</span>Before the agent runs unattended over the weekend, the team wants proof that nothing writes to the ledger without a person, whatever the model does.</p>
           <p><code>TestModel</code> is a stand-in model that calls every tool it's offered, with arguments generated from their schemas, then answers. It doesn't judge anything; it pokes everything.</p>
         </div>
-        <article class="puzzle" id="p1" data-answer="b">
-          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Calling everything</p><div class="pz-tok" aria-hidden="true"></div></div>
-          <div class="pz-grid">
-            <div class="transcript" aria-label="The test">
-              <div class="tr-title">// the reminders agent, TestModel in place of the model</div>
-              <div class="msg sys"><span class="who">tools offered</span><div class="body mono">lookup_invoice, mark_paid (approval), record_payment (approval)</div></div>
-              <div class="msg user"><span class="who">user</span><div class="body">INV-2041 is overdue.</div></div>
-              <div class="msg next"><span class="who">TestModel calls all three</span><div class="body"><span class="caret"></span></div></div>
-            </div>
-            <div class="pz-ask">
-              <p class="q">What does the run end with?</p>
-              <div class="choices" role="radiogroup" aria-label="Your prediction">
-                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Three tool results and a text answer</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>The lookup ran; two calls wait for a person; nothing written</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>An error: generated arguments aren't real invoice numbers</span></button>
-              </div>
-              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
-              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
-              <p class="verdict" aria-live="polite" hidden></p>
-            </div>
-          </div>
-          <div class="stage" data-label="What happened" hidden>
-            <p class="eyebrow"><span class="dia"></span>What happened</p>
-            <p class="headline">The gate held. The lookup ran, the two writes wait for a person, and the ledger is untouched.</p>
-            {{code ch9_testing.py testmodel "code/part2/ch9_testing.py" keys="override\(model=TestModel|assert isinstance"}}
-            {{out ch9_testing}}
-            <p class="measure">The lookup's made-up invoice number got a <code>ModelRetry</code>, and TestModel moved on. If someone drops <code>requires_approval</code> from a tool next month, this test fails before the weekend does.</p>
-            <div class="tok-says"><div class="tk" data-tok="14" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>I pressed every button, and the padlocks held. That's the whole test.</p></div></div>
-          </div>
-          <aside class="notes"><p>Some rooms pick C. The ModelRetry turns a bad argument into feedback, and the gate holds. One test, every writing tool.</p></aside>
-        </article>
+        <div class="transcript" aria-label="The test">
+          <div class="tr-title">// the reminders agent, TestModel in place of the model</div>
+          <div class="msg sys"><span class="who">tool definitions</span><div class="body mono">read_email, lookup_invoice, mark_paid (approval), record_payment (approval)</div></div>
+          <div class="msg user"><span class="who">user</span><div class="body">INV-2041 is overdue.</div></div>
+          <div class="msg next"><span class="who">TestModel calls all four</span><div class="body"><span class="caret"></span></div></div>
+        </div>
+        {{code ch9_testing.py testmodel "code/part2/ch9_testing.py" keys="override\(model=TestModel|assert isinstance"}}
+        {{out ch9_testing}}
+        <div class="prose measure">
+          <p><b>The gate held.</b> Nothing reached the ledger. TestModel's made-up email id and invoice number got a <code>ModelRetry</code>, and it moved on: a bad argument becomes feedback, not a crash. <code>record_payment</code>'s made-up invoice was rejected by its <code>args_validator</code> before anyone was asked (chapter 6), so only <code>mark_paid</code> waits for a person; it has no validator, so a person would be asked about invoice "a". If someone drops <code>requires_approval</code> from a tool next month, this test fails before the weekend does.</p>
+        </div>
+        <div class="tok-says"><div class="tk" data-tok="14" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>I pressed every button, and the padlocks held. That's the whole test.</p></div></div>
+        <aside class="notes"><p>No prediction: the point is the habit. One test, every writing tool, no model call.</p></aside>
       </section>
 
       <section id="suite">

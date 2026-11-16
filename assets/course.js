@@ -11,7 +11,7 @@
      ====================================================================== */
   /* Where the course repo lives, for the "With your coding agent" link on the home page.
      Leave empty until the repo is published; the link then stays hidden. */
-  var REPO_URL = 'https://github.com/DouweM/harness-engineering-with-pydantic-ai';
+  var REPO_URL = 'https://github.com/DouweM/ai-harness-course';
   /* Where the course is hosted, for page links in ask-your-agent prompts. Leave empty until it is online. */
   var SITE_URL = 'https://harness.pydantic.app';
 
@@ -23,6 +23,11 @@
     { n: 3, title: 'Production, and measuring what works', skill: 'Measure what works', short: 'Which idea is better, by how much, on which cases',
       desc: 'Durability, model choice, evals and experiments, and how to run your own probe.' }
   ];
+  /* Reference pages: browsable, outside the chapter flow. Shown as a small row on the home page and in the contents. */
+  var REFERENCE = [
+    { path: 'reference/capabilities.html', title: 'Capability gallery', desc: 'Every built-in and Harness capability: what it does to the request, a snippet, the version it arrived in.' },
+    { path: 'reference/composing-harnesses.html', title: 'How harnesses are composed', desc: 'What each capability adds to a request and in what order, what collides, Coder taken apart, and composing your own harness and sub-agents.' }
+  ];
   var CHAPTERS = [
     // Part 1
     { path: 'part1/01-what-youre-talking-to.html', part: 1, n: 1, title: 'What you\'re talking to', min: 8, evolve: 1,
@@ -33,7 +38,7 @@
       ask: ['Find every place my agent edits, trims, deletes or replaces message history, and tell me what the model would believe after each.',
         'Where could a tool, a permission or a fact change mid-conversation in my agent without anything on the page saying so?',
         'Look at my output types: which required fields could push the model to invent a value it doesn\'t know?'] },
-    { path: 'part1/03-whose-voice.html', part: 1, n: 3, title: 'Whose voice is it?', min: 8, evolve: 3,
+    { path: 'part1/03-whose-voice.html', part: 1, n: 3, title: 'Who\'s speaking?', min: 8, evolve: 3,
       ask: ['List every place untrusted text (emails, documents, tool output) enters my agent\'s context, and in whose voice it arrives.',
         'Is any text in my agent\'s instructions written by someone outside my team? Show me where it comes from.',
         'Explain the operator, user and data voices using my agent\'s code, and check each lands in the right one.'] },
@@ -63,7 +68,7 @@
     { path: 'part2/05-the-answer-form.html', part: 2, n: 5, title: 'The answer form', min: 6, evolve: 10,
       ask: ['Look at my output types: which real answers can\'t fit them? Propose a shape that holds them.',
         'Add an output validator that checks my agent\'s answer against our data and sends it back with ModelRetry.'] },
-    { path: 'part2/06-capabilities.html', part: 2, n: 6, title: 'Capabilities: the unit of harness behavior', min: 12, evolve: 11,
+    { path: 'part2/06-capabilities.html', part: 2, n: 6, title: 'Capabilities: what goes on the page, and when', min: 14, evolve: 11,
       ask: ['Group my agent\'s harness behavior into capabilities: what each would contribute, and which agents would share them.',
         'Which built-in capabilities would help my agent first, and what would each change in the request?',
         'Take Coder apart for my use case: which of its capabilities would I keep, swap or restrict?'] },
@@ -77,17 +82,17 @@
       ask: ['Write a test for each harness idea in my agent (gates, notices, validators), offline, and run them.',
         'Set up ALLOW_MODEL_REQUESTS so my test suite can never call a real model by accident.'] },
     // Part 3
-    { path: 'part3/01-production.html', part: 3, n: 1, title: 'Production architectures', min: 10, evolve: 15,
+    { path: 'part3/01-production.html', part: 3, n: 1, title: 'Production architectures', min: 8, evolve: 15,
       ask: ['Review my agent for production: durability, idempotent writes, approvals that wait for days, limits, observability.',
         'Which of my tools write to the outside world, and how would I make them safe to retry?'] },
     { path: 'part3/02-models.html', part: 3, n: 2, title: 'Models and trade-offs', min: 7, evolve: 16,
       ask: ['Help me plan a model comparison for my agent: which models, which cases, and what I would measure.',
         'How should I roll out a new model or new instructions safely in my setup?'] },
-    { path: 'part3/03-evals.html', part: 3, n: 3, title: 'Evals and experiments', min: 8, evolve: 17,
+    { path: 'part3/03-evals.html', part: 3, n: 3, title: 'Evals and experiments', min: 9, evolve: 17,
       ask: ['Turn ten of my production corrections into a Pydantic Evals dataset, and run it against my agent.',
         'Set up a two-arm experiment for my agent: the current version against one changed capability.',
         'Run this chapter\'s eval example from code/ and explain the report.'] },
-    { path: 'part3/04-run-your-own-probe.html', part: 3, n: 4, title: 'Run your own probe', min: 8, evolve: 18,
+    { path: 'part3/04-run-your-own-probe.html', part: 3, n: 4, title: 'Run your own probe', min: 6, evolve: 18,
       ask: ['Help me write a probe for one question about my agent: change one thing, predict, measure.',
         'Read the cases from my last eval run with me, not just the averages.'] },
     { path: 'part3/05-the-loop.html', part: 3, n: 5, title: 'The loop', min: 4, evolve: 19,
@@ -102,7 +107,7 @@
      visible piece of equipment each, and never renumber 0 to 5 (chapter pages and evolve cards refer to them). */
   var STAGES = [
     { name: 'a token predictor', line: 'the. the cat. the cat sat. I am very good at what comes next, and that is all I do.' },
-    { name: 'an assistant answering', line: 'I read the whole page, top to bottom, and answer as the assistant in it. That page is all I know.' },
+    { name: 'a document completer, then an assistant', line: 'I continue the document you hand me. In a chat, that means I answer as the assistant in it. That page is all I know.' },
     { name: 'an agent acting on its world', line: 'I look things up and act. My history is my world, and I believe every line of it.' },
     { name: 'an agent that knows who is talking', line: 'The app, the person, the data: keep their voices apart and I will weigh each one right.' },
     { name: 'an agent that keeps up', line: 'Tell me what changed, and when, in one line. I will take it from there.' },
@@ -159,7 +164,7 @@
   var PAGE = body.getAttribute('data-page') || 'chapter';
   var here = location.pathname.replace(/\\/g, '/');
   var pageKey = (function () {
-    var m = here.match(/((?:part\d|templates)\/[^\/]+\.html)$/);
+    var m = here.match(/((?:part\d|workshop|templates|reference)\/[^\/]+\.html)$/);
     if (m) return m[1];
     return body.getAttribute('data-path') || 'index.html';
   })();
@@ -329,6 +334,8 @@
       if (!top) { top = document.createElement('header'); top.className = 'topbar'; var after = $('#pmark') ? $('#pmark').parentNode : null; body.insertBefore(top, after ? after.nextSibling : body.firstChild); }
       var crumb = '';
       if (chapter && chapter.part) crumb = '<span class="crumb"><a href="' + href('index.html') + '#part-' + chapter.part + '">Part ' + chapter.part + '</a> &middot; ' + chapter.n + ' of ' + CHAPTERS.filter(function (c) { return c.part === chapter.part; }).length + '</span>';
+      else if (PAGE === 'reference') crumb = '<span class="crumb"><a href="' + href('index.html') + '#reference">Reference</a></span>';
+      else if (PAGE === 'workshop') crumb = '<span class="crumb"><a href="' + href('workshop/index.html') + '">Workshop</a></span>';
       top.innerHTML = '<div class="wrap">' +
         '<a class="brand" href="' + href('index.html') + '" aria-label="Harness engineering with Pydantic AI, course home"><svg width="24" height="20" aria-hidden="true" style="fill:var(--accent)"><use href="#pmark"/></svg><span class="bt">Harness engineering</span></a>' +
         '<button class="mini-tok" id="miniTok" type="button" aria-label="Tok, as you see it now. Tap to hear from it."><span data-tok="current" data-crop="wide"></span></button>' +
@@ -374,7 +381,12 @@
       return (withParts ? '<h3>Part ' + p.n + ' &middot; ' + esc(p.title) + '</h3>' : '') + '<ol class="toc">' + cs.map(function (c) {
         return '<li><a href="' + href(c.path) + '" data-chapter="' + c.path + '"' + (c.path === pageKey ? ' aria-current="page"' : '') + '><span class="n">' + p.n + '.' + c.n + '</span><span>' + esc(c.title) + '</span><span class="rt">' + c.min + ' min</span></a></li>';
       }).join('') + '</ol>';
-    }).join('');
+    }).join('') + (withParts ? '<h3>Reference</h3>' + refHTML() : '');
+  }
+  function refHTML() {
+    return '<ul class="toc ref">' + REFERENCE.map(function (r) {
+      return '<li><a href="' + href(r.path) + '"' + (r.path === pageKey ? ' aria-current="page"' : '') + '><span>' + esc(r.title) + '</span><span class="rt">' + esc(r.desc) + '</span></a></li>';
+    }).join('') + '</ul>';
   }
   function markDone() {
     $$('[data-chapter]').forEach(function (a) { a.classList.toggle('done', !!state.done[a.getAttribute('data-chapter')]); });
@@ -994,7 +1006,7 @@
           '<ol class="toc">' + cs.map(function (c) {
             return '<li><a href="' + href(c.path) + '" data-chapter="' + c.path + '"><span class="n">' + p.n + '.' + c.n + '</span><span>' + esc(c.title) + '</span><span class="rt">' + c.min + ' min</span></a></li>';
           }).join('') + '</ol></article>';
-      }).join('');
+      }).join('') + '<div class="ref-row" id="reference"><span class="skilltag">Reference</span>' + refHTML() + '</div>';
     });
     $$('[data-total-min]').forEach(function (el) { el.textContent = CHAPTERS.reduce(function (a, c) { return a + c.min; }, 0); });
     $$('[data-continue]').forEach(function (a) {
@@ -1103,11 +1115,11 @@
   }
 
   // start in talk mode when asked (?talk) or when it was on in the last chapter
-  var wantTalk = /[?&](talk|present)\b/.test(location.search) || (state.talk);
+  var wantTalk = /[?&](talk|present)\b/.test(location.search) || (state.talk && PAGE !== 'workshop');
   if (wantTalk) setTalk(true, { end: location.hash === '#end', top: location.hash !== '#end' && /[?&]talk\b/.test(location.search), quiet: !!state.talk });
 
   window.Course = {
-    chapters: CHAPTERS, parts: PARTS, stages: STAGES, state: state, save: save,
+    chapters: CHAPTERS, parts: PARTS, reference: REFERENCE, stages: STAGES, state: state, save: save,
     tokSVG: tokSVG, drawTok: drawTok, registerSim: registerSim, setTalk: setTalk, toast: toast, copyText: copyText,
     highlight: { py: hiPy, json: hiJson, sh: hiSh },
     refresh: function (root) { root = root || document; wireCode(root); drawTallies(root); $$('[data-tok]', root).forEach(function (el) { drawTok(el); }); },

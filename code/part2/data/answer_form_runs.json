@@ -1,7 +1,8 @@
 {
  "recorded": "2026-11-16",
- "email": "Correction on INV-2041: we'll pay half this Friday and the rest by the 30th. Dana",
- "instructions": "Decide whether this customer email commits to paying us, and record the promise. The email was received on Wednesday 2026-11-18. INV-2041 is for 4120.00 USD.",
+ "user": "New email 884 from dana@example.com. Read it and handle it.",
+ "email (from read_email)": "Correction on INV-2041: we'll pay half this Friday and the rest by the 30th. Dana",
+ "instructions": "Decide whether the customer email you are asked about commits to paying us, and record the promise. The email was received on Wednesday 2026-11-18. INV-2041 is for 4120.00 USD.",
  "runs": [
   {
    "model": "anthropic:claude-sonnet-5-5",
@@ -13,8 +14,8 @@
     "amount": "4120.00",
     "due_date": "2026-11-30"
    },
-   "input_tokens": 593,
-   "output_tokens": 355
+   "input_tokens": 1478,
+   "output_tokens": 370
   },
   {
    "model": "anthropic:claude-sonnet-5-5",
@@ -26,8 +27,8 @@
     "amount": "4120.00",
     "due_date": "2026-11-30"
    },
-   "input_tokens": 593,
-   "output_tokens": 385
+   "input_tokens": 1478,
+   "output_tokens": 406
   },
   {
    "model": "anthropic:claude-sonnet-5-5",
@@ -39,8 +40,8 @@
     "amount": "4120.00",
     "due_date": "2026-11-30"
    },
-   "input_tokens": 593,
-   "output_tokens": 361
+   "input_tokens": 1478,
+   "output_tokens": 384
   },
   {
    "model": "anthropic:claude-sonnet-5-5",
@@ -52,8 +53,8 @@
     "amount": "4120.00",
     "due_date": "2026-11-30"
    },
-   "input_tokens": 593,
-   "output_tokens": 341
+   "input_tokens": 1478,
+   "output_tokens": 403
   },
   {
    "model": "anthropic:claude-sonnet-5-5",
@@ -65,8 +66,8 @@
     "amount": "4120.00",
     "due_date": "2026-11-30"
    },
-   "input_tokens": 593,
-   "output_tokens": 402
+   "input_tokens": 1478,
+   "output_tokens": 388
   },
   {
    "model": "anthropic:claude-sonnet-5-5",
@@ -86,8 +87,8 @@
      }
     ]
    },
-   "input_tokens": 638,
-   "output_tokens": 228
+   "input_tokens": 1568,
+   "output_tokens": 262
   },
   {
    "model": "anthropic:claude-sonnet-5-5",
@@ -107,8 +108,8 @@
      }
     ]
    },
-   "input_tokens": 638,
-   "output_tokens": 216
+   "input_tokens": 1568,
+   "output_tokens": 261
   },
   {
    "model": "anthropic:claude-sonnet-5-5",
@@ -128,78 +129,78 @@
      }
     ]
    },
-   "input_tokens": 638,
+   "input_tokens": 1568,
+   "output_tokens": 263
+  },
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "installments",
+   "run": 3,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 1568,
+   "output_tokens": 259
+  },
+  {
+   "model": "anthropic:claude-sonnet-5-5",
+   "arm": "installments",
+   "run": 4,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "installments": [
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-20"
+     },
+     {
+      "amount": "2060.00",
+      "due_date": "2026-11-30"
+     }
+    ]
+   },
+   "input_tokens": 1568,
+   "output_tokens": 266
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "one",
+   "run": 0,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 996,
+   "output_tokens": 279
+  },
+  {
+   "model": "openai:gpt-6.1-sol",
+   "arm": "one",
+   "run": 1,
+   "output": {
+    "is_commitment": true,
+    "invoice_number": "INV-2041",
+    "amount": "4120",
+    "due_date": "2026-11-30"
+   },
+   "input_tokens": 450,
    "output_tokens": 219
   },
   {
-   "model": "anthropic:claude-sonnet-5-5",
-   "arm": "installments",
-   "run": 3,
-   "output": {
-    "is_commitment": true,
-    "invoice_number": "INV-2041",
-    "installments": [
-     {
-      "amount": "2060.00",
-      "due_date": "2026-11-20"
-     },
-     {
-      "amount": "2060.00",
-      "due_date": "2026-11-30"
-     }
-    ]
-   },
-   "input_tokens": 638,
-   "output_tokens": 241
-  },
-  {
-   "model": "anthropic:claude-sonnet-5-5",
-   "arm": "installments",
-   "run": 4,
-   "output": {
-    "is_commitment": true,
-    "invoice_number": "INV-2041",
-    "installments": [
-     {
-      "amount": "2060.00",
-      "due_date": "2026-11-20"
-     },
-     {
-      "amount": "2060.00",
-      "due_date": "2026-11-30"
-     }
-    ]
-   },
-   "input_tokens": 638,
-   "output_tokens": 231
-  },
-  {
-   "model": "openai:gpt-6.1-sol",
-   "arm": "one",
-   "run": 0,
-   "output": {
-    "is_commitment": true,
-    "invoice_number": "INV-2041",
-    "amount": "2060",
-    "due_date": "2026-11-20"
-   },
-   "input_tokens": 162,
-   "output_tokens": 244
-  },
-  {
-   "model": "openai:gpt-6.1-sol",
-   "arm": "one",
-   "run": 1,
-   "output": {
-    "is_commitment": true,
-    "invoice_number": "INV-2041",
-    "amount": "2060",
-    "due_date": "2026-11-20"
-   },
-   "input_tokens": 162,
-   "output_tokens": 154
-  },
-  {
    "model": "openai:gpt-6.1-sol",
    "arm": "one",
    "run": 2,
@@ -209,8 +210,8 @@
     "amount": "2060",
     "due_date": "2026-11-20"
    },
-   "input_tokens": 162,
-   "output_tokens": 253
+   "input_tokens": 450,
+   "output_tokens": 146
   },
   {
    "model": "openai:gpt-6.1-sol",
@@ -219,11 +220,11 @@
    "output": {
     "is_commitment": true,
     "invoice_number": "INV-2041",
-    "amount": "2060",
-    "due_date": "2026-11-20"
+    "amount": "4120",
+    "due_date": "2026-11-30"
    },
-   "input_tokens": 162,
-   "output_tokens": 233
+   "input_tokens": 985,
+   "output_tokens": 268
   },
   {
    "model": "openai:gpt-6.1-sol",
@@ -235,8 +236,8 @@
     "amount": "4120",
     "due_date": "2026-11-30"
    },
-   "input_tokens": 658,
-   "output_tokens": 309
+   "input_tokens": 450,
+   "output_tokens": 246
   },
   {
    "model": "openai:gpt-6.1-sol",
@@ -256,8 +257,8 @@
      }
     ]
    },
-   "input_tokens": 157,
-   "output_tokens": 63
+   "input_tokens": 440,
+   "output_tokens": 82
   },
   {
    "model": "openai:gpt-6.1-sol",
@@ -277,8 +278,8 @@
      }
     ]
    },
-   "input_tokens": 157,
-   "output_tokens": 63
+   "input_tokens": 440,
+   "output_tokens": 82
   },
   {
    "model": "openai:gpt-6.1-sol",
@@ -298,8 +299,8 @@
      }
     ]
    },
-   "input_tokens": 157,
-   "output_tokens": 63
+   "input_tokens": 440,
+   "output_tokens": 82
   },
   {
    "model": "openai:gpt-6.1-sol",
@@ -319,8 +320,8 @@
      }
     ]
    },
-   "input_tokens": 157,
-   "output_tokens": 63
+   "input_tokens": 440,
+   "output_tokens": 82
   },
   {
    "model": "openai:gpt-6.1-sol",
@@ -340,8 +341,8 @@
      }
     ]
    },
-   "input_tokens": 157,
-   "output_tokens": 63
+   "input_tokens": 440,
+   "output_tokens": 82
   },
   {
    "model": "anthropic:claude-haiku-5-5",
@@ -353,8 +354,8 @@
     "amount": "4120.00",
     "due_date": "2026-11-30"
    },
-   "input_tokens": 593,
-   "output_tokens": 416
+   "input_tokens": 1478,
+   "output_tokens": 522
   },
   {
    "model": "anthropic:claude-haiku-5-5",
@@ -366,8 +367,8 @@
     "amount": "4120.00",
     "due_date": "2026-11-30"
    },
-   "input_tokens": 593,
-   "output_tokens": 706
+   "input_tokens": 1478,
+   "output_tokens": 505
   },
   {
    "model": "anthropic:claude-haiku-5-5",
@@ -379,8 +380,8 @@
     "amount": "4120.00",
     "due_date": "2026-11-30"
    },
-   "input_tokens": 593,
-   "output_tokens": 396
+   "input_tokens": 1478,
+   "output_tokens": 474
   },
   {
    "model": "anthropic:claude-haiku-5-5",
@@ -392,8 +393,8 @@
     "amount": "4120.00",
     "due_date": "2026-11-30"
    },
-   "input_tokens": 593,
-   "output_tokens": 535
+   "input_tokens": 1478,
+   "output_tokens": 532
   },
   {
    "model": "anthropic:claude-haiku-5-5",
@@ -405,8 +406,8 @@
     "amount": "4120.00",
     "due_date": "2026-11-30"
    },
-   "input_tokens": 593,
-   "output_tokens": 360
+   "input_tokens": 1478,
+   "output_tokens": 568
   },
   {
    "model": "anthropic:claude-haiku-5-5",
@@ -426,8 +427,8 @@
      }
     ]
    },
-   "input_tokens": 638,
-   "output_tokens": 303
+   "input_tokens": 1568,
+   "output_tokens": 356
   },
   {
    "model": "anthropic:claude-haiku-5-5",
@@ -447,8 +448,8 @@
      }
     ]
    },
-   "input_tokens": 638,
-   "output_tokens": 297
+   "input_tokens": 1568,
+   "output_tokens": 382
   },
   {
    "model": "anthropic:claude-haiku-5-5",
@@ -468,8 +469,8 @@
      }
     ]
    },
-   "input_tokens": 638,
-   "output_tokens": 346
+   "input_tokens": 1568,
+   "output_tokens": 359
   },
   {
    "model": "anthropic:claude-haiku-5-5",
@@ -489,8 +490,8 @@
      }
     ]
    },
-   "input_tokens": 638,
-   "output_tokens": 336
+   "input_tokens": 1568,
+   "output_tokens": 397
   },
   {
    "model": "anthropic:claude-haiku-5-5",
@@ -510,8 +511,8 @@
      }
     ]
    },
-   "input_tokens": 638,
-   "output_tokens": 308
+   "input_tokens": 1568,
+   "output_tokens": 408
   }
  ]
 }

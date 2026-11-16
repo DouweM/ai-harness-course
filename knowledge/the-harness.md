@@ -10,11 +10,12 @@ remember, delegate, stay coherent through long runs, and stay safe (guardrails, 
 The boundary is mechanical: core ships what needs model or framework support; the Harness ships everything else,
 so it can move at the speed the field moves.
 
-## Coder is five capabilities: no magic
+## Coder is capabilities: no magic
 
-`Coder`, the Harness's coding agent, is a combined capability: `FileSystem`, `Shell`, `RepoContext`, `SubAgents`
-delegating to the agent itself, and context management (`ClearToolResults`, `ToolOutputLimits`), plus default
-instructions. Everything people know from coding agents is history management, tools, and keeping the model's view
+`Coder`, the Harness's coding agent, is ordinary capabilities: `FileSystem` (five file tools), `Shell` (one
+unrestricted `shell` tool), `RepoContext`, `SubAgents` delegating to the agent itself, and `ClearToolResults` at 70% of
+the window, plus instructions, output limits, argument repair and prompt caching. It works in whatever workspace you
+attach: `LocalWorkspace('.')` (no isolation) or a sandbox; without one, a run fails at its start. Everything people know from coding agents is history management, tools, and keeping the model's view
 of the world current. You can use it whole, or rebuild it from those pieces to change any of them.
 
 ## Docs

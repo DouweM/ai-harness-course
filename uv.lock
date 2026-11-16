@@ -790,7 +790,7 @@ wheels = [
 ]
 
 [[package]]
-name = "harness-engineering-with-pydantic-ai"
+name = "ai-harness-course"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

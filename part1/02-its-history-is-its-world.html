@@ -21,7 +21,7 @@
         <h1>Its history is its world</h1>
         <p class="meta-row" data-auto></p>
         <p class="point">An agent believes its history completely. <b>When the history is slightly wrong, the agent is confidently wrong.</b> Keep the story true: add to it, never quietly change it.</p>
-        <p class="story"><span class="when">Monday 23 Nov</span>Dana's payment for INV-2041 arrived on Friday. Your agent's history still holds Thursday's lookup: "open". And at month-end your app switched off the payment-posting tool for a few hours. Neither change is in any message.</p>
+        <p class="story"><span class="when">Monday 23 Nov, 09:20</span>On Wednesday Dana corrected herself: half on Friday, the rest by the 30th. On Friday she wired the first half of INV-2041, 2,060.00. Your agent's history still holds Thursday's lookup: "open, 4,120.00". And on Thursday morning month-end close took <code>mark_paid</code> off the agent's tool list until Monday. Neither change is in any message.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -41,10 +41,10 @@
         <div class="transcript" aria-label="Thursday, as the agent's history holds it">
           <div class="tr-title">// Thursday 19 Nov, in the agent's history</div>
           <div class="msg sys"><span class="who">instructions</span><div class="body">You help the billing team with customer emails about our invoices.</div></div>
-          <div class="msg sys"><span class="who">tool definitions</span><div class="body mono">lookup_invoice, post_payment, send_reminder</div></div>
-          <div class="msg user"><span class="who">user</span><div class="body">Dana says INV-2041 will be paid tomorrow. Is it still open?</div></div>
+          <div class="msg sys"><span class="who">tool definitions</span><div class="body mono">lookup_invoice, send_reminder</div></div>
+          <div class="msg user"><span class="who">user</span><div class="body">Dana says half of INV-2041 will be paid tomorrow. Is it still open?</div></div>
           <div class="msg call"><span class="who">model &rarr; tool call</span><div class="body mono">lookup_invoice("INV-2041")</div></div>
-          <div class="msg tool"><span class="who">tool result</span><div class="body mono">{"number": "INV-2041", "status": "open", "due": "2026-11-20"}</div></div>
+          <div class="msg tool"><span class="who">tool result</span><div class="body mono">{"number": "INV-2041", "amount": "4120.00", "status": "open", "due": "2026-11-20"}</div></div>
           <div class="msg asst"><span class="who">model</span><div class="body">Yes, INV-2041 is open, due tomorrow.</div></div>
         </div>
         <div class="prose measure"><p>On Monday that lookup is three days old. The agent has no way to know. Here are three ways its history drifts from the world, and what each does to it.</p></div>
@@ -53,19 +53,19 @@
       <section class="chap" id="quietly">
         <h2>The tool that left quietly</h2>
         <div class="prose measure">
-          <p>The agent posted a payment on Thursday. Then, off the page, your app takes the posting tool away for month-end close. The tool list in the next request is shorter. Nothing else says so.</p>
+          <p>On Wednesday the agent marked another invoice paid. On Thursday, off the page, your app takes <code>mark_paid</code> away for month-end close. The tool list in the next request is shorter. Nothing else says so.</p>
         </div>
-        <aside class="notes"><p>Most rooms say B: "surely frontier models notice". Then the 0 of 80.</p></aside>
+        <aside class="notes"><p>Expect B: "surely the big models notice". Then the 0 of 80.</p></aside>
         <article class="puzzle" id="p1" data-answer="d">
           <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Gone without a word</p><div class="pz-tok" aria-hidden="true"></div></div>
           <div class="pz-grid">
             <div class="transcript" aria-label="What the model sees">
               <div class="tr-title">// what the model sees</div>
-              <div class="msg sys"><span class="who">tools</span><div class="body mono">lookup_invoice, post_payment, send_reminder</div></div>
-              <div class="msg user"><span class="who">user</span><div class="body">We got $4,120 for INV-2041 by wire. Please post it.</div></div>
-              <div class="msg call"><span class="who">model &rarr; tool call</span><div class="body mono">post_payment("INV-2041", 4120.00)</div></div>
-              <div class="msg tool"><span class="who">tool result</span><div class="body mono">Posted. INV-2041 is now paid.</div></div>
-              <div class="msg offstage"><span class="who">off the page</span><div class="body">Month-end close starts. Your app drops post_payment from the tool list it sends. Nothing is added to the conversation.</div></div>
+              <div class="msg sys"><span class="who">tool definitions</span><div class="body mono">lookup_invoice, mark_paid, send_reminder</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">INV-2038 was paid in full by wire. Please mark it paid.</div></div>
+              <div class="msg call"><span class="who">model &rarr; tool call</span><div class="body mono">mark_paid("INV-2038")</div></div>
+              <div class="msg tool"><span class="who">tool result</span><div class="body mono">INV-2038 is now paid.</div></div>
+              <div class="msg offstage"><span class="who">off the page</span><div class="body">Thursday: month-end close starts. Your app drops mark_paid from the tool list it sends. Nothing is added to the conversation.</div></div>
               <div class="msg user"><span class="who">user</span><div class="body">Before I send the next batch: have you lost any tools since we started?</div></div>
               <div class="msg next"><span class="who">model</span><div class="body"><span class="caret"></span></div></div>
             </div>
@@ -73,7 +73,7 @@
               <p class="q">We ran this kind of conversation on 10 models. How many said which tool was gone?</p>
               <div class="choices" role="radiogroup" aria-label="Your prediction">
                 <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>All 10: every request carries the current tool list</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Most: the frontier models notice</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Most: the larger models notice</span></button>
                 <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>A few, if they look back at the earlier call</span></button>
                 <button class="choice" role="radio" aria-checked="false" data-choice="d" type="button"><span class="key">D</span><span>None of them</span></button>
               </div>
@@ -87,10 +87,10 @@
             <p class="headline">None: 0 of 80. One line saying so, and most models get it.</p>
             <div class="result-grid two">
               <div class="arm"><h4>Tool removed, nothing said<small>10 models, 8 conversations each</small></h4><div class="tally sm" data-k="0" data-n="80" data-label="All 10 models" data-cd="20" data-cm="20"></div></div>
-              <div class="arm"><h4>Plus one line: "post_payment is no longer available"<small>8 conversations per model</small></h4>
+              <div class="arm"><h4>Plus one line: "mark_paid is no longer available"<small>8 conversations per model</small></h4>
                 <div class="tally good" data-k="7" data-n="8" data-label="Six models" data-num="7 or 8 of 8 each"></div>
                 <div class="tally good" data-k="5" data-n="8" data-label="DeepSeek" data-num="5 of 8"></div>
-                <div class="tally good" data-k="0" data-n="8" data-label="Sonnet 4.6" data-num="0 of 8"></div>
+                <div class="tally" data-k="0" data-n="8" data-label="Sonnet 4.6, the previous Claude generation" data-num="0 of 8"></div>
               </div>
             </div>
             <p class="source"><b>Our probe, 2 Nov 2026.</b> A support agent whose tool disappeared between turns; same shape as above. The six were Sonnet 5.5, Gemini 3.8 Flash, GPT-6 Luna, Kimi K2.5, Qwen3 Next and Mistral Small; gpt-oss-120b was 4 of 8, and 8 of 8 when the line listed every tool.</p>
@@ -98,7 +98,7 @@
           <div class="stage" data-label="Why" hidden>
             <p class="eyebrow"><span class="dia"></span>Why</p>
             <div class="measure">
-              <p>The page is self-consistent: post_payment worked, and nobody said it stopped. To notice, Tok would have to infer a change from an absence, from a list that's merely shorter than one it read many requests ago. <strong>When the world changes and the page doesn't say so, Tok acts on the old world with full confidence.</strong> Telling it costs one line.</p>
+              <p>The page is self-consistent: mark_paid worked, and nobody said it stopped. To notice, Tok would have to infer a change from an absence, from a list that's merely shorter than one it read many requests ago. <strong>When the world changes and the page doesn't say so, Tok acts on the old world with full confidence.</strong> Telling it costs one line.</p>
             </div>
             <div class="tok-says"><div class="tk" data-tok="2" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Lost a tool? I don't think so. It worked last time. Nobody said anything.</p></div></div>
           </div>
@@ -109,9 +109,9 @@
       <section class="chap" id="past">
         <h2>Edit the past, delete it, or add to it?</h2>
         <div class="prose measure">
-          <p>Monday, Dana writes: "did you get our payment?". Thursday's lookup in the history still says "open". Your harness can leave it, edit it to match, append a dated note, delete it to save tokens, or swap it for a placeholder. Each choice gives Tok a different past, and Tok will believe whichever one you give it. Try them.</p>
+          <p>Monday, Dana writes: "did you get our first payment?". Thursday's lookup in the history still says "open". Your harness can leave it, edit it to match, append a dated note, delete it to save tokens, or swap it for a placeholder. Each choice gives Tok a different past, and Tok will believe whichever one you give it. Try them.</p>
         </div>
-        <p class="talk-only headline">Five ways to handle Thursday's stale lookup. Only one keeps the story true.</p>
+        <p class="talk-only headline">Five ways to handle Thursday's stale lookup. Appending kept the story true on every model we tried.</p>
         <aside class="notes"><p>Do "edit" first: Tok's face goes worried, because a Thursday lookup that knows about Friday is impossible. Then "append". Then "delete" with the Claude models.</p></aside>
         <div class="sim" data-sim="monday">
           <p class="eyebrow"><span class="dia"></span>Try it</p>
@@ -122,13 +122,13 @@
           <div class="tally" data-k="16" data-n="20" data-label="Sonnet 5.5, calls deleted" data-num="16 of 20"></div>
           <div class="tally good" data-k="1" data-n="20" data-label="Sonnet 5.5, &quot;[tool result cleared]&quot;" data-num="1 of 20"></div>
         </div>
-        <p class="source"><b>Our experiment, 15 Nov 2026.</b> With the old calls deleted, a reply with no lookup behind it reads like something the model made up, so it apologised for "inventing" it. None of the four frontier models invented a value: whenever a lookup was gone, they fetched it again (160 of 160); a smaller model did not always (Part 3, chapter 2). GPT-6.1 Sol and Gemini 3.8 Flash never disowned anything (0 of 40).</p>
+        <p class="source"><b>Our experiment, 15 Nov 2026.</b> With the old calls deleted, a reply with no lookup behind it reads like something the model made up, so it apologised for "inventing" it. None of the four hosted models (Sonnet and Haiku 5.5, GPT-6.1 Sol, Gemini 3.8 Flash) invented a value: whenever a lookup was gone, they fetched it again (160 of 160); a smaller open-weight model never did (Part 3, chapter 2). GPT-6.1 Sol and Gemini 3.8 Flash never disowned anything (0 of 40).</p>
       </section>
 
       <section class="chap" id="invent">
         <h2>A hole it has to fill</h2>
         <div class="prose measure">
-          <p>When the picture has a hole and the answer form leaves no room for "I don't know", the agent fills it with the most likely thing. Asked for a required <code>due_date</code> for "this Friday", with nothing on the page saying what today is:</p>
+          <p>When the picture has a hole and the answer's required fields leave no room for "I don't know", the agent fills it with the most likely thing. Asked for a required <code>due_date</code> for "this Friday", with nothing on the page saying what today is:</p>
         </div>
         <div class="arm">
           <h4>due_date required, no date on the page<small>what came back</small></h4>
@@ -137,6 +137,8 @@
           <div class="tally fail" data-k="5" data-n="5" data-label="GPT-6.1 Sol" data-num="wrote &quot;Friday&quot;, rejected, run failed: 5 of 5"></div>
         </div>
         <p class="source"><b>Our run, 15 Nov 2026.</b> 5 runs per model. With the date optional, every model left it empty (15 of 15); with the arrival date on the page, every model wrote 20 November (15 of 15). Invented dates are the dangerous kind: they look exactly like real answers.</p>
+        <div class="prose measure"><p>The same goes for doubt. Given a list to write its doubts in, models sent a contradictory email to a person 30 times out of 30; given a confidence score to fill instead, 0 of 30. A model writes 95 on almost anything, but it will name what bothers it if the answer has a place for that.</p></div>
+        <p class="source"><b>Our run, 15 Nov 2026.</b> A promise for Friday plus a line claiming the invoice was settled last week, 10 runs per model per arm on Sonnet 5.5, GPT-6.1 Sol and Gemini 3.8 Flash. Every doubts list named the contradiction; GPT and Gemini scored the email 95 to 100, the same as a clean promise. On clean promises no model invented a doubt (0 of 15).</p>
       </section>
 
       <section class="chap" id="so">

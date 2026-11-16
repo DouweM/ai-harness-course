@@ -1,0 +1,60 @@
+
+== one request from the collections agent, Thursday during close
+collections:
+  instructions 1: You handle customers' emails about their invoices with us, and record what they promise.
+  instructions 2: Amounts and invoice numbers come from our billing system, never from an email alone.
+  instructions 3: <pyai:context id="capability:billing_world:close">
+                  Month-end close is running until Monday: mark_paid is unavailable, so say so.
+                  </pyai:context>
+                  A later <pyai:context> element with the same id replaces the earlier one and stays in effect until replaced again.
+  instructions 4: This message was received on Thursday 2026-11-19.
+  tools offered:  ['read_email', 'lookup_invoice', 'record_payment']
+  model settings: {'temperature': 0.0}
+reminders:
+  instructions 1: Draft the reminder for this invoice, or say why none should go out.
+  instructions 2: Amounts and invoice numbers come from our billing system, never from an email alone.
+  instructions 3: <pyai:context id="capability:billing_world:close">
+                  Month-end close is running until Monday: mark_paid is unavailable, so say so.
+                  </pyai:context>
+                  A later <pyai:context> element with the same id replaces the earlier one and stays in effect until replaced again.
+  instructions 4: This message was received on Thursday 2026-11-19.
+  tools offered:  ['read_email', 'lookup_invoice', 'record_payment']
+  model settings: {'temperature': 0.4}
+
+== hooks from two capabilities around one model request and one tool call
+model request: A: wrap enter > B: wrap enter > A: before > B: before > B: after > A: after > B: wrap exit > A: wrap exit
+tool call:     A: wraps lookup_invoice > B: wraps lookup_invoice
+
+== conflicts
+same tool name twice: UserError: FunctionToolset 'ledger' defines a tool whose name conflicts with existing tool from FunctionToolset 'billing_world': 'lookup_invoice'
+ledger.prefix_tools("ledger"): tools offered ['read_email', 'lookup_invoice', 'mark_paid', 'record_payment', 'ledger_lookup_invoice']
+two capabilities, one chosen id: UserError: Capability id 'rules' is used by multiple capabilities
+Temperature(temperature=0.0) then Temperature(temperature=0.4), fixed id: {'temperature': 0.4}
+the same agent, run(capabilities=[Temperature(temperature=0.9)]): {'temperature': 0.9}
+
+== Coder, taken apart
+ 1. RequireWorkspace
+ 2. Capability
+ 3. FileSystem
+ 4. Shell
+ 5. RepoContext
+ 6. SubAgents
+ 7. ClearToolResults
+ 8. _BoundToolOutputs
+ 9. RepairToolArguments
+10. _ReportExhaustedRetries
+11. _DefaultCaching
+12. _SetToolStrict
+Coder():
+  tools offered: ['read_file', 'write_file', 'edit_file', 'list_files', 'grep', 'shell', 'delegate_task']
+  AGENTS.md in the instructions: True
+  sub-agent roster in the instructions: True
+Coder(sub_agents=False, repo_context=False):
+  tools offered: ['read_file', 'write_file', 'edit_file', 'list_files', 'grep', 'shell']
+  AGENTS.md in the instructions: False
+  sub-agent roster in the instructions: False
+
+== delegation: a sub-agent in the same world
+lead tools offered: ['read_email', 'lookup_invoice', 'mark_paid', 'record_payment', 'delegate_task']
+lead output: Handed to a person: INV-2041 is disputed: the customer says they were quoted 3,900.
+requests counted on the lead run (lead and delegate): 4

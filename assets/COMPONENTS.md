@@ -9,7 +9,7 @@ match v3's, so moving a v3 component over mostly means deleting the page-specifi
 - File names: `partN/NN-short-name.html`. `course.js` holds the manifest (`CHAPTERS` at the top): order,
   titles, runtimes, the Tok stage each chapter unlocks, and the ask-your-agent follow-ups. If your
   file name or title differs from the manifest, tell the shell builder (or edit the manifest entry yourself).
-- `<body data-page="chapter">` (`home` for `index.html`). `data-title`,
+- `<body data-page="chapter">` (`home` for `index.html`, `workshop` for workshop pages). `data-title`,
   `data-part`, `data-n`, `data-runtime` on `<body>` are only a fallback for pages not in the manifest.
 - `<header class="topbar" data-auto></header>`: course.js fills it in (brand, Tok, part crumb, score,
   ask-your-agent, chapters, talk mode, theme). Don't hand-build the top bar.
@@ -154,3 +154,8 @@ yourself), `Course.state` and `Course.save()`.
 
 Sentence-case headings, no em dashes, no customer or framework names, 44px targets, 13px minimum text, no
 horizontal scroll at 360px.
+
+## `.deeper`: a short "go deeper" note
+
+`<div class="deeper measure"><p class="eyebrow">Go deeper: ...</p><p>...</p></div>`. Always open, never a fold:
+for the advanced reader who needs one more paragraph (when a variant is the right call, an edge of a guarantee).

@@ -10,8 +10,8 @@ It takes two to three hours to read everything; skim what you already know.
 ## Open it
 
 ```sh
-git clone https://github.com/DouweM/harness-engineering-with-pydantic-ai
-cd harness-engineering-with-pydantic-ai
+git clone https://github.com/DouweM/ai-harness-course
+cd ai-harness-course
 uv run serve.py        # or: python3 serve.py
 ```
 
@@ -31,7 +31,7 @@ pick an answer, `N` shows speaker notes, `?` lists the keys. Built for 1920x1080
 chapter and its path in this repo. Start Claude Code (or any coding agent) here and paste it:
 
 ```sh
-cd harness-engineering-with-pydantic-ai
+cd ai-harness-course
 claude
 ```
 

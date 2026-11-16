@@ -283,6 +283,9 @@ button { font: inherit; color: inherit; }
 .rule p:last-child { margin-bottom: 0; }
 .rule.warn { border-left-color: var(--warning); }
 .rule.warn .eyebrow { color: var(--warning); }
+.deeper { border-left: 3px solid var(--border-strong); padding: 4px 16px; margin: 20px 0; max-width: 72ch; }
+.deeper .eyebrow { margin-bottom: .4em; }
+.deeper p:last-child { margin-bottom: 0; }
 
 /* code */
 .code { border: 1px solid var(--code-border); border-radius: var(--radius-card); background: var(--code-bg); margin: 14px 0; min-width: 0; position: relative; max-width: 100%; }
@@ -594,6 +597,10 @@ footer { padding: 32px 0 calc(48px + var(--bar-h)); font-size: .875rem; color: v
 .toc a.done .n { color: var(--tip); }
 .toc a.done .n::after { content: "\2713"; margin-left: 2px; }
 .toc .minpath { font-family: var(--font-mono); font-size: .75rem; color: var(--accent-strong); margin-left: 6px; text-transform: uppercase; letter-spacing: .05em; }
+.toc.ref a { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.toc.ref .rt { white-space: normal; font-family: var(--font-sans, inherit); }
+.ref-row { grid-column: 1 / -1; border: 1px dashed var(--border-strong); border-radius: var(--radius-card); padding: 10px 14px; }
+.ref-row .toc { margin-top: 6px; }
 
 /* speaker notes: never shown outside talk mode */
 .notes { display: none; }
@@ -678,8 +685,9 @@ kbd { font-family: var(--font-mono); font-size: .8125rem; border: 1px solid var(
 @media (min-width: 860px) { .howto { grid-template-columns: 1fr 1fr; } }
 .howto > div { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-panel); padding: 16px 18px; min-width: 0; }
 .howto h3 { margin-top: 0; }
+.workshop-link[hidden] { display: none; }
 
-/* forms */
+/* forms (workshop surveys) */
 .form { display: grid; gap: 22px; max-width: 760px; }
 .fq { border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); padding: 14px 16px; margin: 0; min-width: 0; }
 .fq legend, .fq > label.ql { font-weight: 600; color: var(--text-strong); padding: 0 4px; line-height: 1.4; }

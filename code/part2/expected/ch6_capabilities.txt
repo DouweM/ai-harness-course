@@ -1,17 +1,17 @@
 Nothing packaged: the second agent gets the tool, not the rules
   tools offered: ['mark_paid']
   close notice:  none
-  outcome:       Done: INV-2041 is marked paid.
+  outcome:       Done: INV-2045 is marked paid.
   ledger writes: 1
 Move in: hide mark_paid during close
   tools offered: none
   close notice:  none
-  outcome:       I wasn't able to mark INV-2041 paid. Please try again later.
+  outcome:       I wasn't able to mark INV-2045 paid. Please try again later.
   ledger writes: 0
 Move in: the close notice
   tools offered: none
   close notice:  on the page
-  outcome:       Close is running, so I can mark INV-2041 paid on Monday.
+  outcome:       Close is running, so I can mark INV-2045 paid on Monday.
   ledger writes: 0
 Move in: approval. Monday, close is over
   tools offered: ['mark_paid']

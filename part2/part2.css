@@ -48,6 +48,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: .9375rem; }
   .tbl tr { border-bottom: 1px solid var(--border); padding: 6px 0; }
   .tbl td { border: 0; padding: 3px 12px; }
   .tbl td:first-child { white-space: normal; font-weight: 600; }
+  .tbl td[data-label]::before { content: attr(data-label); display: block; font: 600 .6875rem var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
 }
 
 /* Contribution grid (chapter 5): what a capability can contribute */

@@ -1,0 +1,1168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capability gallery · Harness engineering</title>
+<meta name="description" content="Every built-in Pydantic AI capability and every Harness capability: what it does to the request, the line that adds it, the release it arrived in, and its docs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .gal-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 18px 0 8px; }
+  .gal-tools input { flex: 1 1 220px; min-height: 44px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-btn); background: var(--surface); color: var(--text-strong); font: inherit; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 18px; }
+  .chip { min-height: 36px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); color: var(--text-strong); font: 500 .8125rem var(--font-mono); cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--surface-tint); border-color: var(--accent-strong); color: var(--accent-strong); }
+  .gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px; }
+  .card { border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); padding: 14px 16px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .card h3 { margin: 0; font-size: 1.05rem; }
+  .card .meta { font: .75rem var(--font-mono); color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
+  .card .meta .pkg { color: var(--accent-strong); }
+  .card p { margin: 0; }
+  .card .code { margin: 6px 0 0; }
+  .card .docs { margin-top: auto; padding-top: 4px; font-size: .875rem; }
+  .gal-count { font: .8125rem var(--font-mono); color: var(--text-muted); }
+  .job-h { grid-column: 1 / -1; margin: 18px 0 0; font-size: 1rem; color: var(--eyebrow); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .05em; }
+</style>
+</head>
+<body data-page="reference" data-path="reference/capabilities.html">
+<header class="topbar" data-auto></header>
+<main>
+  <section class="wrap">
+    <p class="eyebrow" style="margin-top:28px"><span class="dia"></span>Reference</p>
+    <h1>Capability gallery</h1>
+    <p class="measure">Every capability with its own docs page in Pydantic AI (<span class="pkg">core</span>) or Pydantic AI Harness, <code>pydantic-ai-harness</code> (<span class="pkg">harness</span>): what it does, the line that adds it to an agent, the release its docs page first shipped in, and its docs. Part 2, <a href="../part2/06-capabilities.html">chapter 6</a> explains what a capability is; this page is for finding one. Check here before writing your own.</p>
+    <div class="gal-tools"><input id="q" type="search" placeholder="Search: compaction, approval, Slack..." aria-label="Search capabilities"><span class="gal-count" id="count">106 capabilities</span></div>
+    <div class="chips" role="group" aria-label="Filter by job"><button class="chip" type="button" data-job="" aria-pressed="true">All</button><button class="chip" type="button" data-job="Model and cost" aria-pressed="false">Model and cost</button><button class="chip" type="button" data-job="Tools" aria-pressed="false">Tools</button><button class="chip" type="button" data-job="Workspace and sandboxes" aria-pressed="false">Workspace and sandboxes</button><button class="chip" type="button" data-job="History and context" aria-pressed="false">History and context</button><button class="chip" type="button" data-job="Control and safety" aria-pressed="false">Control and safety</button><button class="chip" type="button" data-job="More than one agent" aria-pressed="false">More than one agent</button><button class="chip" type="button" data-job="Whole agents" aria-pressed="false">Whole agents</button><button class="chip" type="button" data-job="Runtime and observability" aria-pressed="false">Runtime and observability</button><button class="chip" type="button" data-job="Integrations" aria-pressed="false">Integrations</button></div>
+    <div class="gal" id="gal"></div>
+
+    <section id="coder" style="margin:40px 0">
+      <h2>Coder, taken apart</h2>
+      <div class="prose measure">
+        <p>The Harness's <code>Coder</code> is a coding agent built from capabilities on this page: <code>FileSystem</code>, <code>Shell</code>, <code>RepoContext</code>, <code>SubAgents</code> and <code>ClearToolResults</code>, plus its instructions, output limits and argument repair. Pick the same pieces yourself and you get a different agent. A reviewer that reads the code and runs the tests but never writes a file:</p>
+      </div>
+      <div class="code" data-run="uv run code/part2/ch6_capabilities.py"><div class="code-head"><span class="file">code/part2/ch6_capabilities.py, a reviewer from Coder's pieces</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import LocalWorkspace
+from pydantic_ai_harness.filesystem import FileSystem
+from pydantic_ai_harness.repo_context import RepoContext
+from pydantic_ai_harness.shell import Shell
+
+reviewer = Agent(  # Coder's pieces, chosen yourself: reads code, runs tests, writes nothing
+    'anthropic:claude-sonnet-5-5',
+    instructions='Review the change in this repository. Run the tests. Do not edit files.',
+    capabilities=[
+        LocalWorkspace('.'),
+        FileSystem(read_only=True),
+        Shell(allowed_commands=['git', 'pytest']),
+        RepoContext(),
+        ClearToolResults(max_fraction=0.7, placeholder='[Cleared to save space. Read the file again if you need it.]'),
+    ],
+)</pre></div>
+    </section>
+  </section>
+</main>
+<footer><div class="wrap"><p>Generated from the Pydantic AI docs by <code>tools/build_capability_gallery.py</code>: each card's sentence and example are the docs page's own; "since" is the first release whose docs include the page (renames followed). Generated from <code>v2.68.0</code>. How these combine on one agent: <a href="composing-harnesses.html">How harnesses are composed</a>.</p></div></footer>
+<script>
+(function () {
+  var CARDS = [
+{
+"slug": "caching",
+"title": "Caching",
+"pkg": "core",
+"job": "Model and cost",
+"does": "Prompt caching in Pydantic AI: why to add the Caching capability to your agents, how each provider caches, what caching costs, what invalidates a cache, and how to check that it works.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import Caching\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[Caching()])",
+"since": "pydantic-ai 2.55+",
+"url": "https://pydantic.dev/docs/ai/capabilities/caching/"
+},
+{
+"slug": "model-fallback",
+"title": "Model Fallback",
+"pkg": "core",
+"job": "Model and cost",
+"does": "Fall back to other models when a Pydantic AI model request fails or its response is rejected, with the ModelFallback capability.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import ModelFallback\n\n# Try the OpenAI model first, then the Anthropic one.\nagent = Agent('openai:gpt-6.1-sol', capabilities=[ModelFallback('anthropic:claude-sonnet-5-5')])",
+"since": "pydantic-ai 2.64+",
+"url": "https://pydantic.dev/docs/ai/capabilities/model-fallback/"
+},
+{
+"slug": "resolve-model-id",
+"title": "Resolve Model ID",
+"pkg": "core",
+"job": "Model and cost",
+"does": "Map custom model names to Pydantic AI models with ResolveModelId, using run dependencies for per-user API keys, per-tenant providers or model registries.",
+"code": "from pydantic_ai import Agent, ModelResolutionContext\nfrom pydantic_ai.capabilities import ResolveModelId\nfrom pydantic_ai.models import Model, infer_model\nfrom pydantic_ai.providers import Provider, infer_provider\nfrom pydantic_ai.providers.openai import OpenAIProvider\n\nagent = Agent(\n    'user:openai:gpt-6.1-sol',\n    deps_type=Deps,\n    capabilities=[ResolveModelId(resolve_model)],\n)",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/resolve-model-id/"
+},
+{
+"slug": "select-model",
+"title": "Select Model",
+"pkg": "core",
+"job": "Model and cost",
+"does": "Route each Pydantic AI run or step to a different model, chosen from dependencies, message history or usage, with the SelectModel capability.",
+"code": "from pydantic_ai import Agent, ModelSelectionContext\nfrom pydantic_ai.capabilities import SelectModel\n\nagent = Agent(deps_type=Deps, capabilities=[SelectModel(select_model)])",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/select-model/"
+},
+{
+"slug": "thinking",
+"title": "Thinking",
+"pkg": "core",
+"job": "Model and cost",
+"does": "Enable thinking and reasoning effort in Pydantic AI with the Thinking capability, or use native settings for OpenAI, Anthropic, Google, Bedrock and more.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import Thinking\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[Thinking(effort='high')])",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/thinking/"
+},
+{
+"slug": "advisor",
+"title": "Advisor",
+"pkg": "harness",
+"job": "Model and cost",
+"does": "Let a Pydantic AI agent consult a second, often stronger model mid-run, via the provider-native advisor tool on Anthropic or OpenRouter, or a local fallback.",
+"code": null,
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/advisor/"
+},
+{
+"slug": "spend",
+"title": "Spend",
+"pkg": "harness",
+"job": "Model and cost",
+"does": "Set daily, monthly, or per-tenant USD and token budgets for a Pydantic AI agent, track LLM cost per response, and stop requests once a budget is spent.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import SpendLimits\nfrom pydantic_ai_harness.spend import Budget\n\nagent = Agent(\n    'openai:gpt-6.1-sol',\n    capabilities=[SpendLimits(budgets=[Budget(usd=Decimal('100'), window='day')])],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/spend/"
+},
+{
+"slug": "warn-on-cache-busts",
+"title": "Warn On Cache Busts",
+"pkg": "harness",
+"job": "Model and cost",
+"does": "Catch prompt cache busts in Pydantic AI: warn when the cached prefix read back collapses between model requests or turns, unless the provider's cache retention window explains it.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import Caching\nfrom pydantic_ai_harness import WarnOnCacheBusts\n\n# `Caching()` enables caching; `WarnOnCacheBusts()` only observes it.\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[Caching(), WarnOnCacheBusts()])\nresult = await agent.run('...')  # a CacheBustWarning fires if a cached prefix collapses mid-run\n# ...and on the next turn, if the prefix the first turn cached no longer reads back:\nawait agent.run('...', message_history=result.all_messages())",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/warn-on-cache-busts/"
+},
+{
+"slug": "file-understanding",
+"title": "File Understanding",
+"pkg": "core",
+"job": "Tools",
+"does": "The `FileUnderstanding` capability lets an agent take images, documents, audio and video its model cannot read.",
+"code": "from pydantic_ai import Agent, DocumentUrl\nfrom pydantic_ai.capabilities import FileUnderstanding\n\nagent = Agent(\n    'typesafe:jev-latest',\n    output_type=bool,\n    instructions='Is this document about animals?',\n    capabilities=[FileUnderstanding(fallback_subagent_model='openai:gpt-6.1-sol')],\n)",
+"since": "pydantic-ai 2.60+",
+"url": "https://pydantic.dev/docs/ai/capabilities/file-understanding/"
+},
+{
+"slug": "image-generation",
+"title": "ImageGeneration",
+"pkg": "core",
+"job": "Tools",
+"does": "Let a Pydantic AI agent generate images when it decides to, via the provider's native image tool or a fallback image model or image-capable subagent.",
+"code": null,
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/image-generation/"
+},
+{
+"slug": "include-tool-return-schemas",
+"title": "Include Tool Return Schemas",
+"pkg": "core",
+"job": "Tools",
+"does": "Send tool return type schemas to the model with the Pydantic AI IncludeToolReturnSchemas capability, natively where supported or in the tool description.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import IncludeToolReturnSchemas\nfrom pydantic_ai.models.test import TestModel\n\nagent = Agent(test_model, capabilities=[IncludeToolReturnSchemas()])\n",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/include-tool-return-schemas/"
+},
+{
+"slug": "mcp",
+"title": "MCP",
+"pkg": "core",
+"job": "Tools",
+"does": "Connect a Pydantic AI agent to local or remote MCP servers with the MCP capability, calling tools from your own process or via provider-native MCP.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import MCP\n\nagent = Agent(\n    'openai:gpt-6.1-sol',\n    capabilities=[\n        MCP('https://docs.example.com/mcp', id='docs', tool_prefix=True),  # `docs_search`\n        MCP('https://tickets.example.com/mcp', tool_prefix='tickets'),  # `tickets_search`\n    ],\n)",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/mcp/"
+},
+{
+"slug": "prefix-tools",
+"title": "Prefix Tools",
+"pkg": "core",
+"job": "Tools",
+"does": "Namespace a capability's tool names with the Pydantic AI PrefixTools capability to avoid conflicts when composing capabilities with overlapping tool names.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import MCP, PrefixTools\n\nagent = Agent(\n    'openai:gpt-6.1-sol',\n    capabilities=[\n        PrefixTools(MCP(url='https://api1.example.com', native=True), prefix='api1'),\n        PrefixTools(MCP(url='https://api2.example.com', native=True), prefix='api2'),\n    ],\n)",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/prefix-tools/"
+},
+{
+"slug": "prepare-tools",
+"title": "Prepare Tools",
+"pkg": "core",
+"job": "Tools",
+"does": "Hide, filter or modify the tools the model sees on each step of a Pydantic AI run with the PrepareTools and PrepareOutputTools capabilities.",
+"code": "from pydantic_ai import Agent, RunContext, ToolDefinition\nfrom pydantic_ai.capabilities import PrepareTools\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[PrepareTools(hide_dangerous)])\n",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/prepare-tools/"
+},
+{
+"slug": "set-tool-metadata",
+"title": "Set Tool Metadata",
+"pkg": "core",
+"job": "Tools",
+"does": "Tag selected tools with metadata key-value pairs using the Pydantic AI SetToolMetadata capability, for other capabilities or custom logic to inspect.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import SetToolMetadata\nfrom pydantic_ai.models.test import TestModel\n\nagent = Agent(\n    test_model,\n    capabilities=[SetToolMetadata(tools=['search'], sensitive=True)],\n)",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/set-tool-metadata/"
+},
+{
+"slug": "thread-executor",
+"title": "Thread Executor",
+"pkg": "core",
+"job": "Tools",
+"does": "Run sync tools and callbacks on your own thread pool with the Pydantic AI UseThreadExecutor capability, so long-running servers do not accumulate threads.",
+"code": "from concurrent.futures import ThreadPoolExecutor\n\nfrom pydantic_ai import Agent\nfrom pydantic_ai.capabilities import UseThreadExecutor\n\nexecutor = ThreadPoolExecutor(max_workers=16, thread_name_prefix='agent-worker')\nagent = Agent('openai:gpt-6.1-sol', capabilities=[UseThreadExecutor(executor)])",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/thread-executor/"
+},
+{
+"slug": "tool-search",
+"title": "Tool Search",
+"pkg": "core",
+"job": "Tools",
+"does": "Let the model discover deferred tools on demand with the Pydantic AI ToolSearch capability, so agents with many tools only pay tokens for the ones they use.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import ToolSearch\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[ToolSearch(strategy='keywords')])",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/tool-search/"
+},
+{
+"slug": "web-fetch",
+"title": "Web Fetch",
+"pkg": "core",
+"job": "Tools",
+"does": "Let a Pydantic AI agent fetch the contents of URLs with the WebFetch capability, using the provider's native web fetch tool or a local fallback on other models.",
+"code": null,
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/web-fetch/"
+},
+{
+"slug": "web-search",
+"title": "Web Search",
+"pkg": "core",
+"job": "Tools",
+"does": "Give a Pydantic AI agent web search with the WebSearch capability, using the provider's native search when available and a local fallback such as DuckDuckGo.",
+"code": null,
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/web-search/"
+},
+{
+"slug": "x-search",
+"title": "X Search",
+"pkg": "core",
+"job": "Tools",
+"does": "Let a Pydantic AI agent search X (Twitter) posts with the XSearch capability, natively on xAI models or delegated to an xAI subagent from other models.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import XSearch\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[XSearch(fallback_subagent_model='anthropic:claude-sonnet-5-5')],\n)",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/x-search/"
+},
+{
+"slug": "background-tools",
+"title": "Background Tools",
+"pkg": "harness",
+"job": "Tools",
+"does": "Run slow Pydantic AI tools in the background so the agent keeps working, then deliver each tool's result to the model as a follow-up message when it finishes.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import BackgroundTools\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[BackgroundTools()])\n",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/background-tools/"
+},
+{
+"slug": "browser-use",
+"title": "Browser Use",
+"pkg": "harness",
+"job": "Tools",
+"does": "Hand open-ended web tasks from a Pydantic AI agent to a browser-use agent that drives a real Chromium browser and returns text or validated JSON results.",
+"code": null,
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/browser-use/"
+},
+{
+"slug": "code-mode",
+"title": "Code Mode",
+"pkg": "harness",
+"job": "Tools",
+"does": "Let a Pydantic AI agent call its tools from one sandboxed Python script (programmatic tool calling) instead of one model round-trip per tool call.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import CodeMode\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[CodeMode()])\n",
+"since": "pydantic-ai-harness 0.0+",
+"url": "https://pydantic.dev/docs/ai/harness/code-mode/"
+},
+{
+"slug": "exa-search",
+"title": "Exa Search",
+"pkg": "harness",
+"job": "Tools",
+"does": "Give a Pydantic AI agent Exa web search: relevant excerpts per result, full-page reads, opt-in deep search with cited answers, and Exa Agent research runs.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import ExaSearch\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[ExaSearch()])\n\nresult = agent.run_sync('What changed in the latest stable Python release?')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/exa-search/"
+},
+{
+"slug": "ipython-code-mode",
+"title": "IPython Code Mode",
+"pkg": "harness",
+"job": "Tools",
+"does": "Let a local Pydantic AI agent run Python and call its tools from a persistent IPython kernel, with full CPython and any installed package.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import IPythonCodeMode\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[IPythonCodeMode()])\n",
+"since": "pydantic-ai-harness 0.63+",
+"url": "https://pydantic.dev/docs/ai/harness/ipython-code-mode/"
+},
+{
+"slug": "keenable-search",
+"title": "Keenable Search",
+"pkg": "harness",
+"job": "Tools",
+"does": "Give a Pydantic AI agent web research tools backed by the Keenable search API -- excerpted search and full-page retrieval, keyless by default and with no extra to install.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import KeenableSearch\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[KeenableSearch()])\nresult = agent.run_sync('What changed in the EU AI Act this year? Cite your sources.')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.67+",
+"url": "https://pydantic.dev/docs/ai/harness/keenable-search/"
+},
+{
+"slug": "media",
+"title": "Media Externalization",
+"pkg": "harness",
+"job": "Tools",
+"does": "Store large images, audio, and text from Pydantic AI message history in content-addressed disk, SQLite, S3, MongoDB, or PostgreSQL stores to keep run snapshots small.",
+"code": null,
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/media/"
+},
+{
+"slug": "playwright",
+"title": "Playwright Browser",
+"pkg": "harness",
+"job": "Tools",
+"does": "Give a Pydantic AI agent a real Chromium browser through Playwright to navigate, click, type, read, run JavaScript, and screenshot dynamic or logged-in pages.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.playwright import PlaywrightBrowser\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[PlaywrightBrowser()])\nresult = await agent.run('Open https://example.com and tell me the page title.')",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/playwright/"
+},
+{
+"slug": "repair-tool-arguments",
+"title": "Repair Tool Arguments",
+"pkg": "harness",
+"job": "Tools",
+"does": "Fix malformed JSON tool call arguments from the model, such as trailing commas, single quotes, or truncated JSON, before Pydantic AI validates them.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.models.test import TestModel\nfrom pydantic_ai_harness.repair_tool_arguments import RepairToolArguments\n\nagent = Agent(TestModel(), capabilities=[RepairToolArguments()])\n",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/repair-tool-arguments/"
+},
+{
+"slug": "capability-creation",
+"title": "Runtime Capability Creation",
+"pkg": "harness",
+"job": "Tools",
+"does": "Let a Pydantic AI agent write its own capabilities (tools, hooks, instructions) as Python during a run, validate them, and load them on the next run.",
+"code": "from pathlib import Path\n\nfrom pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import CapabilityCreation\n\ncreation = CapabilityCreation(directory=Path('.authored'))\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[LocalWorkspace('.'), creation])",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/capability-creation/"
+},
+{
+"slug": "tool-output-limits",
+"title": "Tool Output Limits",
+"pkg": "harness",
+"job": "Tools",
+"does": "Keep large tool outputs from filling a Pydantic AI agent's context window: truncate them, spill them to a file the model can page through, or summarize them.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import ToolOutputLimits\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[LocalWorkspace('.'), ToolOutputLimits()])",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/tool-output-limits/"
+},
+{
+"slug": "youdotcom",
+"title": "You.com",
+"pkg": "harness",
+"job": "Tools",
+"does": "Give a Pydantic AI agent You.com web search, page reads, cited answers, and multi-step deep research, including a finance research mode, via the You.com APIs.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import YouResearch, YouSearch\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[YouSearch(), YouResearch()])\n\nresult = agent.run_sync('What changed in the latest stable Python release?')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/youdotcom/"
+},
+{
+"slug": "workspace",
+"title": "Workspaces",
+"pkg": "core",
+"job": "Workspace and sandboxes",
+"does": "A workspace is an environment your agent can use: it runs commands and reads and writes files there.",
+"code": "from pydantic_ai import Agent, ModelRetry, RunContext\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai.workspaces import WorkspaceError\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[LocalWorkspace('.')],\n)",
+"since": "pydantic-ai 2.52+",
+"url": "https://pydantic.dev/docs/ai/core-concepts/workspace/"
+},
+{
+"slug": "boxd-sandbox",
+"title": "boxd Sandbox",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands and file edits in an isolated boxd cloud machine instead of on your machine.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.boxd_sandbox import BoxdSandbox\nfrom pydantic_ai_harness.coder import Coder\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[BoxdSandbox(), Coder()])\nresult = agent.run_sync('Clone https://github.com/pydantic/pydantic-ai and summarize how capabilities work.')",
+"since": "pydantic-ai-harness 0.64+",
+"url": "https://pydantic.dev/docs/ai/harness/boxd-sandbox/"
+},
+{
+"slug": "boxlite-sandbox",
+"title": "BoxLite Sandbox",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands and file edits in a BoxLite micro-VM on your own machine, isolated from your files and processes.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.boxlite_sandbox import BoxLiteSandbox\nfrom pydantic_ai_harness.coder import Coder\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[BoxLiteSandbox(image='python:3.12-slim'), Coder()])\nresult = agent.run_sync('Write a script that prints the first 10 primes, and run it.')",
+"since": "pydantic-ai-harness 0.60+",
+"url": "https://pydantic.dev/docs/ai/harness/boxlite-sandbox/"
+},
+{
+"slug": "bubblewrap-sandbox",
+"title": "Bubblewrap Sandbox",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands in a Linux bubblewrap sandbox on the host they run on, over SSH or locally.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import BubblewrapSandbox, Coder, SSHWorkspace\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[BubblewrapSandbox(SSHWorkspace('dev@build-box', working_dir='/srv/app')), Coder()],\n)\nresult = agent.run_sync('Run the test suite and fix the first failure.')",
+"since": "pydantic-ai-harness 0.52+",
+"url": "https://pydantic.dev/docs/ai/harness/bubblewrap-sandbox/"
+},
+{
+"slug": "daytona-sandbox",
+"title": "Daytona Sandbox",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands and file edits in an isolated Daytona cloud sandbox instead of on your machine.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.coder import Coder\nfrom pydantic_ai_harness.daytona_sandbox import DaytonaSandbox\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[DaytonaSandbox(), Coder()])\nresult = agent.run_sync('Clone https://github.com/pydantic/pydantic-ai and summarize how capabilities work.')",
+"since": "pydantic-ai-harness 0.59+",
+"url": "https://pydantic.dev/docs/ai/harness/daytona-sandbox/"
+},
+{
+"slug": "docker-sandbox",
+"title": "Docker Sandbox",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands and file edits in a local Docker or Podman container, created on first use.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.coder import Coder\nfrom pydantic_ai_harness.docker_sandbox import DockerSandbox\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[DockerSandbox(image='python:3.13-slim'), Coder()])\nresult = agent.run_sync('Write a script that prints the first 10 primes, and run it.')",
+"since": "pydantic-ai-harness 0.60+",
+"url": "https://pydantic.dev/docs/ai/harness/docker-sandbox/"
+},
+{
+"slug": "e2b-sandbox",
+"title": "E2B Sandbox",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands and file edits in an isolated E2B cloud sandbox instead of on your machine.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.coder import Coder\nfrom pydantic_ai_harness.e2b_sandbox import E2BSandbox\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[E2BSandbox(), Coder()])\nresult = agent.run_sync('Clone https://github.com/pydantic/pydantic-ai and summarize how capabilities work.')",
+"since": "pydantic-ai-harness 0.52+",
+"url": "https://pydantic.dev/docs/ai/harness/e2b-sandbox/"
+},
+{
+"slug": "filesystem",
+"title": "FileSystem",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Give a Pydantic AI agent tools to read, write, edit, list, and search files in the run's workspace, bounded by one directory with allow, deny, and read-only glob patterns.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import FileSystem\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[LocalWorkspace('./workspace'), FileSystem()],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/filesystem/"
+},
+{
+"slug": "localstack",
+"title": "LocalStack",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Give a Pydantic AI agent access to an emulated AWS environment through the AWS CLI, with an optional Docker-managed LocalStack container lifecycle.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import LocalStack\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[LocalStack()],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/localstack/"
+},
+{
+"slug": "modal-sandbox",
+"title": "Modal Sandbox",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands and file edits in an isolated Modal cloud sandbox instead of on your machine.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.coder import Coder\nfrom pydantic_ai_harness.modal_sandbox import ModalSandbox\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[ModalSandbox(), Coder()])\nresult = agent.run_sync('Clone https://github.com/pydantic/pydantic-ai and summarize how capabilities work.')",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/modal-sandbox/"
+},
+{
+"slug": "opensandbox-sandbox",
+"title": "OpenSandbox",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands and file edits in a sandbox on your own OpenSandbox server, on Docker or Kubernetes.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.coder import Coder\nfrom pydantic_ai_harness.opensandbox_sandbox import OpenSandbox\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[OpenSandbox(image='python:3.13-slim'), Coder()])\nresult = agent.run_sync('Write a script that prints the first 10 primes, and run it.')",
+"since": "pydantic-ai-harness 0.66+",
+"url": "https://pydantic.dev/docs/ai/harness/opensandbox-sandbox/"
+},
+{
+"slug": "render-sandbox",
+"title": "Render Sandbox",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands and file edits in an isolated Render sandbox instead of on your machine.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.coder import Coder\nfrom pydantic_ai_harness.render_sandbox import RenderSandbox\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[RenderSandbox(), Coder()])\nresult = agent.run_sync('Clone https://github.com/pydantic/pydantic-ai and summarize how capabilities work.')",
+"since": "pydantic-ai-harness 0.66+",
+"url": "https://pydantic.dev/docs/ai/harness/render-sandbox/"
+},
+{
+"slug": "repo-context",
+"title": "Repo Context",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Load a repo's AGENTS.md and CLAUDE.md instruction files into a Pydantic AI agent and inventory its skills, subagents, and hooks under .claude or .agents.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import RepoContext\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[LocalWorkspace('.'), RepoContext(walk_up='repo_root')],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/repo-context/"
+},
+{
+"slug": "shell",
+"title": "Shell",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Give a Pydantic AI agent shell command execution with allow/deny controls, environment scrubbing, and managed background processes.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import Shell\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[\n        LocalWorkspace('./workspace'),\n        Shell(allowed_commands=['ls', 'cat', 'rg']),\n    ],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/shell/"
+},
+{
+"slug": "smart-search",
+"title": "Smart Search",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Give a Pydantic AI agent code search by behavior: describe it in plain English and get ranked source excerpts, judged by any model, such as a decision model over the System One API or TypeSafe's Jev.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import SmartSearch\n\nagent = Agent(\n    'openai:gpt-6.1-sol',\n    capabilities=[LocalWorkspace('.'), SmartSearch(model='system-one:clm-latest')],\n)",
+"since": "pydantic-ai-harness 0.60+",
+"url": "https://pydantic.dev/docs/ai/harness/smart-search/"
+},
+{
+"slug": "smol-sandbox",
+"title": "Smol Sandbox",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands and file edits in a smolvm microVM on your own machine, isolated from your files and processes.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.coder import Coder\nfrom pydantic_ai_harness.smol_sandbox import SmolSandbox\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[SmolSandbox(image='python:3.12-alpine'), Coder()])\nresult = agent.run_sync('Write a script that prints the first 10 primes, and run it.')",
+"since": "pydantic-ai-harness 0.56+",
+"url": "https://pydantic.dev/docs/ai/harness/smol-sandbox/"
+},
+{
+"slug": "sprites-sandbox",
+"title": "Sprites Sandbox",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands and file edits in a persistent Fly.io Sprite instead of on your machine.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.coder import Coder\nfrom pydantic_ai_harness.sprites_sandbox import SpritesSandbox\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[SpritesSandbox(), Coder()])\nresult = agent.run_sync('Clone https://github.com/pydantic/pydantic-ai and summarize how capabilities work.')",
+"since": "pydantic-ai-harness 0.52+",
+"url": "https://pydantic.dev/docs/ai/harness/sprites-sandbox/"
+},
+{
+"slug": "ssh-workspace",
+"title": "SSH Workspace",
+"pkg": "harness",
+"job": "Workspace and sandboxes",
+"does": "Run a Pydantic AI agent's commands and file edits on another machine over SSH, with your own ssh client and configuration.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import Coder, SSHWorkspace\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[SSHWorkspace('dev@build-box', working_dir='/srv/app', env={'UV_OFFLINE': '1'}), Coder()],\n)\nresult = agent.run_sync('Run the test suite and fix the first failure.')",
+"since": "pydantic-ai-harness 0.52+",
+"url": "https://pydantic.dev/docs/ai/harness/ssh-workspace/"
+},
+{
+"slug": "compaction",
+"title": "Compaction",
+"pkg": "core",
+"job": "History and context",
+"does": "Keep long Pydantic AI conversations within the context window using OpenAI or Anthropic native compaction, or trim and summarize message history on any model.",
+"code": null,
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/compaction/"
+},
+{
+"slug": "on-demand",
+"title": "On-Demand Capabilities",
+"pkg": "core",
+"job": "History and context",
+"does": "On-demand capabilities, also called deferred capabilities, load like Agent Skills: the model sees a one-line catalog entry and pulls in instructions and tools only when needed, so you can hide or gate tools until a skill is loaded (progressive disclosure).",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import Capability\n\nagent = Agent(\n    'openai-responses:{{ openai:medium.name }}',\n    instructions='You are a customer support assistant.',\n    capabilities=[refunds],\n)",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/on-demand/"
+},
+{
+"slug": "process-history",
+"title": "Process History",
+"pkg": "core",
+"job": "History and context",
+"does": "Trim, redact or summarize the message history before each model request in a Pydantic AI run by wrapping a history processor in the ProcessHistory capability.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import ProcessHistory\nfrom pydantic_ai.messages import ModelMessage\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[ProcessHistory(keep_recent)])",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/process-history/"
+},
+{
+"slug": "reinject-system-prompt",
+"title": "Reinject System Prompt",
+"pkg": "core",
+"job": "History and context",
+"does": "Make sure a Pydantic AI agent's system prompt is always sent, even when message history from a UI or database has dropped it, with ReinjectSystemPrompt.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import ReinjectSystemPrompt\nfrom pydantic_ai.messages import (\n\nagent = Agent('test', system_prompt='You are a helpful assistant.', capabilities=[ReinjectSystemPrompt()])\n",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/reinject-system-prompt/"
+},
+{
+"slug": "compaction",
+"title": "Compaction",
+"pkg": "harness",
+"job": "History and context",
+"does": "Keep a long Pydantic AI agent run within the context window on any model: clear old tool results, trim, or summarize history, with tiered escalation.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import SummarizingCompaction\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[SummarizingCompaction(max_fraction=0.9, keep_messages=20)],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/compaction/"
+},
+{
+"slug": "conversation-search",
+"title": "Conversation Search",
+"pkg": "harness",
+"job": "History and context",
+"does": "Let a Pydantic AI agent search its past conversation history, including messages compaction removed from context, with BM25 over Step Persistence snapshots.",
+"code": null,
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/conversation-search/"
+},
+{
+"slug": "managed-prompt",
+"title": "Managed Prompt",
+"pkg": "harness",
+"job": "History and context",
+"does": "Back a Pydantic AI agent's instructions with a Logfire-managed prompt so you can version, label, and roll it out without redeploying.",
+"code": null,
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/managed-prompt/"
+},
+{
+"slug": "memory",
+"title": "Memory",
+"pkg": "harness",
+"job": "History and context",
+"does": "Give a Pydantic AI agent long-term memory across runs: a Markdown notebook it writes and searches, per-user namespaces, and file, SQLite, or Postgres stores.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import Memory\nfrom pydantic_ai_harness.memory import FileStore\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[LocalWorkspace('.'), Memory(FileStore('.agent-memory'))],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/memory/"
+},
+{
+"slug": "skills",
+"title": "Skills",
+"pkg": "harness",
+"job": "History and context",
+"does": "Load Agent Skills (SKILL.md files) from the run's workspace into a Pydantic AI agent on demand: the model sees each skill's name and description and loads its instructions when needed.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import Skills\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[LocalWorkspace('.'), Skills('.agents/skills')],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/skills/"
+},
+{
+"slug": "system-reminders",
+"title": "System Reminders",
+"pkg": "harness",
+"job": "History and context",
+"does": "Re-inject reminders into a long Pydantic AI agent run on a cadence or condition to counter instruction fade, without breaking the prompt cache.",
+"code": null,
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/system-reminders/"
+},
+{
+"slug": "handle-deferred-tool-calls",
+"title": "Handle Deferred Tool Calls",
+"pkg": "core",
+"job": "Control and safety",
+"does": "Approve or resolve deferred tool calls from a handler inside a Pydantic AI run with HandleDeferredToolCalls, so human-in-the-loop approval does not end the run.",
+"code": "from pydantic_ai import Agent, RunContext\nfrom pydantic_ai.capabilities import HandleDeferredToolCalls\nfrom pydantic_ai.tools import DeferredToolRequests, DeferredToolResults\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[HandleDeferredToolCalls(handle_deferred)])",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/handle-deferred-tool-calls/"
+},
+{
+"slug": "raise-content-filter-error",
+"title": "Raise Content Filter Error",
+"pkg": "core",
+"job": "Control and safety",
+"does": "Treat any model response stopped by a provider content filter as a ContentFilterError in Pydantic AI, even when partial or refusal text comes back.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import RaiseContentFilterError\nfrom pydantic_ai.exceptions import ContentFilterError\nfrom pydantic_ai.messages import ModelMessage, ModelResponse, TextPart\nfrom pydantic_ai.models.function import AgentInfo, FunctionModel\n\nagent = Agent(FunctionModel(filtered_response), capabilities=[RaiseContentFilterError()])\n",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/raise-content-filter-error/"
+},
+{
+"slug": "request-input",
+"title": "Request Input",
+"pkg": "core",
+"job": "Control and safety",
+"does": "Ask for approvals, answers and external results inside a Pydantic AI agent run with RequestInput: answered in place, or waited for in process or suspended and recorded by a durable engine such as AWS Lambda durable functions.",
+"code": "from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults, RunContext\nfrom pydantic_ai.capabilities import RequestInput\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[RequestInput(refund_policy)])\n",
+"since": "pydantic-ai 2.68+",
+"url": "https://pydantic.dev/docs/ai/capabilities/request-input/"
+},
+{
+"slug": "approval-reviewer",
+"title": "Approval Reviewer",
+"pkg": "harness",
+"job": "Control and safety",
+"does": "Let a second model approve the low-risk tool calls that need approval, and leave the rest to a person.",
+"code": "from pydantic_ai import Agent, DeferredToolRequests\nfrom pydantic_ai_harness.approval_reviewer import ApprovalReviewer\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[reviewer],\n    output_type=[str, DeferredToolRequests],\n)",
+"since": "pydantic-ai-harness 0.57+",
+"url": "https://pydantic.dev/docs/ai/harness/approval-reviewer/"
+},
+{
+"slug": "artifact-scanning",
+"title": "Artifact Scanning",
+"pkg": "harness",
+"job": "Control and safety",
+"does": "Scan a Pydantic AI agent's memory files and skills for prompt injection, credential exfiltration, and hidden content before they are stored or loaded.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import ArtifactScanner, Memory, Skills\n\nagent = Agent(\n    capabilities=[\n        LocalWorkspace('.'),\n        Memory(scanner=scanner),\n        Skills('.agents/skills', scanner=scanner),\n    ],\n)",
+"since": "pydantic-ai-harness 0.64+",
+"url": "https://pydantic.dev/docs/ai/harness/artifact-scanning/"
+},
+{
+"slug": "ask-user",
+"title": "Ask User",
+"pkg": "harness",
+"job": "Control and safety",
+"does": "Let a Pydantic AI agent ask the user clarifying multiple-choice questions mid-run and wait for answers, from a terminal, web UI, or test answerer you supply.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import AskUser\nfrom pydantic_ai_harness.ask_user import AskUserAnswer, AskUserRequest, AskUserResponse\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[AskUser(answerer=pick_first)])",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/ask-user/"
+},
+{
+"slug": "detect-loops",
+"title": "Detect Loops",
+"pkg": "harness",
+"job": "Control and safety",
+"does": "Stop a Pydantic AI agent that repeats the same tool calls or responses without making progress: nudge it to change approach, raise an error, or call your own handler.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import DetectLoops\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[DetectLoops()])",
+"since": "pydantic-ai-harness 0.63+",
+"url": "https://pydantic.dev/docs/ai/harness/detect-loops/"
+},
+{
+"slug": "guardrails",
+"title": "Input, Output & Tool Guardrails",
+"pkg": "harness",
+"job": "Control and safety",
+"does": "Add input, output, and tool call guardrails to a Pydantic AI agent: block, redact, retry, or require approval, with built-in secret and PII detectors.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import GuardrailResult, InputGuardrail, OutputGuardrail\n\nagent = Agent(\n    'openai:gpt-6.1-sol',\n    capabilities=[\n        InputGuardrail(guard=no_secrets),\n        OutputGuardrail(guard=no_pii),\n    ],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/guardrails/"
+},
+{
+"slug": "permissions",
+"title": "Permissions",
+"pkg": "harness",
+"job": "Control and safety",
+"does": "Ask a person before the agent writes files or runs commands, by permission mode.",
+"code": null,
+"since": "pydantic-ai-harness 0.65+",
+"url": "https://pydantic.dev/docs/ai/harness/permissions/"
+},
+{
+"slug": "prompt-injection-defender",
+"title": "Prompt Injection Defender",
+"pkg": "harness",
+"job": "Control and safety",
+"does": "Scan a Pydantic AI agent's tool results (emails, tickets, web pages) for indirect prompt injection with StackOne Defender, and optionally block risky ones.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import PromptInjectionDefender\n\nagent = Agent(\n    capabilities=[PromptInjectionDefender(block_high_risk=True)],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/prompt-injection-defender/"
+},
+{
+"slug": "refine-output",
+"title": "Refine Output",
+"pkg": "harness",
+"job": "Control and safety",
+"does": "Have a Pydantic AI agent review and revise its answer before the run ends, for a set number of rounds.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import RefineOutput\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[RefineOutput()])",
+"since": "pydantic-ai-harness 0.68+",
+"url": "https://pydantic.dev/docs/ai/harness/refine-output/"
+},
+{
+"slug": "tool-call-judge",
+"title": "Tool Call Judge",
+"pkg": "harness",
+"job": "Control and safety",
+"does": "Ask a second model whether a tool call may run, and block it before the tool function executes.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.tool_call_judge import ToolCallJudge\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[judge])\n",
+"since": "pydantic-ai-harness 0.53+",
+"url": "https://pydantic.dev/docs/ai/harness/tool-call-judge/"
+},
+{
+"slug": "trajectory-judge",
+"title": "Trajectory Judge",
+"pkg": "harness",
+"job": "Control and safety",
+"does": "Use an LLM judge to review a live Pydantic AI agent run every N model requests and steer it back on course mid-run when it drifts from the task.",
+"code": null,
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/trajectory-judge/"
+},
+{
+"slug": "dynamic-workflow",
+"title": "Dynamic Workflow",
+"pkg": "harness",
+"job": "More than one agent",
+"does": "Let a Pydantic AI orchestrator agent coordinate subagents by writing one sandboxed Python script: fan out in parallel, chain, vote, and retry in one tool call.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import DynamicWorkflow\n\norchestrator = Agent(\n    'openai:gpt-6.1-sol',\n    capabilities=[DynamicWorkflow(agents=[reviewer, summarizer])],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/dynamic-workflow/"
+},
+{
+"slug": "planning",
+"title": "Planning",
+"pkg": "harness",
+"job": "More than one agent",
+"does": "Give a Pydantic AI agent a todo list it plans and updates itself, with subtasks, dependencies, SQLite, Postgres, or Redis storage, and a cache-safe reminder.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import Planning\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[Planning()])\n\nresult = agent.run_sync('Refactor the auth module and add tests.')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/planning/"
+},
+{
+"slug": "render-workflows",
+"title": "Render Workflows",
+"pkg": "harness",
+"job": "More than one agent",
+"does": "Run agents in the background with separate retry, timeout, and compute settings for model requests and tools.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.models.test import TestModel\nfrom pydantic_ai_harness import RenderWorkflows\n\nagent = Agent(\n    TestModel(custom_output_text='The workflow completed.'),\n    name='support',\n    tools=[get_weather],\n    capabilities=[workflows],\n)",
+"since": "pydantic-ai-harness 0.56+",
+"url": "https://pydantic.dev/docs/ai/harness/render-workflows/"
+},
+{
+"slug": "subagents",
+"title": "Subagents",
+"pkg": "harness",
+"job": "More than one agent",
+"does": "Let a Pydantic AI agent delegate tasks to named subagents through one delegate_task tool, with per-subagent budgets, model choice, and Markdown agent files.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import SubAgent, SubAgents\n\norchestrator = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[SubAgents(agents=[SubAgent(researcher), SubAgent(writer)])],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/subagents/"
+},
+{
+"slug": "coder",
+"title": "Coder",
+"pkg": "harness",
+"job": "Whole agents",
+"does": "Build a coding agent with Pydantic AI Harness: Coder gives any model read, write, edit, grep, and shell tools, delegation to a fresh run of itself, plus repo instructions and context management.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness.coder import Coder\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[LocalWorkspace('.'), Coder()],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/coder/"
+},
+{
+"slug": "researcher",
+"title": "Researcher",
+"pkg": "harness",
+"job": "Whole agents",
+"does": "Build a web research agent with Pydantic AI Harness: Researcher combines web search, page fetching, and a research subagent to answer with cited sources.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import Researcher\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[LocalWorkspace('.'), Researcher()])\n\nresult = agent.run_sync('What changed in the last three major releases of Django?')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/researcher/"
+},
+{
+"slug": "dbos",
+"title": "Durable Execution with DBOS",
+"pkg": "core",
+"job": "Runtime and observability",
+"does": "Make Pydantic AI agents durable with DBOS, checkpointing model requests and MCP calls to Postgres or SQLite so a workflow resumes from its last completed step.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.durable_exec.dbos import DBOSDurability\n\nagent = Agent(\n    'openai:gpt-6.1-sol',\n    instructions=\"You're an expert in geography.\",\n    name='geography',  # (2)!\n    capabilities=[DBOSDurability()],  # (3)!\n)",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/dbos/"
+},
+{
+"slug": "prefect",
+"title": "Durable Execution with Prefect",
+"pkg": "core",
+"job": "Runtime and observability",
+"does": "Make Pydantic AI agents durable with Prefect, running model requests and tool calls as cached, retryable tasks in a flow you can deploy and run on a schedule.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.durable_exec.prefect import PrefectDurability\n\nagent = Agent(\n    'openai:gpt-6.1-sol',\n    instructions=\"You're an expert in geography.\",\n    name='geography',  # (1)!\n    capabilities=[PrefectDurability()],  # (2)!\n)",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/prefect/"
+},
+{
+"slug": "temporal",
+"title": "Durable Execution with Temporal",
+"pkg": "core",
+"job": "Runtime and observability",
+"does": "Make Pydantic AI agents durable with Temporal, running model requests and tool calls as activities so agents recover from crashes and resume long-running work.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.durable_exec.temporal import (\n\nagent = Agent(\n    'openai:gpt-6.1-sol',\n    instructions=\"You're an expert in geography.\",\n    name='geography',  # (1)!\n    capabilities=[TemporalDurability()],  # (2)!\n)",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/temporal/"
+},
+{
+"slug": "hooks",
+"title": "Hooks",
+"pkg": "core",
+"job": "Runtime and observability",
+"does": "Add lifecycle hooks to a Pydantic AI agent to log, modify, retry or skip model requests, tool calls, output and stream events, without subclassing.",
+"code": "from pydantic_ai import Agent, ModelRequestContext, RunContext\nfrom pydantic_ai.capabilities import Hooks\n\nagent = Agent('test', capabilities=[hooks])\nresult = agent.run_sync('Hello!')",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/core-concepts/hooks/"
+},
+{
+"slug": "instrumentation",
+"title": "Instrumentation",
+"pkg": "core",
+"job": "Runtime and observability",
+"does": "Trace Pydantic AI agent runs, model requests and tool calls with OpenTelemetry using the Instrumentation capability, following the GenAI semantic conventions.",
+"code": "import logfire\n\nfrom pydantic_ai import Agent\nfrom pydantic_ai.capabilities import Instrumentation\n\nlogfire.configure()  # (1)!\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[Instrumentation()])",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/instrumentation/"
+},
+{
+"slug": "online-evaluation",
+"title": "Online Evaluation",
+"pkg": "core",
+"job": "Runtime and observability",
+"does": "Evaluate Pydantic AI agents and functions in production with Pydantic Evals: score every call or a sample in the background and emit OpenTelemetry events.",
+"code": "from pydantic_ai import Agent\n\nagent = Agent(\n    'openai:gpt-6.1-sol',\n    name='assistant',\n    capabilities=[OnlineEvaluation(evaluators=[OutputNotEmpty()])],\n)",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/evals/online-evaluation/"
+},
+{
+"slug": "process-event-stream",
+"title": "Process Event Stream",
+"pkg": "core",
+"job": "Runtime and observability",
+"does": "Forward a Pydantic AI agent's model streaming and tool execution events to your own handler with the ProcessEventStream capability, even from agent.run().",
+"code": "from pydantic_ai import Agent, AgentStreamEvent, RunContext\nfrom pydantic_ai.capabilities import ProcessEventStream\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[ProcessEventStream(log_events)])",
+"since": "pydantic-ai 2.14 or earlier",
+"url": "https://pydantic.dev/docs/ai/capabilities/process-event-stream/"
+},
+{
+"slug": "absurd",
+"title": "Absurd Durability",
+"pkg": "harness",
+"job": "Runtime and observability",
+"does": "Make a Pydantic AI agent run durable on Absurd, a Postgres-based durable-execution engine -- model requests, MCP calls, and function tool calls are checkpointed into steps so a crashed worker resumes mid-run.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.absurd import AbsurdDurability\n\nagent = Agent('openai:gpt-6.1-sol', name='analyst', capabilities=[AbsurdDurability()])\n",
+"since": "pydantic-ai-harness 0.53+",
+"url": "https://pydantic.dev/docs/ai/harness/absurd/"
+},
+{
+"slug": "aws-lambda",
+"title": "AWS Lambda Durability",
+"pkg": "harness",
+"job": "Runtime and observability",
+"does": "Make a Pydantic AI agent durable on AWS Lambda durable functions: checkpoint model requests and tool calls so retried or timed-out invocations resume.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.aws_lambda import AWSLambdaDurability, durable_agent_handler\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    name='support',\n    capabilities=[AWSLambdaDurability()],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/aws-lambda/"
+},
+{
+"slug": "azure-durable-task",
+"title": "Azure Durable Task",
+"pkg": "harness",
+"job": "Runtime and observability",
+"does": "Make a Pydantic AI agent durable with Azure Durable Task Scheduler -- model requests and tool calls run as activities, so an orchestration resumes after a worker restart.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.azure_durable_task import AzureDurableTaskDurability, run_durable\n\nagent = Agent('openai:gpt-6.1-sol', name='support', capabilities=[AzureDurableTaskDurability()])\n",
+"since": "pydantic-ai-harness 0.66+",
+"url": "https://pydantic.dev/docs/ai/harness/azure-durable-task/"
+},
+{
+"slug": "pgtask",
+"title": "pgtask Durability",
+"pkg": "harness",
+"job": "Runtime and observability",
+"does": "Let a Pydantic AI agent run pick up where it left off after a crash, using pgtask, a task queue that keeps its state in Postgres.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.pgtask import PGTaskDurability\n\nagent = Agent('openai:gpt-6.1-sol', name='analyst', capabilities=[PGTaskDurability()])\n",
+"since": "pydantic-ai-harness 0.56+",
+"url": "https://pydantic.dev/docs/ai/harness/pgtask/"
+},
+{
+"slug": "step-persistence",
+"title": "Step Persistence",
+"pkg": "harness",
+"job": "Runtime and observability",
+"does": "Save Pydantic AI agent run snapshots to memory, files, SQLite, MongoDB, or PostgreSQL so you can resume or fork a run after a crash, with a ledger of tool side effects.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import StepPersistence\nfrom pydantic_ai_harness.step_persistence import InMemoryStepStore\n\nlibrarian = Agent(\n    'openai:gpt-6.1-sol',\n    capabilities=[StepPersistence(store=store, agent_name='code_librarian')],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/step-persistence/"
+},
+{
+"slug": "day-ai",
+"title": "Day AI",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Connect a Pydantic AI agent to Day AI's hosted MCP server to search and update CRM records and meeting context.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import DayAI\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[DayAI()])\nresult = agent.run_sync('Which Day AI opportunities are in the proposal stage?')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/day-ai/"
+},
+{
+"slug": "github",
+"title": "GitHub",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Give a Pydantic AI agent GitHub tools through GitHub's hosted MCP server: read and change repositories, issues, and pull requests with per-user tokens.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.github import GitHub\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[GitHub()])\nresult = agent.run_sync('Summarize the resources I can access')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/github/"
+},
+{
+"slug": "google-workspace",
+"title": "Google Workspace",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Give a Pydantic AI agent Gmail, Calendar, Drive, Docs, Sheets, Slides, Chat, and People tools through Google's hosted MCP servers, with per-user OAuth tokens.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.google_workspace import GoogleWorkspace\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[GoogleWorkspace(services=['gmail', 'calendar'])])\nresult = agent.run_sync('Summarize the resources I can access')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/google-workspace/"
+},
+{
+"slug": "grain",
+"title": "Grain",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Connect a Pydantic AI agent to Grain's hosted MCP server to search and read meetings, transcripts, and notes, and to create clips and tag meetings.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import Grain\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[Grain()])\nresult = agent.run_sync('Summarize my most recent Grain meeting')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/grain/"
+},
+{
+"slug": "linear",
+"title": "Linear",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Give a Pydantic AI agent Linear tools through Linear's hosted MCP server: read and update issues, projects, and comments, with per-user tokens or OAuth.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.linear import Linear\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[Linear(read_only=True)])\nresult = agent.run_sync('List my open issues, highest priority first')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/linear/"
+},
+{
+"slug": "logfire-mcp",
+"title": "Logfire MCP",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Give a Pydantic AI agent Logfire tools through the hosted Logfire MCP server: query traces and telemetry and manage projects, with per-user API keys.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.logfire_mcp import LogfireMCP\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[LogfireMCP()])\nresult = agent.run_sync('Summarize the resources I can access')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/logfire-mcp/"
+},
+{
+"slug": "macroscope",
+"title": "Macroscope",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Run a local Macroscope code review from a Pydantic AI agent and get structured findings it can verify and fix with its own file and shell tools.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import Macroscope\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[\n        LocalWorkspace('.'),\n        Macroscope(),\n    ],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/macroscope/"
+},
+{
+"slug": "notion",
+"title": "Notion",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Give a Pydantic AI agent Notion tools through Notion's hosted MCP server: search and edit pages in a workspace, with per-user OAuth access tokens.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.notion import Notion\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[Notion()])\nresult = agent.run_sync('Summarize the resources I can access')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/notion/"
+},
+{
+"slug": "ordinal",
+"title": "Ordinal",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Connect a Pydantic AI agent to Ordinal's hosted MCP server to draft, schedule, and analyze social posts.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import Ordinal\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[Ordinal()])\nresult = agent.run_sync('List my Ordinal workspaces')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/ordinal/"
+},
+{
+"slug": "pixeltable",
+"title": "Pixeltable",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Give a Pydantic AI agent read-only, allowlisted tools over existing Pixeltable tables and embedding indexes, and keep Harness Memory in a Pixeltable table.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import Memory, Pixeltable\nfrom pydantic_ai_harness.memory import PixeltableMemoryStore\n\nagent = Agent(\n    'openai:gpt-6.1-sol',\n    capabilities=[\n        Pixeltable(['hr.handbook']),\n        Memory(PixeltableMemoryStore(table_name='hr.memory')),\n    ],\n)",
+"since": "pydantic-ai-harness 0.66+",
+"url": "https://pydantic.dev/docs/ai/harness/pixeltable/"
+},
+{
+"slug": "posthog",
+"title": "PostHog",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Connect a Pydantic AI agent to PostHog's hosted MCP server to query product analytics and manage feature flags, experiments, and dashboards.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import PostHog\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[PostHog()])\nresult = agent.run_sync('Which feature flags are active in my project?')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/posthog/"
+},
+{
+"slug": "pydantic-ai-docs",
+"title": "Pydantic AI Docs",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Give an agent a tool that locates and returns Pydantic AI documentation on demand instead of preloading it into the system prompt.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai.capabilities import LocalWorkspace\nfrom pydantic_ai_harness import PydanticAIDocs\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[LocalWorkspace('.'), PydanticAIDocs(local_docs_path=Path('docs'))],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/pydantic-ai-docs/"
+},
+{
+"slug": "pylon",
+"title": "Pylon",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Connect a Pydantic AI agent to Pylon's hosted MCP server to work with support issues, accounts, and contacts.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import Pylon\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[Pylon()])\nresult = agent.run_sync('Summarize my open Pylon issues')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/pylon/"
+},
+{
+"slug": "slack",
+"title": "Slack",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Give a Pydantic AI agent Slack tools through Slack's hosted MCP server: read and send messages, browse channels, and edit canvases as a Slack user.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.slack import Slack\n\nagent = Agent('openai:gpt-6.1-sol', capabilities=[Slack()])\nresult = agent.run_sync('Summarize the resources I can access')\nprint(result.output)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/slack/"
+},
+{
+"slug": "stackone",
+"title": "StackOne",
+"pkg": "harness",
+"job": "Integrations",
+"does": "Connect a Pydantic AI agent to a user's linked business apps, such as BambooHR, Salesforce, Workday, or Zendesk, and run their actions through StackOne.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import StackOne\n\nagent = Agent(\n    'openai:gpt-6.1-sol',\n    capabilities=[\n        StackOne(account_id=os.environ['STACKONE_ACCOUNT_ID']),\n    ],\n)",
+"since": "pydantic-ai-harness 0.52 or earlier",
+"url": "https://pydantic.dev/docs/ai/harness/stackone/"
+}
+];
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  var gal = document.getElementById('gal'), job = '', q = '';
+  var h = '', last = null;
+  CARDS.forEach(function (c, i) {
+    if (c.job !== last) { h += '<h2 class="job-h" data-jobh="' + esc(c.job) + '">' + esc(c.job) + '</h2>'; last = c.job; }
+    h += '<article class="card" id="' + esc(c.slug) + '" data-i="' + i + '"><h3>' + esc(c.title) + '</h3>' +
+      '<p class="meta"><span class="pkg">' + c.pkg + '</span><span>' + esc(c.since) + '</span></p>' +
+      '<p>' + esc(c.does) + '</p>' +
+      (c.code ? '<div class="code"><div class="code-head"><span class="file">' + esc(c.title) + '</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">' + esc(c.code) + '</pre></div>' : '') +
+      '<p class="docs"><a href="' + esc(c.url) + '">Docs: ' + esc(c.title) + '</a></p></article>';
+  });
+  gal.innerHTML = h;
+  function apply() {
+    var shown = 0, needle = q.toLowerCase();
+    Array.prototype.forEach.call(gal.querySelectorAll('.card'), function (el) {
+      var c = CARDS[+el.getAttribute('data-i')];
+      var ok = (!job || c.job === job) && (!needle || (c.title + ' ' + c.does + ' ' + c.slug + ' ' + c.job).toLowerCase().indexOf(needle) >= 0);
+      el.hidden = !ok; if (ok) shown++;
+    });
+    Array.prototype.forEach.call(gal.querySelectorAll('.job-h'), function (el) {
+      var j = el.getAttribute('data-jobh');
+      el.hidden = !CARDS.some(function (c, i) { return c.job === j && !gal.querySelector('[data-i="' + i + '"]').hidden; });
+    });
+    document.getElementById('count').textContent = shown + ' of ' + CARDS.length + ' capabilities';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (b) {
+    b.addEventListener('click', function () {
+      job = b.getAttribute('data-job');
+      Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      apply();
+    });
+  });
+  document.getElementById('q').addEventListener('input', function (e) { q = e.target.value; apply(); });
+  apply();
+})();
+</script>
+<script src="../assets/course.js"></script>
+</body>
+</html>

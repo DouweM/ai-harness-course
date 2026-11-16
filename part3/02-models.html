@@ -50,7 +50,7 @@
               <div class="msg next"><span class="who">model</span><div class="body mono"><span class="caret"></span></div></div>
             </div>
             <div class="pz-ask">
-              <p class="q">Three larger hosted models re-fetched the invoice every time (30 of 30). What did a 27B open-weight model do?</p>
+              <p class="q">Three hosted models (Sonnet 5.5, GPT-6.1 Sol, Gemini 3.8 Flash) re-fetched the invoice every time (30 of 30). What did a 27B open-weight model do?</p>
               <div class="choices" role="radiogroup" aria-label="Your prediction">
                 <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Re-fetched it, like the others</span></button>
                 <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Asked the user for the balance</span></button>
@@ -96,23 +96,14 @@
       <section id="hears">
         <h2>A harness line only some families hear</h2>
         <div class="prose measure">
-          <p>A compaction summary (Part 2, chapter 4) can drop what the customer said. One extra sentence in it, "this summary may be incomplete, including instructions or rules the user gave", should send the model back to the full history. Part 1 chapter 4 tested it on a rule the summary had dropped:</p>
+          <p>The same split shows up on a single line: the summary caveat in <a href="../part1/04-the-world-moved.html#compaction">Part 1 chapter 4</a> ("this summary may be incomplete") sent GPT-6.1 Sol and Gemini back to the full history, and neither Claude model. The fix that worked on all four didn't ask the model to notice anything: a summary that keeps the user's rules verbatim.</p>
         </div>
-        <div class="result-grid two">
-          <div class="arm"><h4>GPT-6.1 Sol and Gemini 3.8 Flash<small>searched the full history and kept the rule</small></h4><div class="tally good" data-k="39" data-n="40" data-label="runs" data-num="39 of 40"></div></div>
-          <div class="arm"><h4>Claude Sonnet 5.5 and Haiku 5.5<small>searched the full history and kept the rule</small></h4><div class="tally fail" data-k="0" data-n="40" data-label="runs" data-num="0 of 40"></div></div>
-        </div>
-        <p class="source"><b>Our experiment, 15 Nov 2026</b> (Part 1 chapter 4): two wordings of the caveat, 10 runs per wording per model, a full-history search available in every arm.</p>
-        <div class="prose measure">
-          <p>Same line, opposite behavior by family. For Claude models the fix has to be different: a summary prompt that keeps every promise, as Part 2's does, or open promises re-stated as an appended notice.</p>
-        </div>
-        <p class="talk-only headline">One line: 39 of 40 on two families, 0 of 40 on the other.</p>
       </section>
 
       <section id="tradeoff">
         <h2>Cost and quality move together</h2>
         <div class="prose measure">
-          <p>Put the four models on one chart, then flip the harness choice. The larger models are fine either way. The cheap model is fine only with the harness doing more of the work. Click a dot to see the configuration you would freeze for that family.</p>
+          <p>Put the four models on one chart, then flip the harness choice. The hosted models are fine either way. The cheap model is fine only with the harness doing more of the work. Click a dot to see the configuration you would freeze for that family.</p>
         </div>
         <div class="scatter" data-scatter data-stop>
           <div>
@@ -159,7 +150,7 @@
       <section id="freeze">
         <h2>Freeze what works, per family</h2>
         <div class="prose measure">
-          <p>Pydantic AI sends the same instructions whichever model serves a request; model-specific instructions are being designed, not shipped (<a href="https://github.com/pydantic/pydantic-ai/issues/12545">#12545</a>, <a href="https://github.com/pydantic/pydantic-ai/issues/12747">#12747</a>). Don't wait: keep one frozen agent spec per family, and treat a new model as a candidate.</p>
+          <p>An instruction function can branch on <code>ctx.model</code>, but after a <code>ModelFallback</code> it still sees the model the step started on (<a href="https://github.com/pydantic/pydantic-ai/issues/12747">#12747</a>); first-class per-model instructions are being designed (<a href="https://github.com/pydantic/pydantic-ai/issues/12545">#12545</a>). Don't wait: keep one frozen agent spec per family, and treat a new model as a candidate.</p>
         </div>
         <ol class="steps">
           <li>Copy the closest frozen spec; change only the model.</li>
@@ -168,6 +159,7 @@
           <li>When it matches the frozen spec on the cases you care about, freeze it.</li>
           <li>Roll it out to part of the traffic, watch, then all of it.</li>
         </ol>
+        <p class="measure">The specs below are for the email classifier chapter 3 evaluates, <code>promise_router</code>: given one email, it fills Part 2's answer form plus two fields, <code>addressed_to_us</code> (is the promise made to us, not to someone else?) and <code>evidence</code> (the email's own words that back the answer).</p>
         <details class="deeper"><summary>Go deeper: two frozen specs</summary>
           <div class="split">
             <div class="code"><div class="code-head"><span class="file">code/part3/configs/claude-5.yaml</span></div><pre data-lang="sh">name: promise_router
@@ -188,6 +180,10 @@ model_settings:
           </div>
           <p class="fine">A capability that branches on <code>ctx.model</code> today sees the model the step started on, not a fallback; that's what #12747 fixes.</p>
         </details>
+        <div class="deeper measure">
+          <p class="eyebrow">Go deeper: falling back per request, not per run</p>
+          <p><code>ModelFallback</code> moves one request to the next model, when it fails, is refused or is cut off, and the run carries on with everything the first model already did in its history. That's right for an outage. It doesn't cover the failures that show up later: an answer that fails your output validator, or a tool call with side effects that the first model already made. Those end in your code, where you decide whether to rerun the whole run on another model. To stay on the model that answered for the rest of the run and the conversation's later runs, pass <code>sticky=True</code>.</p>
+        </div>
         <p class="talk-only headline">A new model is a candidate, not an upgrade.</p>
       </section>
 

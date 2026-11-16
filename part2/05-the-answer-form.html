@@ -58,9 +58,11 @@ class OnePromise(BaseModel):  # Tuesday&#x27;s form: one amount, one date
           <div class="pz-grid">
             <div class="transcript" aria-label="What the model sees">
               <div class="tr-title">// what the model sees</div>
-              <div class="msg sys"><span class="who">instructions</span><div class="body">Decide whether this customer email commits to paying us, and record the promise. The email was received on Wednesday 2026-11-18. INV-2041 is for 4120.00 USD.</div></div>
+              <div class="msg sys"><span class="who">instructions</span><div class="body">Decide whether the customer email you are asked about commits to paying us, and record the promise. The email was received on Wednesday 2026-11-18. INV-2041 is for 4120.00 USD.</div></div>
+              <div class="msg sys"><span class="who">tool definitions</span><div class="body mono">read_email(email_id)</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">New email 884 from dana@example.com. Read it and handle it.</div></div>
+              <div class="msg tool"><span class="who">tool result: read_email</span><div class="body">Correction on INV-2041: we'll pay half this Friday and the rest by the 30th. Dana</div></div>
               <div class="msg sys"><span class="who">answer form</span><div class="body">is_commitment, invoice_number, <mark>amount, due_date</mark></div></div>
-              <div class="msg user"><span class="who">user</span><div class="body">Correction on INV-2041: we'll pay half this Friday and the rest by the 30th. Dana</div></div>
               <div class="msg next"><span class="who">model, filling in the form</span><div class="body"><span class="caret"></span></div></div>
             </div>
             <div class="pz-ask">
@@ -68,7 +70,7 @@ class OnePromise(BaseModel):  # Tuesday&#x27;s form: one amount, one date
               <div class="choices" role="radiogroup" aria-label="Your prediction">
                 <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>2,060 on Friday: the next thing that should happen</span></button>
                 <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>The models refuse or flag that it doesn't fit</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Each model picks one half and drops the other</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>One amount and one date, and nothing said about the rest</span></button>
               </div>
               <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
               <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
@@ -77,7 +79,7 @@ class OnePromise(BaseModel):  # Tuesday&#x27;s form: one amount, one date
           </div>
           <div class="stage" data-label="What models did" hidden>
             <p class="eyebrow"><span class="dia"></span>What models did</p>
-            <p class="headline">All 15 runs dropped half of the promise, and none said so. The Claude models recorded 4,120 on the 30th: no Friday reminder. GPT mostly recorded 2,060 on Friday: the rest forgotten.</p>
+            <p class="headline">All 15 runs dropped half of the promise, and none said so. 14 recorded the full 4,120 on the 30th: no Friday reminder. One GPT run recorded 2,060 on Friday: the rest forgotten.</p>
             <div class="result-grid two">
               <div class="arm"><h4>One amount, one date <small>kept both halves</small></h4><div class="tally fail" data-k="0" data-n="15" data-label="runs"></div></div>
               <div class="arm"><h4>A list of installments <small>kept both halves</small></h4><div class="tally good" data-k="15" data-n="15" data-label="runs"></div></div>
@@ -88,15 +90,16 @@ one          claude-haiku-5-5   kept both halves 0/5  4120.00 on 2026-11-30
 installments claude-sonnet-5-5  kept both halves 5/5  
 installments gpt-6.1-sol        kept both halves 5/5  
 installments claude-haiku-5-5   kept both halves 5/5  </pre></div>
-            <p class="source"><b>Our run, 16 Nov 2026.</b> 5 runs per model per form, tool output, the email's date and the invoice amount in the instructions; raw outputs in <code>code/part2/data/answer_form_runs.json</code>, about $0.10 in total.</p>
+            <p class="source"><b>Our run, 16 Nov 2026.</b> 5 runs per model per form, tool output, the email read with <code>read_email</code>, the email's date and the invoice amount in the instructions; raw outputs in <code>code/part2/data/answer_form_runs.json</code>, about $0.10 in total.</p>
           </div>
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix: a form that holds it, checked against the ledger</p>
-            <div class="code focus" data-keys="7,15,16,33,41" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">code/part2/ch5_answer_form.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from dataclasses import dataclass
+            <div class="code focus" data-keys="8,16,17,35,43" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">code/part2/ch5_answer_form.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from dataclasses import dataclass
 
 from pydantic_ai import Agent, ModelRetry, RunContext, ToolOutput
 
 from billing import FakeBilling
+from billing_world import read_email  # chapter 1&#x27;s tool: Dana&#x27;s email, as data
 
 
 class Installment(BaseModel):
@@ -120,8 +123,9 @@ class Deps:
 agent = Agent(
     &#x27;anthropic:claude-sonnet-5-5&#x27;,
     deps_type=Deps,
-    instructions=&#x27;Decide whether this customer email commits to paying us, and record the promise.&#x27;,
+    instructions=&#x27;Decide whether the customer email you are asked about commits to paying us, and record the promise.&#x27;,
     output_type=ToolOutput(Promise),
+    tools=[read_email],
 )
 
 
@@ -140,7 +144,7 @@ async def matches_the_ledger(ctx: RunContext[Deps], promise: Promise) -&gt; Prom
 recorded:    [(&#x27;2060.00&#x27;, &#x27;2026-11-20&#x27;), (&#x27;2060.00&#x27;, &#x27;2026-11-30&#x27;)]</pre></div>
             <div class="tok-says"><div class="tk" data-tok="10" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>You gave me one box, so I wrote one promise in it. A row per promise, and I wrote both.</p></div></div>
           </div>
-          <aside class="notes"><p>Most rooms pick A or B. Nobody refused, nobody flagged it: a form with one slot gets one answer. Then the fix: installments plus a validator with the real balance.</p></aside>
+          <aside class="notes"><p>Expect A or B. Nobody refused, nobody flagged it: a form with one slot gets one answer. Then the fix: installments plus a validator with the real balance.</p></aside>
         </article>
       </section>
 
@@ -148,7 +152,7 @@ recorded:    [(&#x27;2060.00&#x27;, &#x27;2026-11-20&#x27;), (&#x27;2060.00&#x27
         <h2>Three ways to ask for structure</h2>
         <div class="prose measure">
           <p>The same form can reach the model three ways. <b>Tool output</b> offers an output tool to call, works with every tool-calling model and mixes freely with other tools. <b>Native output</b> uses the provider's own structured-output mode. <b>Prompted output</b> puts the schema in the instructions and parses JSON text. A list of types is a union: one output tool per type, and the model picks. Validation, validators and retries work the same in all three.</p>
-          <p>Without a wrapper, the model profile picks: tool output on most models, but native output on Claude models when the request thinks, which Sonnet 5.5 does by default (since 2.52). Pin <code>ToolOutput(...)</code> when you need the same behavior on every model, as this course does.</p>
+          <p>Without a wrapper, the model profile picks: tool output on most models, but native output on Claude models when the request thinks, which Sonnet 5.5 does by default (since 2.52). Pin <code>ToolOutput(...)</code> to keep the tool path on every model, as this course does (on a thinking Claude request the output tool is offered rather than forced, so a text reply costs one retry).</p>
         </div>
         <div class="code" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">code/part2/ch5_answer_form.py, the three modes</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai import NativeOutput, PromptedOutput
 
@@ -156,6 +160,17 @@ tool_form = ToolOutput(Promise)  # the model &quot;calls&quot; a final_result to
 native_form = NativeOutput(Promise)  # the provider&#x27;s own structured-output mode
 prompted_form = PromptedOutput(Promise)  # the schema goes in the instructions; the model answers in JSON text
 either = [Promise, str]  # a union: the model can also answer in plain text</pre></div>
+        <div class="deeper measure">
+          <p class="eyebrow">Go deeper: when prompted output is the right call</p>
+          <p>Reach for <code>PromptedOutput</code> when the other two can't carry your form: a schema too large or too nested for a provider's structured-output grammar (some reject deep unions or long enums outright), a model or gateway that stalls or degrades when a grammar is enforced, or a model with no tool calling at all. You trade enforcement for reach: the model can write JSON that doesn't fit, so validation and retries do the enforcing.</p>
+        </div>
+      </section>
+
+      <section id="doubts">
+        <h2>Room for doubt</h2>
+        <div class="prose measure">
+          <p>A form decides what the model can say, and that includes "something here doesn't add up". Chapter 6's agent carries one more field, <code>doubts: list[str]</code>, "anything in the email that doesn't add up, in your own words". It's the field Part 1 chapter 2 measured: contradictory emails reached a person 30 times out of 30 with a doubts list, and 0 of 30 with a confidence score, because a model writes 95 on almost anything but will name what bothers it. Your code acts on it: a non-empty list goes to a person.</p>
+        </div>
       </section>
 
       <section id="now">

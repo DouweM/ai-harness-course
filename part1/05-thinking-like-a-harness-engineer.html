@@ -26,7 +26,7 @@
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
-          data-tok-lines='["Treat me like your sharpest new colleague.", "Measure me. I&apos;d like to know how I&apos;m doing too.", "Thanks for telling me what changed."]' data-tok-moods="happy,curious,happy"><span data-tok="current" data-crop="hero"></span></button>
+          data-tok-lines='["Treat me like your sharpest new colleague.", "Measure me. I&apos;d like to know how I&apos;m doing too.", "When I get it wrong, read my page."]' data-tok-moods="happy,curious,happy"><span data-tok="current" data-crop="hero"></span></button>
         <p class="tok-line" aria-live="polite"></p>
       </div>
     </div>
@@ -53,6 +53,7 @@
         <h2>Most lines don't matter. Some matter enormously.</h2>
         <div class="prose measure">
           <p>Candidate lines are cheap to write, so prompts grow. Two one-sentence deletions from real agent setups. One of them changed nothing measurable. The other broke a feature.</p>
+          <p>For B you need one piece of context. Some apps add their own notes inside the user's message, wrapped in a tag, such as <code>&lt;reminder&gt;Close runs until Monday.&lt;/reminder&gt;</code>. A framework that also tags its own text tells the model which tags it should treat with suspicion, and line B is the sentence that says the app's tags are fine.</p>
         </div>
         <aside class="notes"><p>Read both lines out loud. Most people pick A: it's an instruction to the model, B reads like boilerplate.</p></aside>
         <article class="puzzle" id="p1" data-answer="b">
@@ -108,9 +109,9 @@
         </div>
         <div class="lines" id="lines" data-stop>
           <div class="line-row big"><span class="said">"The email was received on Tuesday 2026-11-17."</span><span class="effect"><b>carried it</b>Empty dates to the right Friday, 15 of 15. <a href="02-its-history-is-its-world.html#invent">Ch. 2</a></span></div>
-          <div class="line-row big"><span class="said">A doubts field in the answer form</span><span class="effect"><b>carried it</b>Contradictory emails sent to a person 30 of 30; with a confidence score, 0 of 30.</span></div>
-          <div class="line-row big"><span class="said">"post_payment is no longer available."</span><span class="effect"><b>carried it</b>From 0 of 80 noticing to 7 or 8 of 8 on most models. <a href="02-its-history-is-its-world.html#quietly">Ch. 2</a></span></div>
-          <div class="line-row big"><span class="said">"INV-2050 was paid in full at 14:02." (from the ledger)</span><span class="effect"><b>carried it</b>Wrong reminders: 0 of 80 with it, 72 of 80 without. <a href="04-the-world-moved.html#told">Ch. 4</a></span></div>
+          <div class="line-row big"><span class="said">A <code>doubts</code> list in the answer form, where the model writes what doesn't add up</span><span class="effect"><b>carried it</b>Contradictory emails sent to a person 30 of 30; with a confidence score, 0 of 30. <a href="02-its-history-is-its-world.html">Ch. 2</a></span></div>
+          <div class="line-row big"><span class="said">"mark_paid is no longer available."</span><span class="effect"><b>carried it</b>From 0 of 80 noticing to 7 or 8 of 8 on most models. <a href="02-its-history-is-its-world.html#quietly">Ch. 2</a></span></div>
+          <div class="line-row big"><span class="said">"INV-2057 was paid in full at 14:02." (from the ledger)</span><span class="effect"><b>carried it</b>Wrong reminders: 0 of 80 with it, 72 of 80 without. <a href="04-the-world-moved.html#told">Ch. 4</a></span></div>
           <div class="line-row big"><span class="said">"...such as an application's own reminders, ... keep their usual meaning."</span><span class="effect"><b>carried it</b>App reminders followed 24 of 24; 1 to 3 of 24 without it.</span></div>
           <div class="line-row some"><span class="said">"You will be told about external changes as they happen."</span><span class="effect"><b>depends</b>Saves a lookup on three of four models; only safe if every change is delivered. <a href="04-the-world-moved.html#told">Ch. 4</a></span></div>
           <div class="line-row some"><span class="said">"This summary may be incomplete, including instructions or rules the user gave."</span><span class="effect"><b>depends</b>Two models searched almost every time; two never did. <a href="04-the-world-moved.html#compaction">Ch. 4</a></span></div>
@@ -125,7 +126,7 @@
           <p>That's the method, and it's how every result in Part 1 was made. Read the page as the model would and find the gap. Write down two or three ideas that would close it. Predict which helps most. Then compare them with what you have, on cases from your own traffic. Pick a gap to see candidates.</p>
         </div>
         <p class="talk-only headline">Find the gap. Write three ideas. Predict. Compare on your own cases.</p>
-        <aside class="notes"><p>This is the bridge to Part 3 and to Thursday. Ask the room for a gap in their own agent, and build the three candidates live.</p></aside>
+        <aside class="notes"><p>This is the bridge to Part 3. Ask the room for a gap in their own agent, and build the three candidates live.</p></aside>
         <div class="play" id="gapGen">
           <p class="eyebrow"><span class="dia"></span>Pick a gap</p>
           <div class="gaps" role="group" aria-label="Gaps">
@@ -136,16 +137,16 @@
           </div>
           <div class="cands" id="cands" aria-live="polite"><p class="small muted">Candidates appear here.</p></div>
         </div>
-        <p class="fine">A frontier model with a plain harness often does great; a smaller or cheaper model may need more of these lines to do the same job. Which design does best depends on your model, your cases, and the cost and latency you accept. Part 2 shows how to build each candidate; Part 3 shows how to measure which is better, and by how much.</p>
+        <p class="fine">Which design does best depends on your model, your cases, and the cost and latency you accept. Part 2 shows how to build each candidate; Part 3 shows how to measure which is better, and by how much.</p>
       </section>
 
       <section class="chap" id="so">
         <h2>You write the world it wakes up in</h2>
         <div class="prose measure">
-          <p>Look back at Part 1. Each time, Tok did something reasonable with what it could see. It trusted a lookup from Thursday and never noticed a tool had left. It made up a date when the form left no way to say "I don't know". It followed an order pasted into its rules, and ignored the same order handed to it as data. It kept writing like its own past when the rules changed at the top.</p>
+          <p>Look back at Part 1. Each time, Tok did something reasonable with what it could see. It trusted a lookup from Thursday and never noticed a tool had left. It made up a date when the form left no way to say "I don't know". On a strong model, it followed an order pasted into its rules, and ignored the same order handed to it as data. It kept writing like its own past when the rules changed at the top.</p>
           <p>None of that was the model being careless. Each was a gap in the world someone built for it, and each fix was a line or two, in the right place, in the right voice.</p>
         </div>
-        <div class="tok-says"><div class="tk" data-tok="5" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Thanks for telling me what changed. I won't remember any of this, so please write it down for me.</p></div></div>
+        <div class="tok-says"><div class="tk" data-tok="5" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>When I get it wrong, read my page. Then measure which line fixed it.</p></div></div>
         <div data-evolve="Tok stands up: an agent you can read, ready for its first piece of equipment. Part 2 hands it over."></div>
       </section>
 

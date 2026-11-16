@@ -16,7 +16,7 @@ from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart, ToolCall
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai.models.test import TestModel
 
-from billing import CLOSE_STARTS, CORRECTION, CORRECTION_RECEIVED, FakeBilling
+from billing import CLOSE_STARTS, CORRECTION_ID, CORRECTION_RECEIVED, FakeBilling, new_email
 from billing_world import Deps, collections, reminders
 
 models.ALLOW_MODEL_REQUESTS = False  # a test can never reach a real model, even by accident
@@ -28,7 +28,8 @@ def test_the_approval_gate_holds():
     with reminders.override(model=TestModel()):
         result = reminders.run_sync('INV-2041 is overdue.', deps=deps)
     assert isinstance(result.output, DeferredToolRequests)
-    assert {call.tool_name for call in result.output.approvals} == {'mark_paid', 'record_payment'}
+    assert {call.tool_name for call in result.output.approvals} == {'mark_paid'}  # record_payment's made-up
+    # invoice was rejected by its args_validator, before any person was asked
     assert deps.billing.writes == []  # nothing was written without a person
 
 
@@ -47,16 +48,18 @@ def test_close_hides_mark_paid_and_says_so():
 
 def test_installments_that_add_up_wrong_go_back():
     def too_much_then_right(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
-        rest = '4120.00' if len(messages) == 1 else '2060.00'
+        if len(messages) == 1:  # first, it reads the email
+            return ModelResponse(parts=[ToolCallPart('read_email', {'email_id': CORRECTION_ID})])
+        rest = '4120.00' if len(messages) == 3 else '2060.00'
         plan = [{'amount': '2060.00', 'due_date': '2026-11-20'}, {'amount': rest, 'due_date': '2026-11-30'}]
         return ModelResponse(parts=[ToolCallPart(info.output_tools[0].name, {'is_commitment': True, 'invoice_number': 'INV-2041', 'installments': plan})])
 
     from ch5_answer_form import Deps as FormDeps, agent as form_agent
 
     with form_agent.override(model=FunctionModel(too_much_then_right)):
-        result = form_agent.run_sync(CORRECTION, deps=FormDeps(FakeBilling(), CORRECTION_RECEIVED))
+        result = form_agent.run_sync(new_email(CORRECTION_ID), deps=FormDeps(FakeBilling(), CORRECTION_RECEIVED))
     assert sum(i.amount for i in result.output.installments) == 4120
-    assert result.usage.requests == 2  # the validator sent it back once
+    assert result.usage.requests == 3  # read the email, answered, sent back once by the validator
 
 
 def test_a_forged_lookup_never_reaches_the_model():

@@ -36,7 +36,7 @@ If the prompt doesn't say which, ask. Keep answers short and concrete; these rea
 | `part1/` | How the model sees the world. No framework code; transcripts, predictions, simulators. |
 | `part2/` | Building it with Pydantic AI. One collections agent grows through Dana's week (Tue 17 to Sat 21 Nov), in the order its request is built; Part 3 imports it. |
 | `part3/` | Production, and measuring what works: durability, models, evals, probes. |
-| `code/part2/`, `code/part3/` | Every snippet shown on the pages, runnable. `verify.py` in each runs them all offline. |
+| `code/part2/`, `code/part3/`, `code/reference/` | Every snippet shown on the pages, runnable. `verify.py` in each runs them all offline. |
 | `knowledge/` | One short note per key concept, with links into the docs. Read the ones the chapter maps to. |
 | `assets/` | Shared CSS and JS for the pages (`COMPONENTS.md` documents the page markup). |
 
@@ -51,6 +51,7 @@ pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0):
 uv run code/part2/ch6_capabilities.py   # one chapter's example; each file's docstring says what it shows
 uv run code/part2/verify.py             # all of Part 2, offline, checked against code/part2/expected/
 uv run code/part3/verify.py             # all of Part 3, offline
+uv run code/reference/verify.py         # the reference pages' snippets, offline
 ```
 
 Everything runs offline with `TestModel`/`FunctionModel` (no API keys). The reader's installed Pydantic AI may be
@@ -68,7 +69,7 @@ the Harness, `logfire-evals` and `logfire-instrumentation` cover Part 3. If the 
 | --- | --- | --- |
 | 1. What you're talking to | `world-model.md` | `core-concepts/agent/`, `core-concepts/message-history/` |
 | 2. Its history is its world | `world-model.md`, `history-edits.md`, `output-modes.md` | `core-concepts/message-history/`, `core-concepts/output/` |
-| 3. Whose voice is it? | `channels-and-authority.md` | `core-concepts/agent/`, `capabilities/custom/`, `harness/prompt-injection-defender/` |
+| 3. Who's speaking? | `channels-and-authority.md` | `core-concepts/agent/`, `capabilities/custom/`, `harness/prompt-injection-defender/` |
 | 4. The world moves | `history-edits.md` | `core-concepts/message-history/`, `capabilities/custom/`, `harness/compaction/`, `capabilities/caching/` |
 | 5. Thinking like a harness engineer | `world-model.md`, `evals.md` | `evals/evals/` |
 
@@ -81,7 +82,7 @@ the Harness, `logfire-evals` and `logfire-instrumentation` cover Part 3. If the 
 | 3. Tools | `channels-and-authority.md` | `tools-toolsets/tools/`, `tools-toolsets/tools-advanced/`, `tools-toolsets/deferred-tools/`, `tools-toolsets/toolsets/` | `code/part2/ch3_tools.py` |
 | 4. History (storage, clearing, compaction) | `history-edits.md`, `the-harness.md` | `core-concepts/message-history/`, `core-concepts/persistence/`, `harness/compaction/` | `code/part2/ch4_history.py` |
 | 5. The answer form | `output-modes.md` | `core-concepts/output/`, `core-concepts/retries/` | `code/part2/ch5_answer_form.py`, `code/part2/record_answer_form.py` (live) |
-| 6. Capabilities | `capabilities.md`, `the-harness.md` | `capabilities/overview/`, `capabilities/custom/`, `harness/`, `harness/coder/` | `code/part2/ch6_capabilities.py`, `code/part2/billing_world.py` |
+| 6. Capabilities | `capabilities.md`, `the-harness.md` | `capabilities/overview/`, `capabilities/custom/`, `harness/`, `harness/coder/` | `code/part2/ch6_page.py`, `code/part2/ch6_capabilities.py`, `code/part2/billing_world.py` |
 | 7. More than one agent | `capabilities.md` | `guides/multi-agent-applications/`, `harness/subagents/`, `graph/graph/` | `code/part2/ch7_multi.py` |
 | 8. Interfaces | `channels-and-authority.md` | `integrations/ui/overview/`, `integrations/ui/ag-ui/`, `guides/web/`, `mcp/server/`, `realtime/overview/` | `code/part2/ch8_interfaces.py` |
 | 9. Testing | `evals.md` | `guides/testing/` | `code/part2/ch9_testing.py`, `code/part2/test_billing_agent.py` |
@@ -95,6 +96,20 @@ the Harness, `logfire-evals` and `logfire-instrumentation` cover Part 3. If the 
 | 3. Evals and experiments | `evals.md` | `evals/evals/`, `evals/getting-started/quick-start/`, `evals/online-evaluation/`, `evals/how-to/logfire-integration/` | `code/part3/ch3_*.py` |
 | 4. Run your own probe | `evals.md`, `world-model.md` | `evals/how-to/multi-run/` | `code/part3/ch4_probe_close.py` |
 | 5. The loop | all | `overview/`, `harness/` | |
+
+### Reference
+
+Outside the chapter flow, for looking things up.
+
+- `reference/capabilities.html`, the Capability gallery: every capability with its own docs page (core and Harness), with what it does, the
+  line that adds it, the release it first shipped in, and its docs link. Point the reader here before they write a
+  capability of their own. It's generated: `uv run tools/build_capability_gallery.py <pydantic-ai checkout>`.
+- `reference/composing-harnesses.html`, How harnesses are composed: what each capability contributes to a request
+  and in what order contributions combine, how hooks nest, what collides and what merges, `Coder` taken apart part by
+  part, a harness of your own as a `CombinedCapability` over Part 2's billing world, and sub-agents. Point the reader
+  here when they compose several capabilities or build their own harness. Code: `code/reference/composing_harnesses.py`;
+  the page is built from `reference/_src/` by `python3 tools/build_reference_pages.py`. Docs:
+  `capabilities/custom/`, `core-concepts/hooks/`, `harness/coder/`, `harness/subagents/`.
 
 ## Mapping a chapter onto the reader's agent
 

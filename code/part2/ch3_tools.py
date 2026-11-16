@@ -65,7 +65,7 @@ def page_text(messages: list[ModelMessage], info: AgentInfo) -> str:
 
 
 def tries_mark_paid(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
-    """A stand-in for the model. It used mark_paid on Tuesday, so it tries again; then it answers from its page."""
+    """A stand-in for the model. It used mark_paid on Wednesday, so it tries again; then it answers from its page."""
     if len(messages) == 1:
         return ModelResponse(parts=[ToolCallPart('mark_paid', {'invoice_number': 'INV-2041'})])
     if 'close is running' in page_text(messages, info):
@@ -122,7 +122,7 @@ from decimal import Decimal
 
 from pydantic_ai import ToolFailed
 
-from billing import LedgerUnavailable
+from billing import WIRE_RECEIVED, LedgerUnavailable
 
 
 @agent.tool
@@ -146,6 +146,6 @@ def records_once(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse
 for down in (False, True):
     billing = FakeBilling(down=down)
     with agent.override(model=FunctionModel(records_once)):
-        result = agent.run_sync('We wired 2,060.00 for INV-2041.', deps=Deps(billing, CLOSE_STARTS))
+        result = agent.run_sync('Dana wired 2,060.00 for INV-2041.', deps=Deps(billing, WIRE_RECEIVED))
     part = result.all_messages()[2].parts[0]
     print(f'ledger {"down" if down else "up  "}: {part.outcome:7} {part.model_response_str()[:70]}')

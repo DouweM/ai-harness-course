@@ -83,6 +83,8 @@ async def monday(billing: FakeBilling, conversation_id: str) -> str:
         conversation=conversation,
         deferred_tool_results=pending.build_results(approvals=approvals),
         deps=Deps(billing=billing, received=WIRE_RECEIVED),
+        usage_limits=UsageLimits(request_limit=8),  # the stored conversation carries Friday's count
+        metadata={'tenant': 't_042', 'agent_version': 'collections-2026-11-23'},
     )
     return result.output
 # --8<-- [end:monday]
@@ -115,12 +117,12 @@ async def main() -> None:
 
         down = FakeBilling(down=True)
         conversation_id = await friday(down)
-        print(f'Monday, ledger still down: {await monday(down, conversation_id)}')
+        print(f'Monday, ledger still down (what would happen): {await monday(down, conversation_id)}')
         print(f'  payments recorded: {down.payments}')
         assert down.payments == []
 
     print('A policy answers inside the run (HandleDeferredToolCalls):')
-    for invoice, amount in (('INV-2050', '980.00'), ('INV-2041', '2060.00')):
+    for invoice, amount in (('INV-2057', '980.00'), ('INV-2041', '2060.00')):
         billing = FakeBilling()
         with collections.override(model=model_that_records(invoice, amount)):
             result = await collections.run(

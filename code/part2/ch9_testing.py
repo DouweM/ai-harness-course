@@ -18,6 +18,6 @@ with reminders.override(model=TestModel()):  # calls every tool it's offered, wi
 
 assert isinstance(result.output, DeferredToolRequests)
 print('waiting for a person:', sorted(call.tool_name for call in result.output.approvals))
-print('tool calls that ran: ', [p.tool_name for m in result.all_messages() for p in m.parts if p.part_kind == 'tool-return'])
+print('tool results sent back:', [p.tool_name for m in result.all_messages() for p in m.parts if p.part_kind == 'tool-return'])
 print('ledger writes:       ', deps.billing.writes)
 # --8<-- [end:testmodel]

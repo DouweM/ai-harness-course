@@ -6,7 +6,8 @@ Agents in production run long, call systems that write, wait for people, and cra
 every agent:
 
 - **What happens when the process dies mid-run?** Durable execution (Temporal and other backends) checkpoints each
-  step so a run resumes instead of restarting.
+  model request and each tool call it wraps or you mark (DBOS leaves function tools to you), so a run resumes instead
+  of restarting.
 - **What if a tool runs twice?** Make writes idempotent, keyed on the tool call ID, so a retry or a resume doesn't
   send two emails or post two payments.
 - **How does a person approve a risky action days later?** Deferred tools end the run with the pending call; your

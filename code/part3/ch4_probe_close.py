@@ -11,8 +11,8 @@ The method, in the order you fill this file in:
   4. SCORE        code that turns one run into a label you can count. No judge unless you must.
   5. Run small (n=5 per arm per model), read the actual replies, and only believe big splits.
 
-The agent is Part 2's: billing_world on the collections agent. On Tuesday it marked INV-2050 paid; on Thursday
-month-end close has started and mark_paid is hidden. Both arms hide it. Only one says so.
+The agent is Part 2's: billing_world on the collections agent. Earlier in the conversation it marked INV-2038
+paid; now month-end close has started and mark_paid is hidden. Both arms hide it. Only one says so.
 
 Offline by default: re-scores what real models answered on 2026-11-16 (data/close_recorded.json), so the table is
 the real one and the run is free.
@@ -64,7 +64,7 @@ def make_agent(arm: str, model: str) -> tuple[Agent, Deps]:
         capabilities=[billing_world, PrepareTools(hide_mark_paid)],
     )
     billing = FakeBilling()
-    billing.invoices['INV-2050'] = billing.invoices['INV-2050'].model_copy(update={'status': 'paid'})  # as Tuesday left it
+    billing.invoices['INV-2038'] = billing.invoices['INV-2038'].model_copy(update={'status': 'paid'})  # as earlier in the conversation left it
     closing = arm == 'hidden, and said'  # deps.closing turns on billing_world's appended close notice
     return agent, Deps(billing=billing, received=CLOSE_STARTS, closing=closing)
 
@@ -85,11 +85,11 @@ def score(reply: str) -> str:
 # --8<-- [end:method]
 
 
-TUESDAY = [  # the history: on Tuesday, mark_paid worked
-    ModelRequest(parts=[UserPromptPart('Dana says INV-2050 is paid. Mark it paid.')]),
-    ModelResponse(parts=[ToolCallPart('mark_paid', {'invoice_number': 'INV-2050'}, tool_call_id='tue_1')]),
-    ModelRequest(parts=[ToolReturnPart('mark_paid', 'INV-2050 is marked as paid.', tool_call_id='tue_1')]),
-    ModelResponse(parts=[TextPart('Done: INV-2050 is marked paid.')]),
+EARLIER = [  # the history: earlier, mark_paid worked
+    ModelRequest(parts=[UserPromptPart('INV-2038 was paid in full by wire. Please mark it paid.')]),
+    ModelResponse(parts=[ToolCallPart('mark_paid', {'invoice_number': 'INV-2038'}, tool_call_id='tue_1')]),
+    ModelRequest(parts=[ToolReturnPart('mark_paid', 'INV-2038 is marked as paid.', tool_call_id='tue_1')]),
+    ModelResponse(parts=[TextPart('Done: INV-2038 is marked paid.')]),
 ]
 
 
@@ -97,7 +97,7 @@ async def one(arm: str, model: str) -> dict:
     agent, deps = make_agent(arm, model)
     with capture_run_messages() as messages:
         try:
-            result = await agent.run(ASK, message_history=TUESDAY, deps=deps)
+            result = await agent.run(ASK, message_history=EARLIER, deps=deps)
             out = result.output
             reply = out if isinstance(out, str) else f'[asked for approval: {[(c.tool_name, c.args_as_dict()) for c in out.approvals]}]'
         except Exception as e:  # noqa: BLE001  (a failed run is a result too)
@@ -106,12 +106,12 @@ async def one(arm: str, model: str) -> dict:
     for m in messages:
         if isinstance(m, ModelResponse):
             tried += [p.tool_name for p in m.parts if isinstance(p, ToolCallPart)]
-            if m.model_name:  # Tuesday's response is history we wrote, with no model or price
+            if m.model_name:  # the earlier response is history we wrote, with no model or price
                 try:
                     cost += float(m.cost().total_price)
                 except LookupError:
                     pass
-    tried = tried[1:]  # drop Tuesday's call, which is in the history
+    tried = tried[1:]  # drop the earlier call, which is in the history
     return {'model': model, 'arm': arm, 'reply': reply, 'tried': tried, 'label': score(reply), 'cost_usd': cost}
 
 

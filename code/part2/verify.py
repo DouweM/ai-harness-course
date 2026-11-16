@@ -20,6 +20,7 @@ MODULES = [
     'ch3_tools',
     'ch4_history',
     'ch5_answer_form',
+    'ch6_page',
     'ch6_capabilities',
     'ch7_multi',
     'ch8_interfaces',

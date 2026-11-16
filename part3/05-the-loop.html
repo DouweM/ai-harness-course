@@ -49,14 +49,15 @@
       </section>
 
       <section id="lap">
-        <h2>One lap, from this course</h2>
+        <h2>Two laps, from this course</h2>
         <ol class="steps">
-          <li><b>Design.</b> A compaction summary can drop what Dana said, like Wednesday's correction (Part 1, chapter 4). Idea: tell the model the summary may be incomplete.</li>
-          <li><b>Build.</b> <code>TieredCompaction</code> with a summary prompt that keeps every promise (Part 2, chapter 4), packaged in <code>billing_world</code> (chapter 6).</li>
-          <li><b>Measure.</b> The caveat line: GPT-6.1 Sol and Gemini 3.8 Flash went back to the full history 39 of 40 times; Claude Sonnet and Haiku 5.5, 0 of 40 (Part 3, chapter 2).</li>
-          <li><b>Next idea.</b> For the Claude family, don't rely on the summary: re-state Dana's open promises as an appended notice, the way the close notice works. Probe it with chapter 4's template. That's the next lap.</li>
+          <li><b>Design.</b> A compaction summary dropped a rule the billing team had given ("never contact a debtor before 9am their time"), and every model broke it, 80 of 80 (Part 1, chapter 4). Idea: tell the model the summary may be incomplete.</li>
+          <li><b>Build.</b> One sentence appended to the summary, with a search over the full history available.</li>
+          <li><b>Measure.</b> GPT-6.1 Sol and Gemini 3.8 Flash went back to the full history and kept the rule, 39 of 40 across two wordings; Claude Sonnet and Haiku 5.5, 0 of 40. Half a fix.</li>
+          <li><b>Next lap.</b> Don't rely on the model to notice: write the summary so it keeps the user's rules, verbatim. Built as a <code>summary_prompt</code> on <code>TieredCompaction</code> (Part 2, chapter 4), added next to <code>billing_world</code> in chapter 6. Measured on the same four models, 10 runs each: every one kept the rule, 40 of 40.</li>
         </ol>
-        <p class="talk-only headline">A dropped correction, one capability, a split by family, and on to the next idea.</p>
+        <p class="measure">The second lap is the one that shipped. The first was still worth running: it showed which model families can be trusted to notice a gap and which can't, and that changed what the second lap built.</p>
+        <p class="talk-only headline">A dropped rule, half a fix, a split by family, then a fix on every model.</p>
       </section>
 
       <section id="your-agent">
@@ -72,8 +73,8 @@
           <li><b>Implement it</b> as one change, ideally one capability, and run it as arm B.</li>
           <li><b>Compare, and write down</b> how much better B is on which cases, what you'd ship, what you'd watch online, and the next lap.</li>
         </ol>
-        <p class="fine">Bring the agent's code, read access to its traces or corrections, and a model API key. Your coding agent can do the typing; "Ask your agent" below hands it this chapter.</p>
-        <aside class="notes"><p>One lap on an agent they already run. Ask each team which decision of their agent gets corrected most.</p></aside>
+        <p class="fine">You need the agent's code, read access to its traces or corrections, and a model API key. Your coding agent can do the typing; "Ask your agent" below hands it this chapter.</p>
+        <aside class="notes"><p>One lap on an agent they already run. Ask the room which decision of their agent gets corrected most.</p></aside>
         <p class="talk-only headline">One decision, 20 corrections, two arms, read every miss.</p>
       </section>
 
@@ -90,6 +91,12 @@
           <a class="skill door" href="https://pydantic.dev/docs/ai/overview/coding-agent-skills/"><span class="n">Hand it off</span><h3>Coding agent skills</h3><p>Teach your coding agent current Pydantic AI.</p></a>
         </div>
         <p class="talk-only headline">The docs pick up where the course ends.</p>
+      </section>
+
+      <section id="week">
+        <div class="prose measure">
+          <p class="story"><span class="when">Monday 23 Nov, afternoon</span>The billing team replies to Dana: 3,900 was a quote that expired in October; the invoice stands at 4,120. On the 30th the second half is due, and the agent will be told when it lands.</p>
+        </div>
       </section>
 
       <div data-evolve="Tok is a colleague with a world model: one you designed, built and measured."></div>

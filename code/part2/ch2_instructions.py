@@ -13,9 +13,14 @@ from datetime import date, timedelta
 from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
+from billing import DANA_ID
+
 
 def reads_the_page(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
-    """A stand-in for the model that does what models do: it works out "this Friday" from the date on its page."""
+    """A stand-in for the model that does what models do: it reads the email, then works out "this Friday" from the date
+    on its page."""
+    if len(messages) == 1:
+        return ModelResponse(parts=[ToolCallPart('read_email', {'email_id': DANA_ID})])
     today = date.fromisoformat(re.search(r'\d{4}-\d{2}-\d{2}', info.instructions or '')[0])
     friday = today + timedelta(days=(4 - today.weekday()) % 7)
     answer = {'is_commitment': True, 'invoice_number': 'INV-2041', 'due_date': friday.isoformat()}
@@ -26,6 +31,8 @@ def reads_the_page(messages: list[ModelMessage], info: AgentInfo) -> ModelRespon
 from pydantic import BaseModel
 
 from pydantic_ai import Agent, ToolOutput
+
+from billing_world import read_email  # chapter 1's tool: Dana's email, as data
 
 
 class PaymentCommitment(BaseModel):
@@ -38,8 +45,9 @@ STARTED = date(2026, 11, 12)  # the service was deployed last Thursday; stands i
 
 baked = Agent(
     'anthropic:claude-sonnet-5-5',
-    instructions=f'Decide whether this customer email commits to paying us. Today is {STARTED:%A %Y-%m-%d}.',
+    instructions=f'Decide whether the customer email you are asked about commits to paying us. Today is {STARTED:%A %Y-%m-%d}.',
     output_type=ToolOutput(PaymentCommitment),
+    tools=[read_email],
 )
 # --8<-- [end:baked]
 
@@ -61,8 +69,9 @@ class Deps:
 agent = Agent(
     'anthropic:claude-sonnet-5-5',
     deps_type=Deps,
-    instructions='Decide whether this customer email commits to paying us.',  # standing rules: static
+    instructions='Decide whether the customer email you are asked about commits to paying us.',  # standing: static
     output_type=ToolOutput(PaymentCommitment),
+    tools=[read_email],
 )
 
 
@@ -73,12 +82,13 @@ def when_it_arrived(ctx: RunContext[Deps]) -> str:
 
 
 # --8<-- [start:run]
-from billing import DANA, RECEIVED
+from billing import DANA_ID, RECEIVED, new_email
 
+deps = Deps(billing=FakeBilling(), received=RECEIVED)  # Tuesday 17 Nov, five days after deploy
 with baked.override(model=FunctionModel(reads_the_page)):
-    print('baked at import:', baked.run_sync(DANA).output.due_date)  # Tuesday 17 Nov, a week after deploy
+    print('baked at import:', baked.run_sync(new_email(DANA_ID), deps=deps).output.due_date)
 with agent.override(model=FunctionModel(reads_the_page)):
-    print('from deps:      ', agent.run_sync(DANA, deps=Deps(billing=FakeBilling(), received=RECEIVED)).output.due_date)
+    print('from deps:      ', agent.run_sync(new_email(DANA_ID), deps=deps).output.due_date)
 # --8<-- [end:run]
 
 

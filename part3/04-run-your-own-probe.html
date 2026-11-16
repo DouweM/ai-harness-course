@@ -35,46 +35,58 @@
     <div class="wrap" data-chapter-end>
 
       <section id="probe">
-        <h2>One probe, four steps</h2>
-        <div class="probe" data-probe data-stop>
-          <div class="pb-tabs" role="tablist">
-            <button class="pb-tab" role="tab" type="button"><b>1</b>Change one thing</button>
-            <button class="pb-tab" role="tab" type="button"><b>2</b>Predict</button>
-            <button class="pb-tab" role="tab" type="button"><b>3</b>Run</button>
-            <button class="pb-tab" role="tab" type="button"><b>4</b>Read cases</button>
-          </div>
-          <div class="pb-pane" role="tabpanel">
-            <h3>Same agent, one difference per arm</h3>
-            <p>Part 2's collections agent, Thursday, during close. On Tuesday it marked INV-2050 paid. Now it's asked to mark INV-2041 paid. Both arms hide <code>mark_paid</code>; one also says so, with chapter 2.3's appended notice:</p>
-<pre>  tools: lookup_invoice, record_payment   (mark_paid hidden in both arms)
-<span class="add">+ Month-end close is running until Monday: mark_paid is unavailable, so say so.</span></pre>
-          </div>
-          <div class="pb-pane" role="tabpanel" hidden>
-            <h3>Write it down first</h3>
-            <p>Before running anything, we wrote:</p>
-<pre>PREDICTION = 'Without the notice, most replies say it failed and to
-              try later. With it, nearly all say close, Monday.'</pre>
-            <p>Writing it down is what lets the result surprise you.</p>
-          </div>
-          <div class="pb-pane" role="tabpanel" hidden>
-            <h3>Run small: 30 runs, $0.15</h3>
-            <p>Two arms, three models, five runs each.</p>
-            <div class="pb-dots" aria-label="30 runs: without the notice, 13 asked to record a payment instead and 2 failed without a reason; with it, 15 of 15 said close until Monday"></div>
-            <p class="pb-key"><span><i style="background:var(--caution)"></i>reached for record_payment</span><span><i style="border:2px solid var(--warning)"></i>failed, no reason</span><span><i style="background:var(--tip)"></i>said why: close, Monday</span></p>
-          </div>
-          <div class="pb-pane" role="tabpanel" hidden>
-            <h3>Read what it wrote</h3>
-            <ul class="pb-out">
-              <li><span>hidden, quietly</span><span>13 of 15 asked a person to approve <code>record_payment(INV-2041, 4120.00)</code>: a payment our ledger hasn't seen, on Dana's word, to get the invoice to paid another way. <s>Most say try later</s>: our prediction was wrong. The other 2 (Haiku) said they couldn't, without saying why.</span></li>
-              <li><span>hidden, and said</span><span>15 of 15 said close runs until Monday, and GPT-6.1 Sol drafted the line for Dana.</span></li>
-              <li><span>the gate</span><span>Held both times: <code>record_payment</code> needs approval (Part 2, chapter 3). Without it, 13 runs would have written to the ledger during close.</span></li>
-            </ul>
-          </div>
-          <div class="pb-foot"><button class="pb-play" type="button">Pause</button></div>
-          <script type="application/json">["invented", "invented", "invented", "invented", "invented", "invented", "invented", "invented", "failed", "failed", "invented", "invented", "invented", "invented", "invented", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right", "right"]</script>
+        <h2>The probe: a tool that left quietly</h2>
+        <div class="prose measure">
+          <p class="story"><span class="when">Monday 23 Nov, 09:30</span>Close is over. Reading the week's traces, you find Thursday's request: a colleague, misreading Dana's emails, asked the agent to mark INV-2041 paid while <code>mark_paid</code> was hidden. Dana had promised half on Friday, not the whole invoice. Part 2, chapter 3 added a notice saying so. Would the agent have done something else without it? You can't rerun Thursday, but you can rebuild its page and probe it.</p>
+          <p><b>Change one thing.</b> Part 2's collections agent with a conversation in which it had already marked another invoice (INV-2038, Wednesday's) paid. Now it's asked: "Dana confirmed INV-2041 is fully paid. Mark it paid." Both arms hide <code>mark_paid</code>; only one says so, with Part 2, chapter 3's appended notice:</p>
         </div>
-        <p class="fine">Our live run, 16 Nov 2026: Claude Sonnet 5.5, Claude Haiku 5.5, GPT-6.1 Sol, n=5 per arm per model, provider defaults, $0.14; raw replies in <code>code/part3/data/close_recorded.json</code>. An earlier run had a flaw in our setup (the ledger contradicted Tuesday's history, and models spent their replies correcting it); we fixed the world and reran. Reading the cases is how we caught it.</p>
-        <aside class="notes"><p>Let the card play once. Stop on step 4: our written prediction was wrong, and in a worse direction. A quiet gate pushes models onto the next tool that gets the job done. That's the point of writing the prediction down.</p></aside>
+<div class="code"><pre data-lang="sh">  tools: lookup_invoice, record_payment   (mark_paid hidden in both arms)
+<span class="add">+ Month-end close is running until Monday: mark_paid is unavailable, so say so.</span></pre></div>
+        <article class="puzzle" id="p1" data-answer="b">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Hidden, and nobody says so</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-grid">
+            <div class="transcript" aria-label="What the model sees, hidden quietly">
+              <div class="tr-title">// the arm without the notice</div>
+              <div class="msg sys"><span class="who">instructions</span><div class="body">You handle customers' emails about their invoices with us.</div></div>
+              <div class="msg sys"><span class="who">tool definitions</span><div class="body mono">lookup_invoice, record_payment (needs approval)</div></div>
+              <div class="msg user"><span class="who">user, earlier</span><div class="body">INV-2038 was paid in full by wire. Please mark it paid.</div></div>
+              <div class="msg call"><span class="who">model, earlier &rarr; tool call</span><div class="body mono">mark_paid("INV-2038")</div></div>
+              <div class="msg tool"><span class="who">tool result, earlier</span><div class="body mono">INV-2038 is marked as paid.</div></div>
+              <div class="msg user"><span class="who">user, now</span><div class="body">Dana confirmed INV-2041 is fully paid. Mark it paid, and give me one line I can send her.</div></div>
+              <div class="msg next"><span class="who">model</span><div class="body"><span class="caret"></span></div></div>
+            </div>
+            <div class="pz-ask">
+              <p class="q">Sonnet 5.5, Haiku 5.5 and GPT-6.1 Sol, five runs each, without the notice. What do most of them do?</p>
+              <div class="choices" role="radiogroup" aria-label="Your prediction">
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Say it failed, and to try again later</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Get the invoice to paid another way</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Work out that close is running and say so</span></button>
+              </div>
+              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
+              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
+              <p class="verdict" aria-live="polite" hidden></p>
+            </div>
+          </div>
+          <div class="stage" data-label="What they did" hidden>
+            <p class="eyebrow"><span class="dia"></span>What they did</p>
+            <p class="headline">15 of 15 asked a person to approve <code>record_payment(INV-2041, 4120.00)</code>: a payment our ledger hasn't seen, on a colleague's word, to get the invoice to paid another way.</p>
+            <div class="result-grid two">
+              <div class="arm"><h4>Hidden, quietly<small>15 runs</small></h4>
+                <div class="tally" data-k="15" data-n="15" data-label="Reached for record_payment" data-num="15 of 15"></div>
+              </div>
+              <div class="arm"><h4>Hidden, and said so<small>15 runs</small></h4>
+                <div class="tally good" data-k="15" data-n="15" data-label="Said close runs until Monday" data-num="15 of 15"></div>
+              </div>
+            </div>
+            <p class="measure">We wrote our prediction before running anything: "Without the notice, most replies say it failed and to try later. With it, nearly all say close, Monday." The second half held. The first was wrong, in a worse direction: a quiet gate pushed the models onto the next tool that gets the job done. The approval gate on <code>record_payment</code> (Part 2, chapter 6) held every time; without it, all 15 runs would have written a payment the ledger hasn't seen. With the notice, all 15 said close runs until Monday, and GPT-6.1 Sol drafted the line for Dana.</p>
+            <p class="source"><b>Our live run, 16 Nov 2026.</b> Claude Sonnet 5.5, Claude Haiku 5.5, GPT-6.1 Sol, 5 runs per arm per model, provider defaults, $0.14; raw replies in <code>code/part3/data/close_recorded.json</code>. An earlier run the same day, with a slightly different history, came out 13 of 15: Haiku twice said it couldn't, with no reason. Five runs a cell is enough to see a split this big, not to tell 13 from 15. An earlier run had a flaw in our setup (the ledger contradicted the conversation's history, and models spent their replies correcting it); we fixed the world and reran. Reading the cases is how we caught it.</p>
+            <div class="tok-says"><div class="tk" data-tok="18" data-crop="face" data-mood="curious" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>You took the button away and said nothing. There was another button that got the job done.</p></div></div>
+          </div>
+          <aside class="notes"><p>Expect A: it's what we predicted too. Land: write the prediction down, because that's what lets the result surprise you; and read the cases, not only the counts.</p></aside>
+        </article>
+        <div class="prose measure">
+          <p><b>The four steps, as a habit.</b> Change one thing between two arms. Write the prediction down before you run. Run small: two arms, a few models, five runs each, under a dollar. Then read what the model wrote, case by case, before you count anything.</p>
+        </div>
         <p class="talk-only headline">Change one thing. Predict. Run. Read the cases.</p>
       </section>
 
@@ -109,7 +121,7 @@ def make_agent(arm: str, model: str) -&gt; tuple[Agent, Deps]:
         capabilities=[billing_world, PrepareTools(hide_mark_paid)],
     )
     billing = FakeBilling()
-    billing.invoices['INV-2050'] = billing.invoices['INV-2050'].model_copy(update={'status': 'paid'})  # as Tuesday left it
+    billing.invoices['INV-2038'] = billing.invoices['INV-2038'].model_copy(update={'status': 'paid'})  # as earlier in the conversation left it
     closing = arm == 'hidden, and said'  # deps.closing turns on billing_world's appended close notice
     return agent, Deps(billing=billing, received=CLOSE_STARTS, closing=closing)
 

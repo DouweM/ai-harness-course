@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capability gallery · Harness engineering</title>
+<meta name="description" content="Every built-in Pydantic AI capability and every Harness capability: what it does to the request, the line that adds it, the release it arrived in, and its docs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .gal-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 18px 0 8px; }
+  .gal-tools input { flex: 1 1 220px; min-height: 44px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-btn); background: var(--surface); color: var(--text-strong); font: inherit; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 18px; }
+  .chip { min-height: 36px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); color: var(--text-strong); font: 500 .8125rem var(--font-mono); cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--surface-tint); border-color: var(--accent-strong); color: var(--accent-strong); }
+  .gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px; }
+  .card { border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); padding: 14px 16px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .card h3 { margin: 0; font-size: 1.05rem; }
+  .card .meta { font: .75rem var(--font-mono); color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
+  .card .meta .pkg { color: var(--accent-strong); }
+  .card p { margin: 0; }
+  .card .code { margin: 6px 0 0; }
+  .card .docs { margin-top: auto; padding-top: 4px; font-size: .875rem; }
+  .gal-count { font: .8125rem var(--font-mono); color: var(--text-muted); }
+  .job-h { grid-column: 1 / -1; margin: 18px 0 0; font-size: 1rem; color: var(--eyebrow); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .05em; }
+</style>
+</head>
+<body data-page="reference" data-path="reference/capabilities.html">
+<header class="topbar" data-auto></header>
+<main>
+  <section class="wrap">
+    <p class="eyebrow" style="margin-top:28px"><span class="dia"></span>Reference</p>
+    <h1>Capability gallery</h1>
+    <p class="measure">Every capability with its own docs page in Pydantic AI (<span class="pkg">core</span>) or Pydantic AI Harness, <code>pydantic-ai-harness</code> (<span class="pkg">harness</span>): what it does, the line that adds it to an agent, the release its docs page first shipped in, and its docs. Part 2, <a href="../part2/06-capabilities.html">chapter 6</a> explains what a capability is; this page is for finding one. Check here before writing your own.</p>
+    <div class="gal-tools"><input id="q" type="search" placeholder="Search: compaction, approval, Slack..." aria-label="Search capabilities"><span class="gal-count" id="count"><!--COUNT--> capabilities</span></div>
+    <div class="chips" role="group" aria-label="Filter by job"><button class="chip" type="button" data-job="" aria-pressed="true">All</button><!--JOBS--></div>
+    <div class="gal" id="gal"></div>
+
+    <section id="coder" style="margin:40px 0">
+      <h2>Coder, taken apart</h2>
+      <div class="prose measure">
+        <p>The Harness's <code>Coder</code> is a coding agent built from capabilities on this page: <code>FileSystem</code>, <code>Shell</code>, <code>RepoContext</code>, <code>SubAgents</code> and <code>ClearToolResults</code>, plus its instructions, output limits and argument repair. Pick the same pieces yourself and you get a different agent. A reviewer that reads the code and runs the tests but never writes a file:</p>
+      </div>
+      <div class="code" data-run="uv run code/part2/ch6_capabilities.py"><div class="code-head"><span class="file">code/part2/ch6_capabilities.py, a reviewer from Coder's pieces</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import LocalWorkspace
+from pydantic_ai_harness.filesystem import FileSystem
+from pydantic_ai_harness.repo_context import RepoContext
+from pydantic_ai_harness.shell import Shell
+
+reviewer = Agent(  # Coder's pieces, chosen yourself: reads code, runs tests, writes nothing
+    'anthropic:claude-sonnet-5-5',
+    instructions='Review the change in this repository. Run the tests. Do not edit files.',
+    capabilities=[
+        LocalWorkspace('.'),
+        FileSystem(read_only=True),
+        Shell(allowed_commands=['git', 'pytest']),
+        RepoContext(),
+        ClearToolResults(max_fraction=0.7, placeholder='[Cleared to save space. Read the file again if you need it.]'),
+    ],
+)</pre></div>
+    </section>
+  </section>
+</main>
+<footer><div class="wrap"><p>Generated from the Pydantic AI docs by <code>tools/build_capability_gallery.py</code>: each card's sentence and example are the docs page's own; "since" is the first release whose docs include the page (renames followed). Generated from <code><!--REF--></code>. How these combine on one agent: <a href="composing-harnesses.html">How harnesses are composed</a>.</p></div></footer>
+<script>
+(function () {
+  var CARDS = /*CARDS*/[];
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  var gal = document.getElementById('gal'), job = '', q = '';
+  var h = '', last = null;
+  CARDS.forEach(function (c, i) {
+    if (c.job !== last) { h += '<h2 class="job-h" data-jobh="' + esc(c.job) + '">' + esc(c.job) + '</h2>'; last = c.job; }
+    h += '<article class="card" id="' + esc(c.slug) + '" data-i="' + i + '"><h3>' + esc(c.title) + '</h3>' +
+      '<p class="meta"><span class="pkg">' + c.pkg + '</span><span>' + esc(c.since) + '</span></p>' +
+      '<p>' + esc(c.does) + '</p>' +
+      (c.code ? '<div class="code"><div class="code-head"><span class="file">' + esc(c.title) + '</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">' + esc(c.code) + '</pre></div>' : '') +
+      '<p class="docs"><a href="' + esc(c.url) + '">Docs: ' + esc(c.title) + '</a></p></article>';
+  });
+  gal.innerHTML = h;
+  function apply() {
+    var shown = 0, needle = q.toLowerCase();
+    Array.prototype.forEach.call(gal.querySelectorAll('.card'), function (el) {
+      var c = CARDS[+el.getAttribute('data-i')];
+      var ok = (!job || c.job === job) && (!needle || (c.title + ' ' + c.does + ' ' + c.slug + ' ' + c.job).toLowerCase().indexOf(needle) >= 0);
+      el.hidden = !ok; if (ok) shown++;
+    });
+    Array.prototype.forEach.call(gal.querySelectorAll('.job-h'), function (el) {
+      var j = el.getAttribute('data-jobh');
+      el.hidden = !CARDS.some(function (c, i) { return c.job === j && !gal.querySelector('[data-i="' + i + '"]').hidden; });
+    });
+    document.getElementById('count').textContent = shown + ' of ' + CARDS.length + ' capabilities';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (b) {
+    b.addEventListener('click', function () {
+      job = b.getAttribute('data-job');
+      Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      apply();
+    });
+  });
+  document.getElementById('q').addEventListener('input', function (e) { q = e.target.value; apply(); });
+  apply();
+})();
+</script>
+<script src="../assets/course.js"></script>
+</body>
+</html>

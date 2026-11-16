@@ -8,9 +8,9 @@ Pydantic AI validates the result and, on a validation error, sends the error bac
 **Output modes** decide how the schema reaches the model:
 
 - **Tool output** (the default on most models): the schema is a tool the model calls to finish. Works on nearly
-  every model. Exception: on Claude, a request that thinks (Sonnet 5+, Haiku 5.5 and Opus 5+ think by default, or any
+  every model. Exception: on Claude, a request that thinks (Opus 5 and later, Sonnet 5, Haiku 5.5, Fable and Mythos think by default, or any
   request with `Thinking`) gets **native output** for a bare structured type, since pydantic-ai 2.52. Wrap the type in
-  `ToolOutput(...)` to keep the tool path. The mode is chosen on the run's first request and kept for the run.
+  `ToolOutput(...)` to keep the tool path (offered rather than forced on a thinking request, so a text reply costs a retry). The mode is chosen on the run's first request and kept for the run.
 - **Native output**: the provider's structured-output feature constrains the reply to the schema.
 - **Prompted output**: the schema goes in the prompt and the reply is parsed. For models without either feature.
 

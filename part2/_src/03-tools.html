@@ -26,7 +26,7 @@ runtime: 8
         <h2>Three tools' worth of harness</h2>
         <aside class="notes"><p>The point: three decisions in code, one line each. Then the gate that holds but says nothing, and the one line that fixes it on the same page.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Thursday 19 Nov, 09:10</span>Month-end close starts. Looking invoices up is always fine. Marking one paid needs a person, and during close it isn't allowed at all.</p>
+          <p class="story"><span class="when">Thursday 19 Nov, 09:00</span>Month-end close starts. Looking invoices up is always fine. Marking one paid needs a person, and during close it isn't allowed at all. (Recording a payment gets its own gate in chapter 6.)</p>
           <p>Each rule is one line: <code>prepare=</code> decides per request whether a tool is offered, <code>requires_approval=True</code> turns a call into a question for a person, <code>ModelRetry</code> turns a bad argument into feedback, and <code>ctx.tool_call_id</code> makes the write safe to retry.</p>
         </div>
         <p class="talk-only headline">Offered or not: <code>prepare</code>. Runs or waits: <code>requires_approval</code>. Talks back: <code>ModelRetry</code>.</p>
@@ -35,20 +35,20 @@ runtime: 8
 
       <section id="hidden">
         <h2>The tool that left</h2>
-        <div class="prose measure"><p>Thursday, during close, someone asks the agent to mark INV-2041 paid. The model used <code>mark_paid</code> on Tuesday, so it tries again. Step through what happens.</p></div>
+        <div class="prose measure"><p>Thursday, during close, a colleague who misread Dana's Tuesday email asks the agent to mark INV-2041 paid. The model used <code>mark_paid</code> on Wednesday, for another invoice, so it tries again. Step through what happens.</p></div>
         <div class="viz seq" data-stop>
           <ol class="seq-steps">
-            <li data-mood="curious" data-say="I used mark_paid on Tuesday. Let me do that again."><span class="ico">1</span><div><span class="who">model &rarr; tool call</span><pre>mark_paid({"invoice_number": "INV-2041"})</pre></div></li>
-            <li class="bad" data-mood="unsure" data-say="Unknown? It worked on Tuesday. Did I misspell it?"><span class="ico">&times;</span><div><span class="who">back to the model: this request didn't offer it</span><pre>{{out-inline ch3_tools 1}}</pre></div></li>
-            <li class="bad" data-mood="worried" data-say="I'll say it failed. I don't know why, or when it's back."><span class="ico">2</span><div><span class="who">what the customer hears</span><pre>{{out-inline ch3_tools 2}}</pre></div></li>
+            <li data-mood="curious" data-say="I used mark_paid on Wednesday. Let me do that again."><span class="ico">1</span><div><span class="who">model &rarr; tool call</span><pre>mark_paid({"invoice_number": "INV-2041"})</pre></div></li>
+            <li class="bad" data-mood="unsure" data-say="Unknown? It worked on Wednesday. Did I misspell it?"><span class="ico">&times;</span><div><span class="who">back to the model: this request didn't offer it</span><pre>{{out-inline ch3_tools 1}}</pre></div></li>
+            <li class="bad" data-mood="worried" data-say="I'll say it failed. I don't know why, or when it's back."><span class="ico">2</span><div><span class="who">the reply drafted for Dana</span><pre>{{out-inline ch3_tools 2}}</pre></div></li>
             <li data-mood="curious" data-say="Oh, there's a line on my page now."><span class="ico">+</span><div><span class="who">add one line, appended when close starts</span><pre>Month-end close is running until Monday: mark_paid is unavailable, so say so.</pre></div></li>
-            <li class="good" data-mood="happy" data-say="Close is running. I can say exactly that."><span class="ico">&check;</span><div><span class="who">what the customer hears now</span><pre>{{out-inline ch3_tools 4}}</pre></div></li>
+            <li class="good" data-mood="happy" data-say="Close is running. I can say exactly that."><span class="ico">&check;</span><div><span class="who">the reply drafted for Dana now</span><pre>{{out-inline ch3_tools 4}}</pre></div></li>
           </ol>
           <div class="btn-row"><button class="btn seq-play" type="button">Play</button><button class="btn ghost seq-step" type="button">Next step</button></div>
           <div class="viz-tok seq-tok"><span data-tok="8" data-crop="face"></span><p class="seq-say" aria-live="polite">Press play.</p></div>
         </div>
         <div class="prose measure">
-          <p>The gate held both times: nothing was written ({{out-inline ch3_tools 3}}). What changed is what the model could tell the customer. "Please try again later" is wrong on Thursday and Friday, and Dana tries again. This is Part 1 chapter 2's tool that left quietly: none of 80 conversations noticed on their own, and one line saying so fixed it on most models.</p>
+          <p>The gate held both times: nothing was written ({{out-inline ch3_tools 3}}). What changed is what the model could tell the customer. "Please try again later" is wrong on Thursday and Friday, so Dana is told to try again. This is Part 1 chapter 2's tool that left quietly: none of 80 conversations noticed on their own, and one line saying so fixed it on most models. What models do when the tool is hidden and nobody says so is stranger than "try later": <a href="../part3/04-run-your-own-probe.html">Part 3, chapter 4</a> probes it.</p>
         </div>
         {{code ch3_tools.py notice "code/part2/ch3_tools.py, the line · pydantic-ai 2.59+" keys="on_change='append'|return 'Month-end"}}
         <p class="source"><b>Offline, deterministic.</b> The <code>"Unknown tool"</code> result and the ledger writes are Pydantic AI 2.68's real behavior. The replies come from a stand-in model that answers from its page; what real models did with each page is Part 1 chapter 2's measurement.</p>

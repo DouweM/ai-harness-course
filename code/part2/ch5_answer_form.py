@@ -34,6 +34,7 @@ from dataclasses import dataclass
 from pydantic_ai import Agent, ModelRetry, RunContext, ToolOutput
 
 from billing import FakeBilling
+from billing_world import read_email  # chapter 1's tool: Dana's email, as data
 
 
 class Installment(BaseModel):
@@ -57,8 +58,9 @@ class Deps:
 agent = Agent(
     'anthropic:claude-sonnet-5-5',
     deps_type=Deps,
-    instructions='Decide whether this customer email commits to paying us, and record the promise.',
+    instructions='Decide whether the customer email you are asked about commits to paying us, and record the promise.',
     output_type=ToolOutput(Promise),
+    tools=[read_email],
 )
 
 
@@ -96,19 +98,21 @@ for arm in ('one', 'installments'):
 from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
-from billing import CORRECTION, CORRECTION_RECEIVED
+from billing import CORRECTION_ID, CORRECTION_RECEIVED, new_email
 
 
 def adds_up_wrong_first(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
-    second = '4120.00' if len(messages) == 1 else '2060.00'  # first answer: the rest, written as the full amount
+    if len(messages) == 1:
+        return ModelResponse(parts=[ToolCallPart('read_email', {'email_id': CORRECTION_ID})])
+    second = '4120.00' if len(messages) == 3 else '2060.00'  # first answer: the rest, written as the full amount
     args = {'is_commitment': True, 'invoice_number': 'INV-2041',
             'installments': [{'amount': '2060.00', 'due_date': '2026-11-20'}, {'amount': second, 'due_date': '2026-11-30'}]}
     return ModelResponse(parts=[ToolCallPart(info.output_tools[0].name, args)])
 
 
 with agent.override(model=FunctionModel(adds_up_wrong_first)):
-    result = agent.run_sync(CORRECTION, deps=Deps(FakeBilling(), CORRECTION_RECEIVED))
-sent_back = result.all_messages()[2].parts[0]
+    result = agent.run_sync(new_email(CORRECTION_ID), deps=Deps(FakeBilling(), CORRECTION_RECEIVED))
+sent_back = result.all_messages()[4].parts[0]
 assert isinstance(sent_back, ToolReturnPart)
 print('model reads:', sent_back.model_response_str())
 print('recorded:   ', [(str(i.amount), str(i.due_date)) for i in result.output.installments])

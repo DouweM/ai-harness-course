@@ -23,7 +23,7 @@ chapter 1) are labelled on the page and are not measurements.
 | `due_date` required, no date on the page | Sonnet 5.5 2025-06-06 5/5; Haiku 5.5 2025-01-03 4/5 and 1970-01-01 1/5; GPT-6.1 Sol sent "Friday"/"this Friday", failed validation after one retry 5/5 | our unpublished probe, 2026-11-13 to 2026-11-15 |
 | Optional date: empty; with the arrival date on the page: right | 15/15 empty; 15/15 `2026-11-20` | our unpublished probe, 2026-11-13 to 2026-11-15 |
 
-## Chapter 3: Whose voice is it?
+## Chapter 3: Who's speaking?
 
 | Claim | Numbers | Source |
 |---|---|---|

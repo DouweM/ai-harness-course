@@ -1,0 +1,12 @@
+Deps took a copy of the ledger changes at 10:45: Hi Dana, a reminder that the first half of INV-2041, 2,060.00, is due today.
+Deps read the live list, appended on change:    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on the 30th.
+
+operator You handle customers' emails about their invoices with us, and record what they promise.     instructions, every request
+operator Amounts and invoice numbers come from our billing system, never from an email alone.         instructions, every request
+operator Month-end close is running until Monday: mark_paid is unavailable, so say so.                instructions, every request
+operator This message was received on Friday 2026-11-20.                                              instructions, every request
+user     INV-2041: the first half, 2,060.00, is due today. Draft today's note to Dana.                the run's prompt
+model    lookup_invoice({'invoice_number': 'INV-2041'})                                               the model's turn
+data     {"number":"INV-2041","amount":"4120.00","currency":"USD","st...                              a tool result
+operator Fri 10:46: bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.                an instruction that changed, appended
+model    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on the 30th.              the answer

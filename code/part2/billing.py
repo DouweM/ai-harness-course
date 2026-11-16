@@ -28,17 +28,22 @@ class LedgerUnavailable(Exception):
 
 @dataclass
 class FakeBilling:
-    """An in-memory billing client: look up an invoice, mark it paid, record a payment against it."""
+    """An in-memory billing client: look up an invoice, mark it paid, record a payment, read a customer's email."""
 
     invoices: dict[str, Invoice] = field(
         default_factory=lambda: {
             'INV-2041': Invoice(number='INV-2041', amount=Decimal('4120.00'), currency='USD', status='open'),
-            'INV-2050': Invoice(number='INV-2050', amount=Decimal('980.00'), currency='USD', status='overdue'),
+            'INV-2038': Invoice(number='INV-2038', amount=Decimal('1250.00'), currency='USD', status='open'),
+            'INV-2045': Invoice(number='INV-2045', amount=Decimal('640.00'), currency='USD', status='open'),
+            'INV-2057': Invoice(number='INV-2057', amount=Decimal('980.00'), currency='USD', status='overdue'),
         }
     )
     down: bool = False  # Part 3: the ledger has an outage
     writes: list[tuple[str, str]] = field(default_factory=list)  # (invoice, idempotency key)
     payments: list[tuple[str, Decimal]] = field(default_factory=list)  # (invoice, amount)
+
+    async def read_email(self, email_id: str) -> str | None:
+        return f'From: dana@example.com\n\n{EMAILS[email_id]}' if email_id in EMAILS else None
 
     async def get_invoice(self, number: str) -> Invoice | None:
         return self.invoices.get(number)
@@ -61,7 +66,7 @@ class FakeBilling:
         return f'Recorded {amount} on {number}.'
 
 
-# Dana's week: the thread the whole course follows.
+# Dana's week: the thread the whole course follows (the table in DIRECTION.md).
 DANA = 'Hi, INV-2041 will be paid this Friday. Thanks, Dana'
 RECEIVED = date(2026, 11, 17)  # Tuesday: the email arrives at 09:02
 CORRECTION = "Correction on INV-2041: we'll pay half this Friday and the rest by the 30th. Dana"
@@ -70,3 +75,12 @@ CLOSE_STARTS = date(2026, 11, 19)  # Thursday: month-end close begins
 WIRE = 'We wired the first half for INV-2041 today: 2,060.00. Dana'
 WIRE_RECEIVED = date(2026, 11, 20)  # Friday
 DISPUTE = 'Also, the amount on INV-2041 looks wrong to us: we were quoted 3,900. Dana'
+
+# Dana's emails reach the agent as data: a tool reads them. The user's message is your app's request about an email.
+EMAILS = {'881': DANA, '884': CORRECTION, '887': WIRE, '889': DISPUTE}
+DANA_ID, CORRECTION_ID, WIRE_ID, DISPUTE_ID = EMAILS
+
+
+def new_email(email_id: str) -> str:
+    """What your app sends as the user's message when an email arrives: a request about it, never the email itself."""
+    return f'New email {email_id} from dana@example.com. Read it and handle it.'

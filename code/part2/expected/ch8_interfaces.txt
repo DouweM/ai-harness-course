@@ -1,4 +1,4 @@
 manage_message_history='client': the lookup on the model's page says 3900.00, paid
 manage_message_history='server': the lookup on the model's page says 4120.00, open
-  Approve mark_paid({"invoice_number":"INV-2041"})? ['approved']
+  Approve record_payment({"invoice_number":"INV-2041","amount":"2060.00"})? ['approved']
 ledger writes: []

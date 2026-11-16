@@ -23,11 +23,11 @@
         <h1>What you're talking to</h1>
         <p class="meta-row" data-auto></p>
         <p class="point">The model reads <b>one page, from the top, every time</b>, and writes what comes next. Everything it knows about your situation is on that page. You write the page.</p>
-        <p class="lede">Part 1 has no framework code. It's about the other side of the API call: what the model sees, and what it does with it. Meet <span class="tokname-pill">Tok</span>, our stand-in for the model. Right now Tok is a single token. By the end of this chapter it is a mind, reading one page.</p>
+        <p class="lede">Part 1 has no framework code. It's about the other side of the API call: what the model sees, and what it does with it. Meet <span class="tokname-pill">Tok</span>, our stand-in for the model. Right now Tok is a single token. By the end of this chapter it is an assistant, answering from the one page it reads.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
-          data-tok-lines='["the", "the next", "the next token", "...is what I make. One at a time."]' data-tok-moods=",,,happy"><span data-tok="current" data-crop="hero"></span></button>
+          data-tok-lines='["the", "the next token", "the next token of whatever document you hand me", "and in a chat, the next line is the assistant&apos;s. That&apos;s me."]' data-tok-moods=",,,happy"><span data-tok="current" data-crop="hero"></span></button>
         <p class="tok-line" aria-live="polite"></p>
       </div>
     </div>
@@ -125,7 +125,7 @@ Hi, INV-2041 will be paid this Friday. Thanks, Dana
         <div class="prose measure">
           <p>If Tok only knows the page, then the replies on it are its past, whoever wrote them. We tested that: one model wrote the first turns of a billing conversation, then a model from another company took over, and we told it so in plain words.</p>
         </div>
-        <aside class="notes"><p>Most rooms pick A or B: surely it notices, especially when told. The answer is the cleanest demonstration that the page is all there is.</p></aside>
+        <aside class="notes"><p>Expect A or B: surely it notices, especially when told. The answer is the cleanest demonstration that the page is all there is.</p></aside>
 
         <article class="puzzle" id="p1" data-answer="c">
           <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; A different model takes over</p><div class="pz-tok" aria-hidden="true"></div></div>
@@ -162,7 +162,7 @@ Hi, INV-2041 will be paid this Friday. Thanks, Dana
             <p class="eyebrow"><span class="dia"></span>Why</p>
             <div class="measure">
               <p>There is no "itself" off the page to compare with. The replies above the cursor are the only past Tok has, so they are its past; the line about another model is one more sentence, and nothing contradicts the story.</p>
-              <p>That cuts both ways. You can switch models mid-conversation and the story holds. But whatever the page says Tok did, Tok believes it did, including anything your code later edits. Chapter 4 is about exactly that.</p>
+              <p>That cuts both ways. You can switch models mid-conversation and the story holds. But whatever the page says Tok did, Tok believes it did, including anything your code later edits. Chapter 2 is about exactly that.</p>
             </div>
             <div class="tok-says"><div class="tk" data-tok="1" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Those replies are on my page. So they're mine. What else would they be?</p></div></div>
           </div>
@@ -172,7 +172,8 @@ Hi, INV-2041 will be paid this Friday. Thanks, Dana
       <section class="chap" id="so">
         <h2>So: you write the page</h2>
         <div class="prose measure">
-          <p>That's the whole job, seen from here. Tok doesn't know today's date unless you put it there, or your database, or the last request, or that a tool was quietly switched off. And models read the page differently: frontier models follow your rules closely, while smaller, cheaper ones, which you'll often want, lean harder on whatever the page shows. Write it for the models you'll actually run.</p>
+          <p>That's the whole job, seen from here. Tok doesn't know today's date unless you put it there, or your database, or the last request, or that a tool was quietly switched off. And models read the page differently: the largest models follow the app's instructions closely, while smaller, cheaper ones, which you'll often want, lean harder on whatever the page shows. Write it for the models you'll actually run.</p>
+          <p class="small muted">When this course says <b>frontier models</b>, it means the largest current hosted models we tested: Claude Opus 5.5, Claude Sonnet 5.5, GPT-6.1 Sol and GPT-6 Luna. Claude Haiku 5.5 and Gemini 3.8 Flash are their <b>smaller hosted</b> siblings; the open-weight models (Qwen3.8 27B, gpt-oss-120b) are named where they appear.</p>
           <p>Chapters 2 to 4 are three ways the page goes wrong, and the line or two that fixes each.</p>
         </div>
         <p class="talk-only headline">It only knows the page. Chapters 2 to 4: three ways the page goes wrong.</p>

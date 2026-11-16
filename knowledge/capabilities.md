@@ -11,6 +11,8 @@ A capability bundles one piece of harness behavior so it can be added to any age
 - **Hooks** around the run, each model request (`before_model_request`, `after_model_request`,
   `wrap_model_request`), and each tool call.
 - **History processing**, and events.
+- **Loading on demand** (`defer_loading=True`): instructions and tools stay off the page until the model loads the
+  capability.
 
 Built-in capabilities ship in core (thinking, caching, web search and fetch, tool search, provider-native
 compaction, MCP, model fallback, handle deferred tool calls, instrumentation, and more) and many more in the Harness

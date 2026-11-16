@@ -58,7 +58,7 @@ def tree() -> None:
 async def main() -> None:
     billing = FakeBilling()
     with collections.override(model=model_that_records('INV-2041', '2060.00')):
-        with logfire.span('Friday 17:40: Dana wires the first half'):
+        with logfire.span('Friday 17:40: the bank confirms the first half'):
             conversation_id = await friday(billing)
         with logfire.span('Monday 09:15: approved'):
             await monday(billing, conversation_id)

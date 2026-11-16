@@ -26,7 +26,7 @@ runtime: 6
         <h2>Smallest shape first</h2>
         <aside class="notes"><p>The point: pick the smallest shape; when you delegate, return typed facts and share usage. The prediction: a cost limit that never sees the delegate's retries.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Friday 20 Nov, 14:15</span>"Also, the amount on INV-2041 looks wrong to us: we were quoted 3,900. Dana." A dispute changes everything downstream: no reminder, no recorded promise, a person on the billing team. Deciding whether an email is a dispute is a narrow job a smaller model does well.</p>
+          <p class="story"><span class="when">Friday 20 Nov, 14:15</span>"Also, the amount on INV-2041 looks wrong to us: we were quoted 3,900. Dana." A dispute changes everything downstream: no reminder, no recorded promise, a person on the billing team. (That person replies on Monday: 3,900 was a quote that expired in October, and the invoice stands at 4,120.) Deciding whether an email is a dispute is a narrow job a smaller model does well.</p>
           <p>An agent is a loop, and every turn costs a request. Four shapes, from cheapest:</p>
         </div>
         <div class="tbl-wrap"><table class="tbl">
@@ -38,7 +38,7 @@ runtime: 6
             <tr><td>An agent that delegates</td><td>The parent model</td><td>Self-contained sub-tasks with their own context</td><td>A tool that runs another agent; <a href="https://pydantic.dev/docs/ai/harness/subagents/"><code>SubAgents</code></a></td></tr>
           </tbody>
         </table></div>
-        {{code ch7_multi.py delegate "code/part2/ch7_multi.py, delegating as a tool" keys="class DisputeCheck|output_type=ToolOutput|@collections.tool|usage=ctx.usage"}}
+        {{code ch7_multi.py delegate "code/part2/ch7_multi.py, delegating as a tool" keys="class DisputeCheck|output_type=ToolOutput|@collections.tool|usage=ctx.usage|LIMITS = "}}
       </section>
 
       <section id="budget">
@@ -49,9 +49,9 @@ runtime: 6
             <div class="transcript" aria-label="The run">
               <div class="tr-title">// one email, a limit of 8 requests</div>
               <div class="msg sys"><span class="who">your code</span><div class="body mono">collections.run_sync(email, usage_limits=UsageLimits(request_limit=8))</div></div>
-              <div class="msg model"><span class="who">collections, four times</span><div class="body mono">check_for_dispute(email)</div></div>
+              <div class="msg model"><span class="who">collections, four times</span><div class="body mono">check_for_dispute("889")</div></div>
               <div class="msg tool"><span class="who">classifier, each time</span><div class="body">a first answer that fails validation, then a good one: 2 requests</div></div>
-              <div class="msg sys"><span class="who">the delegate tool</span><div class="body mono">await classifier.run(email_text)  # no usage=</div></div>
+              <div class="msg sys"><span class="who">the delegate tool</span><div class="body mono">await classifier.run(ask, deps=ctx.deps)  # no usage=</div></div>
             </div>
             <div class="pz-ask">
               <p class="q">That's 13 requests in all. What happens?</p>
@@ -73,12 +73,12 @@ runtime: 6
           </div>
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix: one line</p>
-            <p class="measure">Pass <code>usage=ctx.usage</code>, and the delegate counts on the parent's usage: the limit sees every request in the tree.</p>
+            <p class="measure">Pass <code>usage=ctx.usage</code>, and the delegate counts on the parent's total: the limit sees every request in the tree. Pass the same <code>usage_limits=</code> too, so the delegate stops itself mid-run instead of when control comes back. <code>SubAgents</code> does both.</p>
             {{out ch7_multi 2-2}}
             <p class="source"><b>Offline, deterministic.</b> Stand-in models for both agents; the counting is Pydantic AI 2.68's real behavior. <code>SubAgents</code> forwards usage by default.</p>
             <div class="tok-says"><div class="tk" data-tok="12" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>My teammate and I share one budget now. When it runs out, we both stop.</p></div></div>
           </div>
-          <aside class="notes"><p>Most rooms pick A. The answer is B. One line fixes it: usage=ctx.usage.</p></aside>
+          <aside class="notes"><p>Expect A. The answer is B. One line fixes it: usage=ctx.usage.</p></aside>
         </article>
       </section>
 
@@ -93,7 +93,7 @@ runtime: 6
       <section id="now">
         <div class="rule">
           <p class="eyebrow">What you can do now</p>
-          <p>Find every place one of your agents runs another. Give each delegate a typed output and <code>usage=ctx.usage</code>, and set a usage limit on the outer run.</p>
+          <p>Find every place one of your agents runs another. Give each delegate a typed output, <code>usage=ctx.usage</code> and the outer run's <code>usage_limits=</code>.</p>
         </div>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>

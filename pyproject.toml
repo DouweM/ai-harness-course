@@ -1,5 +1,5 @@
 [project]
-name = "harness-engineering-with-pydantic-ai"
+name = "ai-harness-course"
 version = "0.1.0"
 description = "Course code: every snippet from the chapters, runnable offline."
 requires-python = ">=3.11"

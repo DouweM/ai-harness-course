@@ -40,7 +40,7 @@
         <h2>Smallest shape first</h2>
         <aside class="notes"><p>The point: pick the smallest shape; when you delegate, return typed facts and share usage. The prediction: a cost limit that never sees the delegate's retries.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Friday 20 Nov, 14:15</span>"Also, the amount on INV-2041 looks wrong to us: we were quoted 3,900. Dana." A dispute changes everything downstream: no reminder, no recorded promise, a person on the billing team. Deciding whether an email is a dispute is a narrow job a smaller model does well.</p>
+          <p class="story"><span class="when">Friday 20 Nov, 14:15</span>"Also, the amount on INV-2041 looks wrong to us: we were quoted 3,900. Dana." A dispute changes everything downstream: no reminder, no recorded promise, a person on the billing team. (That person replies on Monday: 3,900 was a quote that expired in October, and the invoice stands at 4,120.) Deciding whether an email is a dispute is a narrow job a smaller model does well.</p>
           <p>An agent is a loop, and every turn costs a request. Four shapes, from cheapest:</p>
         </div>
         <div class="tbl-wrap"><table class="tbl">
@@ -52,9 +52,11 @@
             <tr><td>An agent that delegates</td><td>The parent model</td><td>Self-contained sub-tasks with their own context</td><td>A tool that runs another agent; <a href="https://pydantic.dev/docs/ai/harness/subagents/"><code>SubAgents</code></a></td></tr>
           </tbody>
         </table></div>
-        <div class="code focus" data-keys="5,17,25,28" data-run="uv run code/part2/ch7_multi.py"><div class="code-head"><span class="file">code/part2/ch7_multi.py, delegating as a tool</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from pydantic import BaseModel
+        <div class="code focus" data-keys="7,20,23,34,38" data-run="uv run code/part2/ch7_multi.py"><div class="code-head"><span class="file">code/part2/ch7_multi.py, delegating as a tool</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from pydantic import BaseModel
 
-from pydantic_ai import Agent, RunContext, ToolOutput
+from pydantic_ai import Agent, RunContext, ToolOutput, UsageLimits
+
+from billing_world import Deps, read_email  # chapter 1&#x27;s tool: the email is data, for both agents
 
 
 class DisputeCheck(BaseModel):
@@ -68,19 +70,27 @@ class DisputeCheck(BaseModel):
 
 classifier = Agent(
     &#x27;anthropic:claude-haiku-5-5&#x27;,
-    instructions=&#x27;Decide whether this email disputes one of our invoices.&#x27;,
+    deps_type=Deps,
+    instructions=&#x27;Decide whether the email you are asked about disputes one of our invoices.&#x27;,
     output_type=ToolOutput(DisputeCheck),
+    tools=[read_email],
 )
+LIMITS = UsageLimits(request_limit=8)  # your cost ceiling for one email, for the whole tree
+
 collections = Agent(
     &#x27;anthropic:claude-sonnet-5-5&#x27;,
+    name=&#x27;collections&#x27;,
+    deps_type=Deps,
     instructions=&quot;You handle customers&#x27; emails about their invoices. Check for a dispute before recording a promise.&quot;,
+    tools=[read_email],
 )
 
 
 @collections.tool
-async def check_for_dispute(ctx: RunContext, email_text: str) -&gt; DisputeCheck:
+async def check_for_dispute(ctx: RunContext[Deps], email_id: str) -&gt; DisputeCheck:
     &quot;&quot;&quot;Ask the dispute classifier about an email.&quot;&quot;&quot;
-    result = await classifier.run(email_text, usage=ctx.usage)  # one usage count for the whole tree
+    ask = f&#x27;Does email {email_id} dispute one of our invoices?&#x27;
+    result = await classifier.run(ask, deps=ctx.deps, usage=ctx.usage, usage_limits=LIMITS)  # one count, one ceiling
     return result.output</pre></div>
       </section>
 
@@ -92,9 +102,9 @@ async def check_for_dispute(ctx: RunContext, email_text: str) -&gt; DisputeCheck
             <div class="transcript" aria-label="The run">
               <div class="tr-title">// one email, a limit of 8 requests</div>
               <div class="msg sys"><span class="who">your code</span><div class="body mono">collections.run_sync(email, usage_limits=UsageLimits(request_limit=8))</div></div>
-              <div class="msg model"><span class="who">collections, four times</span><div class="body mono">check_for_dispute(email)</div></div>
+              <div class="msg model"><span class="who">collections, four times</span><div class="body mono">check_for_dispute("889")</div></div>
               <div class="msg tool"><span class="who">classifier, each time</span><div class="body">a first answer that fails validation, then a good one: 2 requests</div></div>
-              <div class="msg sys"><span class="who">the delegate tool</span><div class="body mono">await classifier.run(email_text)  # no usage=</div></div>
+              <div class="msg sys"><span class="who">the delegate tool</span><div class="body mono">await classifier.run(ask, deps=ctx.deps)  # no usage=</div></div>
             </div>
             <div class="pz-ask">
               <p class="q">That's 13 requests in all. What happens?</p>
@@ -116,12 +126,12 @@ async def check_for_dispute(ctx: RunContext, email_text: str) -&gt; DisputeCheck
           </div>
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix: one line</p>
-            <p class="measure">Pass <code>usage=ctx.usage</code>, and the delegate counts on the parent's usage: the limit sees every request in the tree.</p>
+            <p class="measure">Pass <code>usage=ctx.usage</code>, and the delegate counts on the parent's total: the limit sees every request in the tree. Pass the same <code>usage_limits=</code> too, so the delegate stops itself mid-run instead of when control comes back. <code>SubAgents</code> does both.</p>
             <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>with usage=ctx.usage   : stopped: The next request would exceed the request_limit of 8</pre></div>
             <p class="source"><b>Offline, deterministic.</b> Stand-in models for both agents; the counting is Pydantic AI 2.68's real behavior. <code>SubAgents</code> forwards usage by default.</p>
             <div class="tok-says"><div class="tk" data-tok="12" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>My teammate and I share one budget now. When it runs out, we both stop.</p></div></div>
           </div>
-          <aside class="notes"><p>Most rooms pick A. The answer is B. One line fixes it: usage=ctx.usage.</p></aside>
+          <aside class="notes"><p>Expect A. The answer is B. One line fixes it: usage=ctx.usage.</p></aside>
         </article>
       </section>
 
@@ -153,7 +163,7 @@ triage = Agent(  # a handoff is an output type: the run ends, and your code rout
       <section id="now">
         <div class="rule">
           <p class="eyebrow">What you can do now</p>
-          <p>Find every place one of your agents runs another. Give each delegate a typed output and <code>usage=ctx.usage</code>, and set a usage limit on the outer run.</p>
+          <p>Find every place one of your agents runs another. Give each delegate a typed output, <code>usage=ctx.usage</code> and the outer run's <code>usage_limits=</code>.</p>
         </div>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>

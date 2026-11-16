@@ -1,19 +1,19 @@
-title: Capabilities: the unit of harness behavior
-description: Chapters 2 to 5 built a harness on one agent. Friday a second agent needs the same world, and copying the tool without its rules writes to the ledger during close. A capability packages instructions, tools, gates and hooks once, for any agent. The built-ins and Coder are made the same way.
+title: Capabilities: what goes on the page, and when
+description: Design the page first: what the model should read, in whose voice, from what moment. Pydantic AI gives you a fixed set of moments to add to it, and every harness feature, from approvals to background tools to code mode, is a few insertions at those moments. A capability packages them once, for any agent. The built-ins and Coder are made the same way.
 n: 6
-runtime: 12
+runtime: 14
 ---
   <header class="chapter-head">
     <div class="wrap head-grid">
       <div>
         <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
-        <h1>Capabilities: the unit of harness behavior</h1>
+        <h1>Capabilities: what goes on the page, and when</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">Everything chapters 2 to 5 built lives on one agent. <b>A capability packages it once: instructions, tools, gates and hooks, attached to any agent.</b> The built-ins, and whole agents like Coder, are made the same way.</p>
+        <p class="point">Start from the page you want the model to read. <b>Every harness feature is something put on that page at a known moment, in some voice, and a capability packages a set of them for any agent.</b> The built-ins, and whole agents like Coder, are made the same way.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
-          data-tok-lines='["Everything I carry, packed once.", "Give the new agent my backpack, not just my tools.", "Coder? Five capabilities and a good onboarding note."]'><span data-tok="current" data-crop="hero"></span></button>
+          data-tok-lines='["Tell me at 10:46, not at 10:45.", "Everything I carry, packed once.", "Give the new agent my backpack, not just my tools.", "Coder? Five capabilities and a good onboarding note."]'><span data-tok="current" data-crop="hero"></span></button>
         <p class="tok-line" aria-live="polite"></p>
       </div>
     </div>
@@ -22,16 +22,143 @@ runtime: 12
   <div class="chapter-body">
     <div class="wrap" data-chapter-end>
 
+      <section id="page">
+        <h2>Start from the page you want</h2>
+        <aside class="notes"><p>The first half of the chapter, about 7 minutes. The point: design the page first (what the model should read, in which voice, from what moment), then pick mechanisms. Every feature in the recipe table is a few insertions at known moments. Then the second half packages them.</p></aside>
+        <div class="prose measure">
+          <p class="story"><span class="when">Friday 20 Nov, 10:45</span>A quarter of an hour after chapter 4's email, the billing app's morning job asks the agent for today's note to Dana: the first half is due today. At 10:46, while the agent is looking the invoice up, the bank feed shows her wire coming in. The bank confirms it at 17:40, and Part 3 records it; for now it is on its way.</p>
+          <p>Before any code, write down the page you want the model to read when it writes that note. Here it is, in the order the model reads it:</p>
+        </div>
+        <div class="transcript" aria-label="The page we want at 10:47">
+          <div class="tr-title">// the page we want the model to read at 10:47</div>
+          <div class="msg sys"><span class="who">instructions</span><div class="body">You handle customers' emails about their invoices with us, and record what they promise.
+Amounts and invoice numbers come from our billing system, never from an email alone.
+Month-end close is running until Monday: mark_paid is unavailable, so say so.
+This message was received on Friday 2026-11-20.</div></div>
+          <div class="msg sys"><span class="who">tool definitions</span><div class="body mono">read_email, lookup_invoice, record_payment   (mark_paid: off the page during close)</div></div>
+          <div class="msg user"><span class="who">user: the billing app, 10:45</span><div class="body">INV-2041: the first half, 2,060.00, is due today. Draft today's note to Dana.</div></div>
+          <div class="msg call"><span class="who">model &rarr; tool call</span><div class="body mono">lookup_invoice(invoice_number='INV-2041')</div></div>
+          <div class="msg tool"><span class="who">tool result: lookup_invoice</span><div class="body mono">INV-2041: 4120.00 USD, open</div></div>
+          <div class="msg note"><span class="who">notice from your app, 10:46</span><div class="body"><mark>Changes in our ledger since this conversation started:
+Fri 10:46: bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.</mark></div></div>
+          <div class="msg next"><span class="who">model</span><div class="body"><span class="caret"></span></div></div>
+          <div class="msg sys"><span class="who">answer form</span><div class="body">Promise, or a plain reply</div></div>
+        </div>
+        <div class="prose measure">
+          <p>Every line has a voice (Part 1, chapter 3) and a moment it went in. The instructions are yours and go in before every request. The tool list is yours too, and changes with close. The app's request is the user's. The lookup result is data. The incoming wire is a fact from your own systems, so you say it, as the operator, and it has to arrive <b>during</b> the run, at the end of the page, where a change belongs (Part 1, chapter 4).</p>
+          <p>That is the whole method: for each thing the model should know, decide <b>who says it</b> and <b>from what moment</b>. The rest of this chapter is the places Pydantic AI lets you put things, and the features built from them.</p>
+        </div>
+      </section>
+
+      <section id="points">
+        <h2>Where things go in, and when</h2>
+        <div class="prose measure">
+          <p>A run is a loop: a request to the model, its tool calls, their results, the next request. These are the moments you can add to the page or change what's on it, in the order they happen:</p>
+        </div>
+        <div class="tbl-wrap">
+<table class="tbl">
+  <thead><tr><th>Moment</th><th>What you can put on the page, or change</th><th>In Pydantic AI</th></tr></thead>
+  <tbody>
+    <tr><td>Before the run</td><td>The history you load (chapter 4), and the user's message</td><td><code>conversation=</code>, the prompt</td></tr>
+    <tr><td>Before every request</td><td>The instructions, read again: a changed one either rewrites the start of the page or is appended at the end</td><td><code>@instructions(on_change='append')</code></td></tr>
+    <tr><td></td><td>Which tools this request offers</td><td><code>prepare=</code>, <code>prepare_tools</code></td></tr>
+    <tr><td></td><td>The model and its settings</td><td><code>get_model</code>, <code>get_model_settings</code></td></tr>
+    <tr><td></td><td>The messages actually sent: clear, cut or summarize old ones</td><td><code>before_model_request</code>, history processors</td></tr>
+    <tr><td></td><td>A system message for this request only, at the end</td><td><code>SystemReminders</code></td></tr>
+    <tr><td>During a tool call</td><td>The result, as data. Anything the tool queues goes right after its result</td><td>the return value, <code>ctx.enqueue(...)</code></td></tr>
+    <tr><td>Any time, from outside</td><td>A message into the running run, before its next request</td><td><code>run.enqueue(...)</code></td></tr>
+    <tr><td>When the model would stop</td><td>Queued content that gives it another turn; a check that sends the answer back; a call that waits for a person</td><td><code>priority='when_idle'</code>, <code>ModelRetry</code>, <code>DeferredToolRequests</code></td></tr>
+    <tr><td>Between runs</td><td>What you store, and what changed since the last run</td><td><code>result.conversation</code>, appended instruction changes</td></tr>
+  </tbody>
+</table>
+        </div>
+        <p class="measure">Two rules from Part 1 decide which row you use. Keep the start of the page the same, so the provider can reuse its cache and the model's earlier reasoning still holds: changes go at the end. And give each piece the voice it deserves: a ledger change from your own system is yours to state; an email is data, read by a tool.</p>
+      </section>
+
+      <section id="midrun">
+        <h2>What can change during a run</h2>
+        <div class="prose measure">
+          <p>The wire shows up at 10:46, in the middle of the run. The ledger instruction from <code>billing_world</code> is read before every request, so it can carry the change, but only if it reads the ledger when it runs. Here are two versions of the same agent: one loads the changes into its deps when the run starts, the usual way to pass state; the other reads them live.</p>
+        </div>
+        {{code ch6_page.py midrun "code/part2/ch6_page.py · pydantic-ai 2.68" keys="ledger_changes=|async with collections.iter|is_call_tools_node|ledger_feed.append"}}
+        {{out ch6_page 1-2}}
+        <div class="prose measure">
+          <p>The first note asks Dana for money that is already on its way. Nothing failed: the model wrote from its page, and its page was from 10:45. The second read the ledger before the request after the lookup, and Pydantic AI appended the change at the end of the page, in your voice. Here is that page as the model read it, piece by piece:</p>
+        </div>
+        {{out ch6_page 4-12}}
+        <div class="prose measure">
+          <p>Between one request and the next, all of this can change:</p>
+          <ul>
+            <li><b>Instructions:</b> a notice that appears, changes or goes away (this one, chapter 3's close notice).</li>
+            <li><b>Tools:</b> if close starts mid-run, <code>mark_paid</code> is gone from the next request. A tool search can reveal tools, and loading an on-demand capability adds its tools and instructions together.</li>
+            <li><b>The model and its settings:</b> chosen per request, or swapped for the next model when a request fails.</li>
+            <li><b>The messages sent:</b> old results cleared or summarized as the page fills up (chapter 4).</li>
+            <li><b>New messages:</b> a tool's follow-up, a background result, a message from another agent or your app.</li>
+          </ul>
+          <p>What you shouldn't change is what the model already read. Rewriting the start of the page makes the provider process everything again, and leaves the model's earlier turns answering text that is no longer there, with nothing saying it changed. Say what changed, at the end.</p>
+        </div>
+      </section>
+
+      <section id="recipes">
+        <h2>Every feature is a recipe</h2>
+        <div class="prose measure">
+          <p>With the moments in hand, the features stop being magic. Each one puts something on the page at one of those moments, in some voice. The ones you'll meet most:</p>
+        </div>
+        <div class="tbl-wrap">
+<table class="tbl">
+  <thead><tr><th>Feature</th><th>What it puts on the page, and when</th><th>Where</th></tr></thead>
+  <tbody>
+    <tr><td>Notices</td><td>A changed instruction, appended at the end before the next request, in your voice (chapter 3, and the wire above)</td><td><code>on_change='append'</code> <span class="pkg">core</span></td></tr>
+    <tr><td>Hiding a tool</td><td>Leaves its definition out of a request. Pair it with a notice, or the model doesn't know why (chapter 3)</td><td><code>prepare=</code> <span class="pkg">core</span></td></tr>
+    <tr><td>Approvals</td><td>The call is on the page; the run pauses. The person's decision comes back as that call's result on the next run, or a policy decides within the run</td><td><code>requires_approval</code>, <a href="https://pydantic.dev/docs/ai/capabilities/handle-deferred-tool-calls/">HandleDeferredToolCalls</a> <span class="pkg">core</span></td></tr>
+    <tr><td>Reminders</td><td>A system message at the end of one request, gone from the next, so a long run doesn't drift from a rule</td><td><a href="https://pydantic.dev/docs/ai/harness/system-reminders/">SystemReminders</a> <span class="pkg">harness</span></td></tr>
+    <tr><td>Background tools</td><td>The call's result is "started" with a task id. The real result arrives later as a message framed as that tool's result; the run waits for it before it ends</td><td><a href="https://pydantic.dev/docs/ai/harness/background-tools/">BackgroundTools</a> <span class="pkg">harness</span></td></tr>
+    <tr><td>Agents messaging agents</td><td>A delegated task's report and questions arrive as messages framed as task data. A message to a running task is read at its next request</td><td><a href="https://pydantic.dev/docs/ai/harness/subagents/">SubAgents</a> with <code>TaskControl</code> <span class="pkg">harness</span></td></tr>
+    <tr><td>Clearing</td><td>Replaces an old tool result with a note; the call stays, so the model can fetch it again (chapter 4)</td><td><a href="https://pydantic.dev/docs/ai/harness/compaction/">ClearToolResults</a> <span class="pkg">harness</span></td></tr>
+    <tr><td>Compaction</td><td>Replaces older turns with one summary (chapter 4)</td><td><a href="https://pydantic.dev/docs/ai/harness/compaction/">TieredCompaction</a> <span class="pkg">harness</span></td></tr>
+    <tr><td>Tool search</td><td>Holds tool definitions back; a search puts the matches on the next request</td><td><a href="https://pydantic.dev/docs/ai/capabilities/tool-search/">ToolSearch</a>, <code>defer_loading=True</code> <span class="pkg">core</span></td></tr>
+    <tr><td>On-demand capabilities</td><td>A one-line catalog entry. Loading one states its instructions as a system message and adds its tools</td><td><a href="https://pydantic.dev/docs/ai/capabilities/on-demand/">defer_loading=True</a> on a capability <span class="pkg">core</span></td></tr>
+    <tr><td>Code mode</td><td>Folds tools into one <code>run_code</code> tool. The model writes a program that calls them; only what it returns reaches the page</td><td><a href="https://pydantic.dev/docs/ai/harness/code-mode/">CodeMode</a> <span class="pkg">harness</span></td></tr>
+    <tr><td>Fallback</td><td>The same page, sent to the next model when a request fails or is refused</td><td><a href="https://pydantic.dev/docs/ai/capabilities/model-fallback/">ModelFallback</a> <span class="pkg">core</span></td></tr>
+  </tbody>
+</table>
+        </div>
+        <p class="measure">Read a new feature the same way: what does it put on the page, in whose voice, from what moment, and what does the model have to do to get the rest? If you can answer those, you can predict how it behaves, and build your own when nothing fits.</p>
+      </section>
+
+      <section id="context">
+        <h2>Making room: the context tricks</h2>
+        <div class="prose measure">
+          <p>Every request pays for the whole page, and models pick worse once it's long or the tool list passes a few dozen. Each trick below keeps something off the page; the question is what the model must do to get it back, and what that costs.</p>
+        </div>
+        <div class="tbl-wrap">
+<table class="tbl">
+  <thead><tr><th>Trick</th><th>What stays off the page</th><th>How the model gets it back</th><th>The catch</th></tr></thead>
+  <tbody>
+    <tr><td>Clearing (chapter 4)</td><td data-label="Off the page">Old tool results</td><td data-label="Getting it back">Calls the tool again</td><td data-label="The catch">Only for results a tool can fetch again: not Dana's emails</td></tr>
+    <tr><td>Compaction (chapter 4)</td><td data-label="Off the page">Older turns</td><td data-label="Getting it back">It can't; it has the summary</td><td data-label="The catch">Lossy: keep rules and promises word for word</td></tr>
+    <tr><td><a href="https://pydantic.dev/docs/ai/harness/tool-output-limits/">Tool output limits</a></td><td data-label="Off the page">Most of a huge result</td><td data-label="Getting it back">Pages through a saved copy, if you keep one</td><td data-label="The catch">The model must know there's more</td></tr>
+    <tr><td>Tool search</td><td data-label="Off the page">Definitions of tools it hasn't needed</td><td data-label="Getting it back">Searches by keyword</td><td data-label="The catch">One more round trip; it has to guess the words</td></tr>
+    <tr><td>On-demand capabilities</td><td data-label="Off the page">Whole workflows: instructions, tools, settings</td><td data-label="Getting it back">Loads one by name</td><td data-label="The catch">Costs a round trip: skip it for what most runs need</td></tr>
+    <tr><td>Code mode</td><td data-label="Off the page">Intermediate results</td><td data-label="Getting it back">Never needs them: its code filters them</td><td data-label="The catch">The model must write correct code, in a sandbox's subset of Python</td></tr>
+    <tr><td>Sub-agents (chapter 7)</td><td data-label="Off the page">A whole sub-task's work</td><td data-label="Getting it back">Reads the report</td><td data-label="The catch">The report is all it knows</td></tr>
+  </tbody>
+</table>
+        </div>
+        <p class="measure">Clearing and compaction change earlier parts of the page, so the provider's cache starts over after them: do them in large steps when the page is nearly full, not a little on every request. The other tricks add at the end and keep the cache. Further reading: <a href="https://pydantic.dev/articles/code-mode-vs-sandboxes">Code mode vs sandboxes for AI agents</a>, on when code mode beats tool calls and how it differs from a sandbox, and <a href="https://pydantic.dev/articles/pydantic-ai-capabilities">Skills on steroids</a>, on on-demand capabilities and what they save.</p>
+      </section>
+
       <section id="second">
         <h2>Friday: a second agent</h2>
-        <aside class="notes"><p>The climax of Part 2. The point: a tool copied without its rules is the failure; a capability carries the rules with it. Walk the four steps slowly, then the built-ins, the building blocks and Coder.</p></aside>
+        <aside class="notes"><p>The second half, about 7 minutes. The point: a tool copied without its rules is the failure; a capability carries the rules with it. Walk the four steps slowly; the rest is a quick tour, and the gallery is for later.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Friday 20 Nov, 08:00</span>The team adds a reminders agent: it drafts the reminder for each open invoice. It needs <code>mark_paid</code> too, for customers who say they already paid. Close is still running.</p>
+          <p>So far every insertion lives on one agent.</p>
+          <p class="story"><span class="when">Friday 20 Nov, 11:00</span>Half an hour after Dana's wire went out, the team adds a reminders agent: it drafts the reminder for each open invoice. It needs <code>mark_paid</code> too, for customers who say they already paid. Close is still running.</p>
           <p>The quick way is to register the same function on the new agent. Step through what that gives it, then move each rule from chapters 2 to 5 into one capability, one at a time:</p>
         </div>
         <div class="viz seq" data-stop>
           <p class="eyebrow"><span class="dia"></span>Package it, one piece at a time</p>
-          <h4>The reminders agent during close. Dana says the wire went out: "Mark INV-2041 paid."</h4>
+          <h4>The reminders agent during close. A colleague: "INV-2045 was paid in full by wire this morning. Mark it paid."</h4>
           <ol class="seq-steps">
             <li class="bad" data-mood="happy" data-say="mark_paid is right here. Done!"><span class="ico">1</span><div><span class="who">{{out-inline ch6_capabilities 1}}</span><pre>{{out-inline ch6_capabilities 2}}
 {{out-inline ch6_capabilities 4}}
@@ -48,7 +175,7 @@ runtime: 12
           </ol>
           <div class="btn-row"><button class="btn seq-play" type="button">Play</button><button class="btn ghost seq-step" type="button">Next step</button></div>
           <div class="viz-tok seq-tok"><span data-tok="11" data-crop="face"></span><p class="seq-say" aria-live="polite">Press play.</p></div>
-          <p class="source"><b>Offline, deterministic.</b> Tool lists, notices and ledger writes are Pydantic AI 2.68's real behavior; the replies come from a stand-in model that answers from its page. <code>code/part2/ch6_capabilities.py</code></p>
+          <p class="source"><b>Offline, deterministic.</b> Tool lists, notices and ledger writes are Pydantic AI 2.68's real behavior; the replies come from a stand-in model that answers from its page (Part 3 chapter 4 shows what real models do). <code>code/part2/ch6_capabilities.py</code></p>
         </div>
         <p class="measure">Step 1 is the failure: the new agent got the tool without its rules, and wrote to the ledger during close. Once the rules travel with the tool, every agent that has one has the other.</p>
       </section>
@@ -56,10 +183,11 @@ runtime: 12
       <section id="world">
         <h2>The collections world, packaged</h2>
         <div class="prose measure">
-          <p><code>Capability</code> has the decorators an agent has, so moving the code over is a change of prefix. Each highlighted line is a chapter: the received date (2), the close notice and the hidden, gated <code>mark_paid</code> (3), errors that say whose problem it is (3). Chapters 7 to 9 and Part 3 import this file. A capability can also contribute model settings, a fallback model, history processing and hooks around every request and tool call.</p>
+          <p><code>Capability</code> has the decorators an agent has, so moving the code over is a change of prefix. Each highlighted line is a chapter: the received date (2), the close notice and the hidden, gated <code>mark_paid</code> (3), errors that say whose problem it is (3). And <code>record_payment</code> now waits for a person too, with its argument checks in <code>args_validator=</code>, so a person is never asked to approve a call that was going to be rejected. Chapters 7 to 9 and Part 3 import this file. A capability can also contribute model settings, a fallback model, history processing and hooks around every request and tool call.</p>
         </div>
-        {{code billing_world.py world "code/part2/billing_world.py · pydantic-ai 2.59+" keys="billing_world = Capability|name='received'|name='close'|return None if ctx.deps.closing|requires_approval=True, prepare|raise ToolFailed"}}
-        {{code billing_world.py agents "code/part2/billing_world.py, two agents, one world" keys="output_type=\[ToolOutput|capabilities=\[billing_world"}}
+        {{code billing_world.py world "code/part2/billing_world.py · pydantic-ai 2.59+" keys="billing_world = Capability|name='received'|name='close'|return None if ctx.deps.closing|requires_approval=True, prepare|args_validator=valid_payment|raise ToolFailed"}}
+        {{code billing_world.py agents "code/part2/billing_world.py, two agents, one world" keys="output_type=\[ToolOutput|capabilities=\[billing_world|Caching\(\)"}}
+        <p class="measure">Two agents, one world: both read the same date, see the same close notice, and can't write during close. If your system today is a set of single model calls, each with its own copy of the prompt and its own idea of what the ledger says, this is the step that makes them agree.</p>
       </section>
 
 
@@ -68,40 +196,23 @@ runtime: 12
         <div class="prose measure">
           <p>Pydantic AI ships the capabilities that need provider or loop support, and the Harness (<code>pydantic-ai-harness</code>) ships the rest. Four this agent would add, each in one line:</p>
         </div>
-        {{code ch6_capabilities.py builtins "code/part2/ch6_capabilities.py, built-ins" keys="TieredCompaction\(|SystemReminders\(|Caching\(|ModelFallback\("}}
+        {{code ch6_capabilities.py builtins "code/part2/ch6_capabilities.py, built-ins" keys="compaction,|SystemReminders\(|Caching\(|ModelFallback\("}}
         <div class="tbl-wrap">
 <table class="tbl">
-  <thead><tr><th>Capability</th><th>What it does</th></tr></thead>
+  <thead><tr><th>The eight we reach for first</th><th>What it does</th></tr></thead>
   <tbody>
-    <tr class="grp"><th colspan="2">Model and cost</th></tr>
     <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/thinking/">Thinking</a> <span class="pkg">core</span></td><td>One effort setting for every provider.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/caching/">Caching</a> <span class="pkg">core</span></td><td>Caches the unchanged start of the conversation.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/harness/warn-on-cache-busts/">WarnOnCacheBusts</a> <span class="pkg">harness</span></td><td>Tells you when a request missed the cache.</td></tr>
+    <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/caching/">Caching</a> <span class="pkg">core</span></td><td>Caches the unchanged start of the conversation. On by default in every agent you build: Anthropic caches nothing without it.</td></tr>
     <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/model-fallback/">ModelFallback</a> <span class="pkg">core</span></td><td>Retries a failed or refused request on the next model.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/harness/spend/">SpendLimits</a> <span class="pkg">harness</span></td><td>Budgets across runs: per day, tenant or month.</td></tr>
-    <tr class="grp"><th colspan="2">Tools and workspace</th></tr>
     <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/mcp/">MCP</a> <span class="pkg">core</span></td><td>Connects any MCP server's tools.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/web-search/">WebSearch</a>, <a href="https://pydantic.dev/docs/ai/capabilities/web-fetch/">WebFetch</a> <span class="pkg">core</span></td><td>Provider-native search and fetch.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/tool-search/">ToolSearch</a> <span class="pkg">core</span> <a href="https://pydantic.dev/docs/ai/harness/code-mode/">CodeMode</a> <span class="pkg">harness</span></td><td>Hundreds of tools: load on demand, or call many from one script.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/core-concepts/workspace/">LocalWorkspace</a> <span class="pkg">core</span> sandboxes <span class="pkg">harness</span></td><td>Where file and shell tools run: this machine or a sandbox.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/harness/tool-output-limits/">ToolOutputLimits</a> <span class="pkg">harness</span></td><td>Truncates oversized tool results.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/harness/subagents/">SubAgents</a>, <a href="https://pydantic.dev/docs/ai/harness/planning/">Planning</a> <span class="pkg">harness</span></td><td>Delegate to named agents; keep a plan.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/harness/memory/">Memory</a>, <a href="https://pydantic.dev/docs/ai/harness/skills/">Skills</a> <span class="pkg">harness</span></td><td>A notebook across runs; instructions loaded on demand.</td></tr>
-    <tr class="grp"><th colspan="2">History and context</th></tr>
     <tr><td><a href="https://pydantic.dev/docs/ai/harness/compaction/">TieredCompaction</a> <span class="pkg">harness</span></td><td>Clear, then summarize, only as far as needed (chapter 4).</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/compaction/">OpenAICompaction</a>, AnthropicCompaction <span class="pkg">core</span></td><td>The provider compacts history server side.</td></tr>
     <tr><td><a href="https://pydantic.dev/docs/ai/harness/system-reminders/">SystemReminders</a> <span class="pkg">harness</span></td><td>Re-states standing rules mid-run, at the end of the page.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/harness/managed-prompt/">ManagedPrompt</a> <span class="pkg">harness</span></td><td>Instructions you version and roll out without a deploy.</td></tr>
-    <tr class="grp"><th colspan="2">Control and safety</th></tr>
     <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/handle-deferred-tool-calls/">HandleDeferredToolCalls</a> <span class="pkg">core</span></td><td>Approves gated calls inside the run, by your policy.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/harness/ask-user/">AskUser</a> <span class="pkg">harness</span></td><td>Lets the model ask the user a question mid-run.</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/harness/guardrails/">InputGuardrail, ToolGuardrail, OutputGuardrail</a>, <a href="https://pydantic.dev/docs/ai/harness/detect-loops/">DetectLoops</a> <span class="pkg">harness</span></td><td>Block or redact; break repeated calls.</td></tr>
-    <tr class="grp"><th colspan="2">Runtime and operations</th></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/">DBOSDurability, TemporalDurability</a> and more <span class="pkg">core</span> <span class="pkg">harness</span></td><td>Runs that survive restarts (Part 3).</td></tr>
-    <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/process-history/">ProcessHistory</a>, <a href="https://pydantic.dev/docs/ai/capabilities/prepare-tools/">PrepareTools</a>, <a href="https://pydantic.dev/docs/ai/core-concepts/hooks/">Hooks</a> <span class="pkg">core</span></td><td>One processor, filter or hook, without a class.</td></tr>
+    <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/">DBOSDurability</a> <span class="pkg">core</span></td><td>Runs that survive restarts (Part 3).</td></tr>
   </tbody>
 </table>
         </div>
+        <p class="measure">The rest, over a hundred of them, each with what it does to the request, a short snippet and the version it arrived in: <a href="../reference/capabilities.html"><b>the Capability gallery</b></a>, filterable by job.</p>
       </section>
 
       <section id="blocks">
@@ -111,15 +222,16 @@ runtime: 12
         </div>
         {{code billing_world.py hooks "code/part2/billing_world.py, a hook" keys="Hooks\[Deps\]|@audit.on.after_tool_execute|return result"}}
         {{code ch6_capabilities.py subclass "code/part2/ch6_capabilities.py, a capability as a class" keys="class ReadOnlyDuringClose|def get_instructions|InstructionPart\(|def prepare_tools|t.name not in"}}
-        <p class="measure">If you subclassed or wrapped an agent to add logging or guards, a <code>Hooks</code> capability replaces it, and works on every agent.</p>
+        <p class="measure">If you subclassed or wrapped an agent to add logging or guards, a <code>Hooks</code> capability replaces it, and works on every agent. Any capability, yours included, can load on demand: give it an <code>id</code> and <code>defer_loading=True</code>, as in the recipe table above.</p>
       </section>
 
       <section id="coder">
-        <h2>Coder is five capabilities: no magic</h2>
+        <h2>Coder is capabilities: no magic</h2>
         <div class="prose measure">
-          <p>The Harness also ships whole agents built the same way. <code>Coder</code> is a coding agent in one line. Take it apart:</p>
+          <p>The Harness also ships whole agents built the same way. <code>Coder</code> is a coding agent in two lines: <code>LocalWorkspace('.')</code> (or a sandbox) for where it works, and <code>Coder()</code>. Taking it apart shows five capabilities and some plumbing:</p>
         </div>
         {{code ch6_capabilities.py coder "code/part2/ch6_capabilities.py, taking Coder apart · pydantic-ai-harness 0.68"}}
+        {{out ch6_capabilities 21-22}}
         <div class="exploded">
           <div class="blk5"><b>FileSystem</b><span>read_file, write_file, edit_file, list_files, grep</span></div>
           <div class="blk5"><b>Shell</b><span>shell, with timeouts</span></div>
@@ -128,41 +240,8 @@ runtime: 12
           <div class="blk5"><b>ClearToolResults</b><span>chapter 4, at 70% of the window</span></div>
           <div class="blk5 plumb"><b>plumbing</b><span>its instructions, output limits, argument repair, caching</span></div>
         </div>
-        <article class="puzzle" id="p1" data-answer="b">
-          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; A long session</p><div class="pz-tok" aria-hidden="true"></div></div>
-          <div class="pz-grid">
-            <div class="transcript" aria-label="A long Coder session">
-              <div class="tr-title">// an hour into a Coder session</div>
-              <div class="msg model"><span class="who">model, early on</span><div class="body mono">read_file("billing.py")</div></div>
-              <div class="msg tool"><span class="who">tool result, 400 lines</span><div class="body mono">class FakeBilling: ...</div></div>
-              <div class="msg user"><span class="who">&hellip; forty tool calls later, the window passes 70%</span><div class="body">Now add a test for record_payment.</div></div>
-              <div class="msg next"><span class="who">where billing.py was, the model now reads</span><div class="body"><span class="caret"></span></div></div>
-            </div>
-            <div class="pz-ask">
-              <p class="q">What is in the place of that file read?</p>
-              <div class="choices" role="radiogroup" aria-label="Your prediction">
-                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>The file, still: coding agents keep what they read</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>A short placeholder; the call that read it stays</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Nothing: the whole exchange is summarized away</span></button>
-              </div>
-              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
-              <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
-              <p class="verdict" aria-live="polite" hidden></p>
-            </div>
-          </div>
-          <div class="stage" data-label="What it reads" hidden>
-            <p class="eyebrow"><span class="dia"></span>What it reads</p>
-            <p class="headline">A placeholder. It's chapter 4's <code>ClearToolResults</code>, with its default note.</p>
-            {{out ch6_capabilities 21-22}}
-            <p class="measure">The read call stays, so the model knows it read the file and can read it again. It's an ordinary capability: change the note, the threshold, or which tools are cleared.</p>
-          </div>
-          <div class="stage" data-label="Your own" hidden>
-            <p class="eyebrow"><span class="dia"></span>Your own, from the same pieces</p>
-            {{code ch6_capabilities.py reviewer "code/part2/ch6_capabilities.py, a reviewer from Coder's pieces" keys="read_only=True|allowed_commands|placeholder="}}
-            <div class="tok-says"><div class="tk" data-tok="11" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Same backpack, different contents. A coding agent was never anything else.</p></div></div>
-          </div>
-          <aside class="notes"><p>Most rooms pick A or C. It is chapter 4's capability with a generic note. Land: Coder is five capabilities, no magic, and you can build your own from the same pieces.</p></aside>
-        </article>
+        <p class="measure">An hour into a session, where a file read was, the model reads chapter 4's placeholder; the read call stays, so it knows to read the file again. Your own agent can pick the same pieces: a code reviewer with no file-writing tools and a shell limited to git and pytest is five lines (<code>reviewer</code> in <code>code/part2/ch6_capabilities.py</code>, and in the <a href="../reference/capabilities.html#coder">gallery</a>). That's a guardrail against accidents, not a guarantee: git and pytest can both write. For a hard guarantee, run it in a sandbox. Every part of <code>Coder</code>, what it adds to the request and how to swap it, and the order several capabilities combine in: <a href="../reference/composing-harnesses.html">How harnesses are composed</a>.</p>
+        <div class="tok-says"><div class="tk" data-tok="11" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Same backpack, different contents. A coding agent was never anything else.</p></div></div>
       </section>
 
       <section id="now">
@@ -176,6 +255,8 @@ runtime: 12
             <li><a href="https://pydantic.dev/docs/ai/capabilities/overview/">Capabilities</a></li>
             <li><a href="https://pydantic.dev/docs/ai/capabilities/custom/">Writing your own</a> and <a href="https://pydantic.dev/docs/ai/core-concepts/hooks/">Hooks</a></li>
             <li><a href="https://pydantic.dev/docs/ai/harness/">The Harness</a> and <a href="https://pydantic.dev/docs/ai/harness/coder/">Coder</a></li>
+            <li><a href="../reference/capabilities.html">The Capability gallery</a>, in this course</li>
+            <li><a href="../reference/composing-harnesses.html">How harnesses are composed</a>, in this course</li>
           </ul>
         </div>
       </section>

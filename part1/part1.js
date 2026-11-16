@@ -119,9 +119,10 @@
     build: function (st) {
       var on = st.date === 'on', req = st.field === 'required';
       var msgs = [
-        { role: 'sys', who: 'instructions', html: 'Decide whether this customer email commits to paying us.' + (on ? '\n<span class="add">The email was received on Tuesday 2026-11-17.</span>' : ''), changed: on },
-        { role: 'sys', who: 'answer form', mono: true, html: 'is_commitment: true or false\ninvoice_number: text, or empty\ndue_date: ' + (req ? '<span class="add">a date (required)</span>' : 'a date, or empty'), changed: req },
-        { role: 'user', who: 'the email', text: 'Hi, INV-2041 will be paid this Friday. Thanks, Dana' }
+        { role: 'sys', who: 'instructions', html: 'Decide whether the customer email you are asked about commits to paying us.' + (on ? '\n<span class="add">The email was received on Tuesday 2026-11-17.</span>' : ''), changed: on },
+        { role: 'user', who: 'user (your billing system)', text: 'New email 881 from dana@example.com. Classify it.' },
+        { role: 'tool', who: 'tool result: read_email', text: 'Hi, INV-2041 will be paid this Friday. Thanks, Dana' },
+        { role: 'sys', who: 'answer form', mono: true, html: 'is_commitment: true or false\ninvoice_number: text, or empty\ndue_date: ' + (req ? '<span class="add">a date (required)</span>' : 'a date, or empty'), changed: req }
       ];
       var day = on ? { k: 'What day is it?', v: 'Tuesday 17 November: you told me when it arrived.', s: 'known' } : { k: 'What day is it?', v: 'No idea. Nothing here says.', s: 'unknown' };
       var fri, likely;
@@ -150,7 +151,7 @@
   SCN.monday = {
     init: { past: 'leave', model: 'claude' },
     controls: [
-      { key: 'past', label: 'What your harness does with Thursday\'s lookup', options: [{ v: 'leave', label: 'Leave it' }, { v: 'edit', label: 'Edit it to say "paid"' }, { v: 'append', label: 'Append a dated note' }, { v: 'delete', label: 'Delete it' }, { v: 'stub', label: 'Swap it for [cleared]' }] },
+      { key: 'past', label: 'What your harness does with Thursday\'s lookup', options: [{ v: 'leave', label: 'Leave it' }, { v: 'edit', label: 'Edit it to say "partly paid"' }, { v: 'append', label: 'Append a dated note' }, { v: 'delete', label: 'Delete it' }, { v: 'stub', label: 'Swap it for [cleared]' }] },
       { key: 'model', label: 'Model', options: [{ v: 'claude', label: 'Sonnet or Haiku 5.5' }, { v: 'other', label: 'GPT-6.1 Sol or Gemini 3.8 Flash' }] }
     ],
     build: function (st) {
@@ -158,16 +159,18 @@
       var open = '{"number": "INV-2041", "amount": "4120.00", "status": "open"}';
       var msgs = [
         { role: 'sys', who: 'instructions', text: 'You help the billing team with customer emails and invoices.', past: true },
-        { role: 'user', who: 'Dana, Thu 19 Nov', text: 'We\'ll pay INV-2041 on Friday. Thanks, Dana', past: true },
+        { role: 'user', who: 'user (the billing team), Thu 19 Nov', text: 'New email from Dana. Is INV-2041 still open?', past: true },
+        { role: 'tool', who: 'read_email: from Dana, Tue 17 Nov', text: 'Hi, INV-2041 will be paid this Friday. Thanks, Dana', past: true },
         { role: 'call', who: 'model, tool call', mono: true, text: 'lookup_invoice("INV-2041")', past: true, gone: p === 'delete' },
         { role: 'tool', who: 'tool result, Thu 19 Nov', mono: true, past: true, gone: p === 'delete',
-          html: p === 'edit' ? '<span class="add">{"number": "INV-2041", "amount": "4120.00", "status": "paid", "paid_on": "2026-11-20"}</span>' : p === 'stub' ? '<span class="add">[tool result cleared]</span>' : esc(open),
+          html: p === 'edit' ? '<span class="add">{"number": "INV-2041", "amount": "4120.00", "received": "2060.00", "status": "partly paid", "paid_on": "2026-11-20"}</span>' : p === 'stub' ? '<span class="add">[tool result cleared]</span>' : esc(open),
           changed: p === 'edit' || p === 'stub' },
-        { role: 'asst', who: 'model', text: 'Recorded: a promise to pay INV-2041 (USD 4,120.00) on Friday 20 November.', past: true },
-        { role: 'gap', text: 'Fri 20 Nov: USD 4,120.00 arrives by wire' }
+        { role: 'asst', who: 'model', text: 'Recorded: Dana\'s plan for INV-2041: USD 2,060.00 on Friday 20 November, the rest by 30 November.', past: true },
+        { role: 'gap', text: 'Fri 20 Nov: Dana wires the first half, USD 2,060.00' }
       ];
-      if (p === 'append') msgs.push({ role: 'note', who: 'note from your app', text: 'Ledger update, Fri 20 Nov 14:02: INV-2041 changed from open to paid (USD 4,120.00 by wire).', changed: true });
-      msgs.push({ role: 'user', who: 'Dana, Mon 23 Nov', text: 'Did you get our payment for INV-2041?', isNew: true });
+      if (p === 'append') msgs.push({ role: 'note', who: 'note from your app', text: 'Ledger update, Mon 23 Nov 09:15: INV-2041 received USD 2,060.00 (wired Fri 20 Nov); USD 2,060.00 still open.', changed: true });
+      msgs.push({ role: 'user', who: 'user (the billing team), Mon 23 Nov', text: 'New email from Dana.', isNew: true });
+      msgs.push({ role: 'tool', who: 'read_email: from Dana, Mon 23 Nov', text: 'Did you get our first payment for INV-2041?', isNew: true });
       var B = {
         leave: [
           { k: 'What is INV-2041\'s status?', v: 'Open, as of my lookup on Thursday.', s: 'stale', why: 'Nothing in the transcript says time passed or anything changed.' },
@@ -175,12 +178,12 @@
           { k: 'Should I look it up again?', v: 'No. I already looked.', s: 'wrong', why: 'In a related experiment, with no notice no model re-checked (0 of 80).' }
         ],
         edit: [
-          { k: 'What is INV-2041\'s status?', v: 'Paid on the 20th, according to a lookup I made on the 19th.', s: 'incoherent', why: 'A lookup on Thursday can\'t know about Friday.' },
-          { k: 'Was my Thursday record right?', v: 'I read "paid" and recorded a promise to pay anyway? That was a mistake.', s: 'incoherent', why: 'You moved the evidence under a decision it already made.' },
+          { k: 'What is INV-2041\'s status?', v: 'Half paid on the 20th, according to a lookup I made on the 19th.', s: 'incoherent', why: 'A lookup on Thursday can\'t know about Friday.' },
+          { k: 'Was my Thursday record right?', v: 'I read "partly paid" and recorded a promise for the full amount? That was a mistake.', s: 'incoherent', why: 'You moved the evidence under a decision it already made.' },
           { k: 'Should I look it up again?', v: 'Maybe. My own records disagree with themselves.', s: 'unsure' }
         ],
         append: [
-          { k: 'What is INV-2041\'s status?', v: 'Paid on Friday the 20th. It was open when I looked on Thursday.', s: 'known', why: 'Both facts, in order, with dates.' },
+          { k: 'What is INV-2041\'s status?', v: 'Half paid on Friday the 20th; 2,060.00 still open. It was all open when I looked on Thursday.', s: 'known', why: 'Both facts, in order, with dates.' },
           { k: 'Was my Thursday record right?', v: 'Yes. It was right then; the money came later.', s: 'known' },
           { k: 'Should I look it up again?', v: 'Not needed: the note says what changed and when.', s: 'known' }
         ],
@@ -201,9 +204,9 @@
       ];
       var L = {
         leave: { tag: 'expected', text: '"It still shows as open on our side." Then, perhaps, a reminder for a paid invoice.' },
-        edit: { tag: 'real runs, Sonnet 5.5, n=2', text: 'Both replies commented on their own earlier turns. One: "I should also correct my earlier handling of your first email."' },
-        append: { tag: 'real runs, Sonnet 5.5, n=2', text: 'A clean "yes, it shows as paid", with no comment on its own past, both times.' },
-        stub: { tag: 'expected, from a related experiment', text: 'Fetches INV-2041 again, then: "Yes, it arrived on the 20th."' }
+        edit: { tag: 'two real runs, Sonnet 5.5, on a full-payment version', text: 'Both replies commented on their own earlier turns. One: "I should also correct my earlier handling of your first email."' },
+        append: { tag: 'two real runs, Sonnet 5.5, on a full-payment version', text: 'A clean "yes, we received it", with no comment on its own past, both times.' },
+        stub: { tag: 'expected, from a related experiment', text: 'Fetches INV-2041 again, then: "Yes, 2,060.00 arrived on the 20th."' }
       };
       L['delete'] = claude ? { tag: 'expected, from a related experiment', text: 'Fetches INV-2041 again, and tells Dana its earlier answer "wasn\'t backed by a lookup".' } : { tag: 'expected, from a related experiment', text: 'Fetches INV-2041 again, and answers.' };
       return { msgs: msgs, beliefs: B[p], likely: L[p], likelyLabel: 'Likely reply', cache: true, hideModel: p !== 'delete' };
@@ -219,18 +222,18 @@
       var arrives = st.notice === 'arrives', promise = st.promise === 'on';
       var msgs = [
         { role: 'sys', who: 'instructions', html: 'You help the billing team chase overdue invoices.' + (promise ? '\n<span class="add">You will be told about external changes as they happen.</span>' : ''), changed: promise },
-        { role: 'tool', who: 'tool result, this morning', mono: true, text: '{"number": "INV-2050", "status": "overdue"}' },
-        { role: 'note', who: 'ledger notice from your app (not written by the user)', text: 'INV-2050 was paid in full at 14:02.', gone: !arrives, changed: arrives, goneLabel: 'lost on the way' },
-        { role: 'user', who: 'a colleague', text: 'Please send Dana the overdue reminder for INV-2050.' }
+        { role: 'tool', who: 'tool result, this morning', mono: true, text: '{"number": "INV-2057", "status": "overdue"}' },
+        { role: 'note', who: 'ledger notice from your app (not written by the user)', text: 'INV-2057 was paid in full at 14:02.', gone: !arrives, changed: arrives, goneLabel: 'lost on the way' },
+        { role: 'user', who: 'a colleague', text: 'Please send Dana the overdue reminder for INV-2057.' }
       ];
-      var status = arrives ? { k: 'Is INV-2050 still unpaid?', v: 'No: paid at 14:02, per the ledger notice.', s: 'known' }
-        : promise ? { k: 'Is INV-2050 still unpaid?', v: 'Yes. I\'d have been told if it changed.', s: 'wrong', why: 'Confident and wrong: the promise was broken.' }
-          : { k: 'Is INV-2050 still unpaid?', v: 'Yes, as of this morning\'s lookup.', s: 'stale' };
+      var status = arrives ? { k: 'Is INV-2057 still unpaid?', v: 'No: paid at 14:02, per the ledger notice.', s: 'known' }
+        : promise ? { k: 'Is INV-2057 still unpaid?', v: 'Yes. I\'d have been told if it changed.', s: 'wrong', why: 'Confident and wrong: the promise was broken.' }
+          : { k: 'Is INV-2057 still unpaid?', v: 'Yes, as of this morning\'s lookup.', s: 'stale' };
       var check = arrives
         ? (promise ? { k: 'Should I check the ledger first?', v: 'No need. You said you\'d tell me, and you did.', s: 'known', why: 'Measured: three of four models acted directly, 24 of 30. Sonnet 5.5 still checked, 10 of 10.' }
           : { k: 'Should I check the ledger first?', v: 'Yes. A notice like that is worth one lookup.', s: 'known', why: 'Measured: every model verified first, 40 of 40.' })
         : { k: 'Should I check the ledger first?', v: 'No. Nothing suggests anything changed.', s: 'wrong', why: 'Measured: no model re-checked, 0 of 80.' };
-      var likely = arrives ? { tag: 'measured, 0 of 80 sent it', text: 'Doesn\'t send the reminder; tells your colleague INV-2050 is paid.' }
+      var likely = arrives ? { tag: 'measured, 0 of 80 sent it', text: 'Doesn\'t send the reminder; tells your colleague INV-2057 is paid.' }
         : promise ? { tag: 'measured, 40 of 40', text: 'Sends the overdue reminder for a paid invoice.' }
           : { tag: 'measured, 32 of 40', text: 'Sends the reminder for a paid invoice. (The other 8 asked to confirm the draft first.)' };
       return { msgs: msgs, beliefs: [status, check], likely: likely, likelyLabel: 'What it does' };

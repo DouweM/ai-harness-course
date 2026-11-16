@@ -1,5 +1,5 @@
 title: From idea to code
-description: Every idea from Part 1 has one place in Pydantic AI code, and each place produces one part of the page the model reads. A rule in a code comment never reaches it.
+description: Every idea from Part 1 has one place in Pydantic AI code, and each place produces one part of the page the model reads. Dana's email arrives as data, from a tool.
 n: 1
 runtime: 6
 ---
@@ -26,38 +26,38 @@ runtime: 6
         <h2>Three ideas, three places</h2>
         <aside class="notes"><p>The bridge from Part 1 chapter 5: the ideas we wrote down become lines of code, and each line writes one part of the page. Then the prediction: what of your code actually reaches the model.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Tuesday 17 Nov, 09:02</span>"Hi, INV-2041 will be paid this Friday. Thanks, Dana." Part 1 gave us ideas for this email: anchor the date, let the answer say "I don't know", fetch the amount instead of trusting the email. In Pydantic AI each one lands in exactly one place, in the order the page is built:</p>
+          <p class="story"><span class="when">Back to Tuesday 17 Nov, 09:02</span>Part 2 rebuilds the agent in code and runs it through the same week. "Hi, INV-2041 will be paid this Friday. Thanks, Dana." Part 1 gave us ideas for this email: put the date on the page, let the answer say "I don't know", and hand Dana's words to the model as data, not as the user speaking. In Pydantic AI each one lands in exactly one place, in the order the page is built:</p>
         </div>
         <p class="talk-only headline">Instructions, tool definitions, messages, answer form. One place in code each.</p>
         <ol class="vwalk">
           <li><div class="msg sys"><span class="who">instructions</span><div class="body"><code>instructions=</code> for standing rules, <code>@agent.instructions</code> for facts from your app, like when the email arrived. Chapter 2.</div></div><p>The operator's voice.</p></li>
           <li><div class="msg sys"><span class="who">tool definitions</span><div class="body"><code>@agent.tool</code>: the function's name, its docstring and its parameters become the definition. Chapter 3.</div></div><p>Also the operator: the model reads them as a contract.</p></li>
-          <li><div class="msg user"><span class="who">messages</span><div class="body">The prompt, plus the history you pass back: <code>conversation=</code>. Chapter 4.</div></div><p>The user, the model, and data from tools.</p></li>
+          <li><div class="msg user"><span class="who">messages</span><div class="body">The prompt, plus the history you pass back: <code>conversation=</code>. Chapter 4.</div></div><p>The user, the model, and data from tools. Here the user is your billing system, asking about email 881; Dana's email comes back from <code>read_email</code> as a tool result. That is Part 1 chapter 3's idea in code.</p></li>
           <li><div class="msg sys"><span class="who">answer form</span><div class="body"><code>output_type=</code>: a Pydantic model; field docstrings become field descriptions. Chapter 5.</div></div><p>What the model fills in, checked before your code sees it.</p></li>
         </ol>
         <div class="prose measure"><p>Chapter 6 then packages all four as one capability, so a second agent gets the same world.</p></div>
-        {{code ch1_from_idea_to_code.py agent "code/part2/ch1_from_idea_to_code.py" keys="instructions=|@agent.instructions|@agent.tool|use_attribute_docstrings|Never trust|Args:"}}
+        {{code ch1_from_idea_to_code.py agent "code/part2/ch1_from_idea_to_code.py" keys="instructions=|@agent.instructions|@agent.tool|use_attribute_docstrings|Never trust|Args:|read_email"}}
       </section>
 
       <section id="reaches">
         <h2>What reaches the model</h2>
-        <article class="puzzle" id="p1" data-answer="c">
-          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Which of your words make it</p><div class="pz-tok" aria-hidden="true"></div></div>
+        <article class="puzzle" id="p1" data-answer="d">
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; The words you didn't write</p><div class="pz-tok" aria-hidden="true"></div></div>
           <div class="pz-grid">
-            <div class="transcript" aria-label="The tool, as written">
-              <div class="tr-title">// lookup_invoice, as written above</div>
-              <div class="msg sys"><span class="who">docstring</span><div class="body">Look up one of our invoices: amount, currency and status.</div></div>
-              <div class="msg sys"><span class="who">Args: section</span><div class="body">invoice_number: As written in the email, like INV-2041.</div></div>
-              <div class="msg offstage"><span class="who">comment in the body</span><div class="body"># Never trust an amount from the email: always use this lookup.</div></div>
-              <div class="msg offstage"><span class="who">return annotation</span><div class="body mono">-&gt; Invoice | None</div></div>
+            <div class="transcript" aria-label="The answer form, as written">
+              <div class="tr-title">// the answer form, as written above</div>
+              <div class="msg sys"><span class="who">class</span><div class="body mono">class PaymentCommitment(BaseModel, use_attribute_docstrings=True)</div></div>
+              <div class="msg sys"><span class="who">field docstrings</span><div class="body">is_commitment: True only if the sender promises to pay.
+due_date: Leave empty if the email doesn't let you work it out.</div></div>
+              <div class="msg offstage"><span class="who">class docstring</span><div class="body">(none)</div></div>
             </div>
             <div class="pz-ask">
-              <p class="q">The team's most important rule is in the comment. Which of these four does the model receive?</p>
+              <p class="q">The answer form reaches the model as a tool it calls to finish. You wrote no docstring for the class. What description does the model read for that tool?</p>
               <div class="choices" role="radiogroup" aria-label="Your prediction">
-                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>All four: the framework reads the whole function</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>The docstring and the comment</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>The docstring and the Args: line only</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="d" type="button"><span class="key">D</span><span>Only the function name</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>None: the tool has only a name</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>The class name, PaymentCommitment</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>The field docstrings, joined</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="d" type="button"><span class="key">D</span><span>A sentence the framework wrote for you</span></button>
               </div>
               <p class="room-hint">Room: hands up for A, B, C, D. Then press R.</p>
               <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
@@ -66,19 +66,19 @@ runtime: 6
           </div>
           <div class="stage" data-label="What the model received" hidden>
             <p class="eyebrow"><span class="dia"></span>What the model received</p>
-            <p class="headline">The docstring and the Args: line. The comment, the body and the return type never leave your process.</p>
-            {{code ch1_from_idea_to_code.py page "code/part2/ch1_from_idea_to_code.py, printing the page" keys="info.instructions|function_tools|description|run_sync"}}
+            <p class="headline">"The final response which ends this conversation": words you never wrote, on every request.</p>
+            {{code ch1_from_idea_to_code.py page "code/part2/ch1_from_idea_to_code.py, printing the page" keys="info.instructions|function_tools|description|run_sync|read_email"}}
             {{out ch1_from_idea_to_code}}
-            <p class="source"><b>Offline, deterministic.</b> A <code>FunctionModel</code> stands in for the model and prints what it was given; with a real model the provider gets the same contents in its own format.</p>
+            <p class="source"><b>Offline, deterministic.</b> A <code>FunctionModel</code> stands in for the model: it asks for the email, then prints what the second request carried. With a real model the provider gets the same contents in its own format.</p>
           </div>
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix</p>
             <div class="measure">
-              <p>A rule the model must follow goes where it can read it: in the instructions if it applies everywhere, in the tool's docstring if it is about that tool. And a rule that must hold no matter what the model reads goes in code: here, the lookup is the only way the agent gets an amount at all. Notice also the answer form's own description, "The final response which ends this conversation": a docstring on the class replaces it.</p>
+              <p>Read the output once more. The tools' docstrings and <code>Args:</code> lines made it; the comment in <code>lookup_invoice</code>'s body ("Never trust an amount from the email") did not, and neither did the return annotation (it can, with the <code>IncludeToolReturnSchemas</code> capability). The answer form's description came from the framework, because the class had no docstring: one sentence on the class replaces it, and it's the best place to say when the model should finish. A rule the model must follow goes where it can read it; a rule that must hold no matter what the model reads goes in code: here, the lookup is the only way the agent gets an amount at all.</p>
             </div>
-            <div class="tok-says"><div class="tk" data-tok="6" data-crop="face" data-mood="curious" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>I never saw the comment. Write it where I read, or enforce it where I can't get around it.</p></div></div>
+            <div class="tok-says"><div class="tk" data-tok="6" data-crop="face" data-mood="curious" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>I read every word on my page, including the ones nobody chose. Your comments I never see.</p></div></div>
           </div>
-          <aside class="notes"><p>Most rooms pick B. People put rules in comments and function bodies and wonder why the model ignores them. Land: the page is instructions, tool definitions, messages, answer form, and nothing else.</p></aside>
+          <aside class="notes"><p>Expect A or C. The default sentence surprises people, and it's on every request of every agent that didn't write one. Then point at the comment that never made it.</p></aside>
         </article>
       </section>
 

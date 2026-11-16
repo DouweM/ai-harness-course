@@ -11,7 +11,9 @@ import _offline  # noqa: F401  (placeholder API keys; nothing is sent)
 # --8<-- [start:delegate]
 from pydantic import BaseModel
 
-from pydantic_ai import Agent, RunContext, ToolOutput
+from pydantic_ai import Agent, RunContext, ToolOutput, UsageLimits
+
+from billing_world import Deps, read_email  # chapter 1's tool: the email is data, for both agents
 
 
 class DisputeCheck(BaseModel):
@@ -25,19 +27,27 @@ class DisputeCheck(BaseModel):
 
 classifier = Agent(
     'anthropic:claude-haiku-5-5',
-    instructions='Decide whether this email disputes one of our invoices.',
+    deps_type=Deps,
+    instructions='Decide whether the email you are asked about disputes one of our invoices.',
     output_type=ToolOutput(DisputeCheck),
+    tools=[read_email],
 )
+LIMITS = UsageLimits(request_limit=8)  # your cost ceiling for one email, for the whole tree
+
 collections = Agent(
     'anthropic:claude-sonnet-5-5',
+    name='collections',
+    deps_type=Deps,
     instructions="You handle customers' emails about their invoices. Check for a dispute before recording a promise.",
+    tools=[read_email],
 )
 
 
 @collections.tool
-async def check_for_dispute(ctx: RunContext, email_text: str) -> DisputeCheck:
+async def check_for_dispute(ctx: RunContext[Deps], email_id: str) -> DisputeCheck:
     """Ask the dispute classifier about an email."""
-    result = await classifier.run(email_text, usage=ctx.usage)  # one usage count for the whole tree
+    ask = f'Does email {email_id} dispute one of our invoices?'
+    result = await classifier.run(ask, deps=ctx.deps, usage=ctx.usage, usage_limits=LIMITS)  # one count, one ceiling
     return result.output
 # --8<-- [end:delegate]
 
@@ -47,7 +57,7 @@ from pydantic_ai.exceptions import UsageLimitExceeded
 from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart, ToolCallPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
-from billing import DISPUTE
+from billing import DISPUTE_ID, WIRE_RECEIVED, FakeBilling, new_email
 
 
 sent = [0]  # every request any agent in the tree sends, counted here
@@ -58,7 +68,7 @@ def keeps_asking(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse
     """The parent asks the classifier four times (its answers keep coming back unsure), then replies."""
     asked = sum(1 for m in messages for p in m.parts if getattr(p, 'tool_name', None) == 'check_for_dispute') // 2
     if asked < 4:
-        return ModelResponse(parts=[ToolCallPart('check_for_dispute', {'email_text': DISPUTE})])
+        return ModelResponse(parts=[ToolCallPart('check_for_dispute', {'email_id': DISPUTE_ID})])
     return ModelResponse(parts=[TextPart('A person on the billing team will look at the amount on INV-2041.')])
 
 
@@ -71,22 +81,23 @@ def retries_once(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse
 
 
 # --8<-- [start:limits]
-limits = UsageLimits(request_limit=8)  # your cost ceiling for one email
+limits = LIMITS
 
-unshared = Agent('anthropic:claude-sonnet-5-5')
+unshared = Agent('anthropic:claude-sonnet-5-5', deps_type=Deps)
 
 
 @unshared.tool(name='check_for_dispute')
-async def check_for_dispute_unshared(ctx: RunContext, email_text: str) -> DisputeCheck:
+async def check_for_dispute_unshared(ctx: RunContext[Deps], email_id: str) -> DisputeCheck:
     """Ask the dispute classifier about an email."""
-    return (await classifier.run(email_text)).output  # no usage=: the classifier counts on its own
+    ask = f'Does email {email_id} dispute one of our invoices?'
+    return (await classifier.run(ask, deps=ctx.deps)).output  # no usage=: the classifier counts on its own
 # --8<-- [end:limits]
 
 for label, agent in (('without usage=ctx.usage', unshared), ('with usage=ctx.usage   ', collections)):
     sent[0] = 0
     with agent.override(model=FunctionModel(keeps_asking)), classifier.override(model=FunctionModel(retries_once)):
         try:
-            result = agent.run_sync(DISPUTE, usage_limits=limits)
+            result = agent.run_sync(new_email(DISPUTE_ID), deps=Deps(FakeBilling(), WIRE_RECEIVED), usage_limits=limits)
             print(f'{label}: finished; the limit counted {result.usage.requests} requests, {sent[0]} were sent')
         except UsageLimitExceeded as e:
             print(f'{label}: stopped: {str(e).split(".")[0]}')
