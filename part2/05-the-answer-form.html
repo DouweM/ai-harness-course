@@ -154,6 +154,7 @@ either = [Promise, str]  # a union: the model can also answer in plain text</pre
           <p>Check ten emails your agent got wrong against its output type: can it represent the right answer? Match the form to what customers say, and add a validator that checks it against your data.</p>
           <p class="see-lf"><b>See it in Logfire.</b> The answer form appears in each request's tool definitions. If validation fails, the trace shows the retry request and the validation error sent to the model.</p>
         </div>
+        <p class="small muted measure">Small print: a validation error goes back as the output tool's result; one retry by default, <code>retries={'output': N}</code> to raise it. When retries run out the run raises <code>UnexpectedModelBehavior</code> and your code decides what a person sees.</p>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>
           <ul class="docs">
@@ -161,7 +162,6 @@ either = [Promise, str]  # a union: the model can also answer in plain text</pre
             <li><a href="https://pydantic.dev/docs/ai/core-concepts/retries/">Retries</a></li>
           </ul>
         </div>
-        <p class="small muted measure">Small print: a validation error goes back as the output tool's result; one retry by default, <code>retries={'output': N}</code> to raise it. When retries run out the run raises <code>UnexpectedModelBehavior</code> and your code decides what a person sees.</p>
       </section>
 
       <div data-evolve="Tok gets a clipboard: a row per promise, and every row gets written down."></div>

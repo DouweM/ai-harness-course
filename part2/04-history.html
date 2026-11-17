@@ -170,6 +170,7 @@ compaction = TieredCompaction(
           <p>Find where your agent trims history. Clear old tool results with retrieval notes, and write a summary prompt that preserves what customers say.</p>
           <p class="see-lf"><b>See it in Logfire.</b> Inspect the request after clearing or compaction: it shows lookup notes, Dana's emails, and summaries replacing older turns.</p>
         </div>
+        <p class="small muted measure">Small print: clearing rewrites old messages, so the provider's cache restarts from the first cleared result; <code>ClearToolResults</code> clears in batches to keep that rare. Provider-native compaction (<code>OpenAICompaction</code>, <code>AnthropicCompaction</code>) is in core.</p>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>
           <ul class="docs">
@@ -179,7 +180,6 @@ compaction = TieredCompaction(
             <li><a href="https://pydantic.dev/docs/ai/capabilities/process-history/">ProcessHistory</a></li>
           </ul>
         </div>
-        <p class="small muted measure">Small print: clearing rewrites old messages, so the provider's cache restarts from the first cleared result; <code>ClearToolResults</code> clears in batches to keep that rare. Provider-native compaction (<code>OpenAICompaction</code>, <code>AnthropicCompaction</code>) is in core.</p>
       </section>
 
       <div data-evolve="Tok gets a logbook that only grows. When it gets heavy, old results become notes on where to find them."></div>

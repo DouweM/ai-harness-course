@@ -77,6 +77,7 @@ runtime: 8
         {{code ch3_tools.py errors "code/part2/ch3_tools.py, three worlds" keys="raise ModelRetry|idempotency_key|raise ToolFailed"}}
         {{out ch3_tools 7-8}}
         <p class="measure">If you return <code>"error: ledger down"</code> as a string, the model may say the payment succeeded and monitoring counts the call as successful because the function returned normally.</p>
+        <p class="measure">A <code>ModelRetry</code> uses the tool's retry budget (1 by default); <code>ToolFailed</code> doesn't, so cap repeated failures with usage limits.</p>
       </section>
 
       <section id="native">
@@ -101,7 +102,6 @@ runtime: 8
             <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/toolsets/">Toolsets</a> and <a href="https://pydantic.dev/docs/ai/capabilities/mcp/">MCP</a></li>
           </ul>
         </div>
-        <p class="small muted measure">A <code>ModelRetry</code> uses the tool's retry budget (1 by default); <code>ToolFailed</code> does not, so bound repeats with usage limits. Toolsets group tools to reuse, filter, or swap together. MCP server tools reach the model like yours.</p>
       </section>
 
       <div data-evolve="Tok gets a tool belt. One tool has a padlock, and now Tok is told when it's locked."></div>

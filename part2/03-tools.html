@@ -147,6 +147,7 @@ async def record_payment(ctx: RunContext[Deps], invoice_number: str, amount: Dec
         <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>ledger up  : success Recorded 2060.00 on INV-2041.
 ledger down: failed  {&quot;error&quot;:&quot;Nothing was recorded: the ledger is unavailable. Tell the cu</pre></div>
         <p class="measure">If you return <code>"error: ledger down"</code> as a string, the model may say the payment succeeded and monitoring counts the call as successful because the function returned normally.</p>
+        <p class="measure">A <code>ModelRetry</code> uses the tool's retry budget (1 by default); <code>ToolFailed</code> doesn't, so cap repeated failures with usage limits.</p>
       </section>
 
       <section id="native">
@@ -171,7 +172,6 @@ ledger down: failed  {&quot;error&quot;:&quot;Nothing was recorded: the ledger i
             <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/toolsets/">Toolsets</a> and <a href="https://pydantic.dev/docs/ai/capabilities/mcp/">MCP</a></li>
           </ul>
         </div>
-        <p class="small muted measure">A <code>ModelRetry</code> uses the tool's retry budget (1 by default); <code>ToolFailed</code> does not, so bound repeats with usage limits. Toolsets group tools to reuse, filter, or swap together. MCP server tools reach the model like yours.</p>
       </section>
 
       <div data-evolve="Tok gets a tool belt. One tool has a padlock, and now Tok is told when it's locked."></div>

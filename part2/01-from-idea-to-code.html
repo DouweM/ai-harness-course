@@ -202,6 +202,7 @@ logfire.instrument_pydantic_ai()  # from here on, every agent run is a trace in 
           <p class="eyebrow">What you can do now</p>
           <p>Print one request and read what the model receives. Put each essential rule on that page or enforce it in code. Enable Logfire to inspect every run.</p>
         </div>
+        <p class="small muted measure">About API keys: <code>Agent('anthropic:...')</code> asks for an Anthropic API key when it is created, even if it never calls Anthropic. The course code sets a fake placeholder key, so the offline examples run without a real one. A real request to Anthropic needs your own key.</p>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>
           <ul class="docs">
@@ -212,7 +213,6 @@ logfire.instrument_pydantic_ai()  # from here on, every agent run is a trace in 
             <li><a href="https://pydantic.dev/docs/ai/integrations/logfire/">Observability with Logfire</a></li>
           </ul>
         </div>
-        <p class="small muted measure">About API keys: <code>Agent('anthropic:...')</code> asks for an Anthropic API key when it is created, even if it never calls Anthropic. The course code sets a fake placeholder key, so the offline examples run without a real one. A real request to Anthropic needs your own key.</p>
       </section>
 
       <div data-evolve="Tok gets a blueprint: every line on its page comes from one place in your code."></div>
