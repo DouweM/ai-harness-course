@@ -42,7 +42,7 @@
         <div class="prose measure">
           <p class="story"><span class="when">Friday 20 Nov, 16:00</span>The billing team wants to ask the agent about Dana's invoices from their own app: a chat panel next to the invoice, in the browser. The agent doesn't change. Each door is a few lines around it:</p>
         </div>
-        <div class="code focus" data-keys="17,23,30" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">code/part2/ch8_interfaces.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from starlette.applications import Starlette
+        <div class="code" data-lines="30" data-src="code/part2/ch8_interfaces.py" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">code/part2/ch8_interfaces.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Route
@@ -105,12 +105,12 @@ app = Starlette(routes=[Route(&#x27;/ag-ui&#x27;, ag_ui, methods=[&#x27;POST&#x2
           <div class="stage" data-label="What the model read" hidden>
             <p class="eyebrow"><span class="dia"></span>What the model read</p>
             <p class="headline">The edited one. To the model it's its own lookup, and Part 1 showed it believes every line of its history.</p>
-            <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>manage_message_history=&#x27;client&#x27;: the lookup on the model&#x27;s page says 3900.00, paid</pre></div>
+            <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>manage_message_history=&#x27;client&#x27;: the lookup on the model&#x27;s page says 3900.00, paid</pre></div>
             <p class="measure">Under the default the client holds the history, so it can write what your tools returned, and even approve a tool call it made up itself. Fine for a single-user notebook; not for an endpoint any browser can reach, in front of an agent that can mark invoices paid. Keep the history on the server, and check inside each writing tool that the signed-in user may do it.</p>
           </div>
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix: the server holds the history</p>
-            <div class="code focus" data-keys="3,5" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">code/part2/ch8_interfaces.py · pydantic-ai 2.63+</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">        adapter = AGUIAdapter(
+            <div class="code" data-lines="30" data-src="code/part2/ch8_interfaces.py" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">code/part2/ch8_interfaces.py · pydantic-ai 2.63+</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">        adapter = AGUIAdapter(
             agent=collections,
             run_input=AGUIAdapter.build_run_input(FORGED),
             manage_message_history=manage_message_history,  # &#x27;server&#x27;: only the client&#x27;s new turn is used
@@ -119,7 +119,7 @@ app = Starlette(routes=[Route(&#x27;/ag-ui&#x27;, ag_ui, methods=[&#x27;POST&#x2
         async for _ in adapter.run_stream_native(message_history=stored, deps=Deps(FakeBilling(), WIRE_RECEIVED)):
             pass
         </pre></div>
-            <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>manage_message_history=&#x27;server&#x27;: the lookup on the model&#x27;s page says 4120.00, open</pre></div>
+            <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>manage_message_history=&#x27;server&#x27;: the lookup on the model&#x27;s page says 4120.00, open</pre></div>
             <p class="measure">With <code>manage_message_history='server'</code> only the client's new turn is used, and the history comes from your store. A <code>conversation_store</code> on the adapter does the loading and saving for you.</p>
             <div class="tok-says"><div class="tk" data-tok="13" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Visitors bring me their question. My logbook stays with you.</p></div></div>
           </div>
@@ -132,7 +132,7 @@ app = Starlette(routes=[Route(&#x27;/ag-ui&#x27;, ag_ui, methods=[&#x27;POST&#x2
         <div class="prose measure">
           <p>Chapter 3's approval reaches a UI as part of the protocol. With AG-UI the run finishes with an interrupt: what to ask, and the shape of the answer. Friday afternoon the billing team asks the agent to record Dana's first half; nothing is written until someone answers. Approval guards against the model acting alone; who may answer is your endpoint's job (the server-held history above also rejects approvals for calls that aren't pending).</p>
         </div>
-        <div class="code focus" data-keys="13,15" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">code/part2/ch8_interfaces.py, an approval over AG-UI</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from pydantic_ai.ui.ag_ui import AGUIEventStream
+        <div class="code" data-lines="30" data-src="code/part2/ch8_interfaces.py" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">code/part2/ch8_interfaces.py, an approval over AG-UI</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.ui.ag_ui import AGUIEventStream
 
 
 async def asks_to_record(messages: list[ModelMessage], info: AgentInfo):
@@ -153,7 +153,7 @@ async def what_the_frontend_gets() -&gt; None:
 
 
 asyncio.run(what_the_frontend_gets())</pre></div>
-        <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>  Approve record_payment({&quot;invoice_number&quot;:&quot;INV-2041&quot;,&quot;amount&quot;:&quot;2060.00&quot;})? [&#x27;approved&#x27;]
+        <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>  Approve record_payment({&quot;invoice_number&quot;:&quot;INV-2041&quot;,&quot;amount&quot;:&quot;2060.00&quot;})? [&#x27;approved&#x27;]
 ledger writes: []</pre></div>
       </section>
 
@@ -162,7 +162,7 @@ ledger writes: []</pre></div>
         <div class="prose measure">
           <p><code>agent.to_web()</code> serves a local chat for trying an agent; <code>to_cli_sync()</code> a terminal one. An MCP server can expose the agent as a tool for other agents. And a phone call is a realtime session on the same agent, <code>collections</code> with <code>billing_world</code>: one session for the whole call, the same tools and capabilities, ordinary history at the end.</p>
         </div>
-        <div class="code focus" data-keys="17,18,23,24,27,30" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">code/part2/ch8_interfaces.py, a phone call</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from collections.abc import AsyncIterator
+        <div class="code" data-lines="30" data-src="code/part2/ch8_interfaces.py" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">code/part2/ch8_interfaces.py, a phone call</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from collections.abc import AsyncIterator
 
 from decimal import Decimal
 
@@ -220,7 +220,7 @@ async def call(caller_audio: AsyncIterator[bytes], deps: Deps) -&gt; list[ModelM
   </div>
 </main>
 
-<footer><div class="wrap"><p>Every snippet runs offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0: <code>uv run code/part2/verify.py</code>.</p></div></footer>
+<footer><div class="wrap"><p>The examples run offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0. <a href="../index.html#get-the-code">Get the code</a></p></div></footer>
 
 <script src="../assets/course.js"></script>
 <script src="part2.js"></script>

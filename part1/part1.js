@@ -40,7 +40,7 @@
       clearTimeout(timer);
       if (reqI < 0) { stepDoc.innerHTML = '<p class="small muted">No request yet. Tok doesn\'t exist between requests.</p>'; stepLab.textContent = 'Between requests'; stepTok.innerHTML = ''; stepBtn.textContent = 'Send request 1'; return; }
       var upto = REQ[reqI] - 1;
-      stepLab.textContent = 'Request ' + (reqI + 1) + ': a fresh Tok reads ' + (upto + 1) + ' messages, then writes one';
+      stepLab.textContent = 'Request ' + (reqI + 1) + ' of ' + REQ.length + ': a fresh Tok reads ' + (upto + 1) + ' messages, then writes one';
       stepTok.classList.remove('wake'); void stepTok.offsetWidth; stepTok.classList.add('wake');
       stepTok.innerHTML = T.svg(1, { mood: 'curious' }) + '<p class="tok-caption">Tok #' + (reqI + 1) + ', brand new</p>';
       var h = '';

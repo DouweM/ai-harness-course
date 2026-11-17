@@ -58,9 +58,9 @@ def snippet(name: str) -> str:
 
 def code_card(m: re.Match[str]) -> str:
     body = snippet(m.group(1))
-    long = ' long' if body.count('\n') > 45 else ''
+    long = ''  # shown in full, like Part 2
     return (
-        f'<div class="code{long}" data-run="uv run code/reference/{MODULE}.py">'
+        f'<div class="code{long}" data-src="code/reference/{MODULE}.py" data-run="uv run code/reference/{MODULE}.py">'
         f'<div class="code-head"><span class="file">{html.escape(m.group(2))}</span>'
         f'<button class="copy" type="button">Copy</button></div>'
         f'<pre data-lang="py">{html.escape(body)}</pre></div>'
@@ -71,7 +71,7 @@ def out_card(m: re.Match[str]) -> str:
     lines = (CODE / 'expected' / f'{MODULE}.txt').read_text().rstrip('\n').split('\n')
     first, last = (int(x) for x in m.group(1).split('-'))
     return (
-        '<div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div>'
+        '<div class="code out"><div class="code-head"><span class="file">// output</span></div>'
         f'<pre>{html.escape(chr(10).join(lines[first - 1 : last]))}</pre></div>'
     )
 
@@ -98,7 +98,7 @@ def build(src: Path) -> None:
 <main>
 {body.strip()}
 </main>
-<footer><div class="wrap"><p>Every snippet runs offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0: <code>uv run code/reference/verify.py</code>.</p></div></footer>
+<footer><div class="wrap"><p>The examples run offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0. <a href="../index.html#get-the-code">Get the code</a></p></div></footer>
 <script src="../assets/course.js"></script>
 </body>
 </html>

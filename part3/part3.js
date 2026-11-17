@@ -186,11 +186,7 @@
     var pp = $('.pb-play', root);
     if (pp) pp.addEventListener('click', function () { if (timer) stop(); else { play(); show(i + 1); } pp.textContent = timer ? 'Pause' : 'Play'; });
     show(0);
-    if ('IntersectionObserver' in window && !REDUCED) {
-      new IntersectionObserver(function (es) {
-        es.forEach(function (en) { if (en.isIntersecting && !seen) { seen = true; play(); if (pp) pp.textContent = 'Pause'; } });
-      }, { threshold: 0.5 }).observe(root);
-    }
+    // no autoplay: the reader picks a tab, or presses Play
   });
 
   /* ------------------------------------------------------------ ch5: the loop */

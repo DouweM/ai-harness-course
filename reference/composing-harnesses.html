@@ -82,7 +82,7 @@
       <div class="prose measure">
         <p>The list order is the composition order. All the capabilities on an agent become one <code>CombinedCapability</code> that follows middleware semantics, the way web framework middleware does: every <code>wrap_*</code> is entered before any <code>before_*</code> runs, <code>before_*</code> hooks fire first to last, <code>after_*</code> hooks fire last to first. Two traced capabilities, <code>A</code> then <code>B</code>:</p>
       </div>
-<div class="code" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, two capabilities that record when they run</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import Hooks
+<div class="code" data-src="code/reference/composing_harnesses.py" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, two capabilities that record when they run</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import Hooks
 
 trace: list[str] = []
 
@@ -116,13 +116,13 @@ def traced(name: str) -&gt; Hooks[Deps]:
 
 
 ordered = Agent(&#x27;anthropic:claude-sonnet-5-5&#x27;, deps_type=Deps, capabilities=[traced(&#x27;A&#x27;), traced(&#x27;B&#x27;), billing_world])</pre></div>
-<div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>model request: A: wrap enter &gt; B: wrap enter &gt; A: before &gt; B: before &gt; B: after &gt; A: after &gt; B: wrap exit &gt; A: wrap exit
+<div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>model request: A: wrap enter &gt; B: wrap enter &gt; A: before &gt; B: before &gt; B: after &gt; A: after &gt; B: wrap exit &gt; A: wrap exit
 tool call:     A: wraps lookup_invoice &gt; B: wraps lookup_invoice</pre></div>
       <div class="prose measure">
         <p>So the first capability sees the request first and the response last. Put a guard or an audit log first when it must see everything the others do, including what they change. A capability that has to sit at one position wherever it's listed declares it with <code>get_ordering()</code>: <code>position='outermost'</code> or <code>'innermost'</code>, <code>wraps=[...]</code>, <code>wrapped_by=[...]</code>, and <code>requires=[...]</code> for a capability that must be present. <code>Hooks(ordering=...)</code> takes the same constraints.</p>
         <h3>What collides, and what merges</h3>
       </div>
-<div class="code" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, two capabilities with a lookup_invoice tool</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import Capability
+<div class="code" data-src="code/reference/composing_harnesses.py" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, two capabilities with a lookup_invoice tool</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import Capability
 
 ledger = Capability[Deps](id=&#x27;ledger&#x27;)
 
@@ -135,7 +135,7 @@ def lookup_invoice(invoice_number: str) -&gt; str:
 
 clash = Agent(&#x27;anthropic:claude-sonnet-5-5&#x27;, deps_type=Deps, capabilities=[billing_world, ledger])
 fixed = Agent(&#x27;anthropic:claude-sonnet-5-5&#x27;, deps_type=Deps, capabilities=[billing_world, ledger.prefix_tools(&#x27;ledger&#x27;)])</pre></div>
-<div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>same tool name twice: UserError: FunctionToolset &#x27;ledger&#x27; defines a tool whose name conflicts with existing tool from FunctionToolset &#x27;billing_world&#x27;: &#x27;lookup_invoice&#x27;
+<div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>same tool name twice: UserError: FunctionToolset &#x27;ledger&#x27; defines a tool whose name conflicts with existing tool from FunctionToolset &#x27;billing_world&#x27;: &#x27;lookup_invoice&#x27;
 ledger.prefix_tools(&quot;ledger&quot;): tools offered [&#x27;read_email&#x27;, &#x27;lookup_invoice&#x27;, &#x27;mark_paid&#x27;, &#x27;record_payment&#x27;, &#x27;ledger_lookup_invoice&#x27;]
 two capabilities, one chosen id: UserError: Capability id &#x27;rules&#x27; is used by multiple capabilities
 Temperature(temperature=0.0) then Temperature(temperature=0.4), fixed id: {&#x27;temperature&#x27;: 0.4}
@@ -176,12 +176,12 @@ the same agent, run(capabilities=[Temperature(temperature=0.9)]): {&#x27;tempera
       <div class="prose measure">
         <p><code>Coder</code> is a list you can print. Its constructor builds the parts from its arguments and hands them to <code>CombinedCapability</code>:</p>
       </div>
-<div class="code" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, Coder&#x27;s parts · pydantic-ai-harness 0.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import LocalWorkspace
+<div class="code" data-src="code/reference/composing_harnesses.py" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, Coder&#x27;s parts · pydantic-ai-harness 0.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import LocalWorkspace
 from pydantic_ai_harness.coder import Coder
 
 for i, part in enumerate(Coder().capabilities, 1):  # a CombinedCapability: a list you can read
     print(f&#x27;{i:&gt;2}. {type(part).__name__}&#x27;)</pre></div>
-<div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre> 1. RequireWorkspace
+<div class="code out"><div class="code-head"><span class="file">// output</span></div><pre> 1. RequireWorkspace
  2. Capability
  3. FileSystem
  4. Shell
@@ -215,7 +215,7 @@ for i, part in enumerate(Coder().capabilities, 1):  # a CombinedCapability: a li
       <div class="prose measure">
         <p>Two ways to change it. Flags turn parts off or swap one in; the request shows the difference, here in a project whose <code>AGENTS.md</code> says to run pytest:</p>
       </div>
-<div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>Coder():
+<div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>Coder():
   tools offered: [&#x27;read_file&#x27;, &#x27;write_file&#x27;, &#x27;edit_file&#x27;, &#x27;list_files&#x27;, &#x27;grep&#x27;, &#x27;shell&#x27;, &#x27;delegate_task&#x27;]
   AGENTS.md in the instructions: True
   sub-agent roster in the instructions: True
@@ -233,7 +233,7 @@ Coder(sub_agents=False, repo_context=False):
       <div class="prose measure">
         <p>Part 2's billing agent, packaged the way <code>Coder</code> is: a <code>CombinedCapability</code> whose parts are the billing world from <a href="../part2/06-capabilities.html">chapter 6</a>, a model setting, a history policy and an audit hook. Each part is one kind of contribution, and each flag is a swap.</p>
       </div>
-<div class="code" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, the collections harness</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import AbstractCapability, CombinedCapability
+<div class="code" data-src="code/reference/composing_harnesses.py" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, the collections harness</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import AbstractCapability, CombinedCapability
 from pydantic_ai_harness.compaction import ClearToolResults
 
 
@@ -277,7 +277,7 @@ reminders = Agent(  # the same harness, one setting changed by adding a capabili
       <div class="prose measure">
         <p>Thursday during close, each agent's first request. The instructions follow the order from the <a href="#contributions">table above</a>; <code>mark_paid</code> is gone because the billing world's <code>prepare</code> hid it; and the reminders agent's <code>Temperature</code>, listed after the bundle, merged with the one inside it and won:</p>
       </div>
-<div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>collections:
+<div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>collections:
   instructions 1: You handle customers&#x27; emails about their invoices with us, and record what they promise.
   instructions 2: Amounts and invoice numbers come from our billing system, never from an email alone.
   instructions 3: &lt;pyai:context id=&quot;capability:billing_world:close&quot;&gt;
@@ -318,7 +318,7 @@ reminders:
       <div class="prose measure">
         <p>A dispute classifier as a sub-agent of the billing agent. It wears the same billing world, so it reads Dana's email through the parent's deps:</p>
       </div>
-<div class="code" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, a sub-agent in the same world</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai_harness.subagents import SubAgent, SubAgents
+<div class="code" data-src="code/reference/composing_harnesses.py" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, a sub-agent in the same world</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai_harness.subagents import SubAgent, SubAgents
 
 disputes = Agent(
     &#x27;anthropic:claude-haiku-5-5&#x27;,
@@ -334,7 +334,7 @@ lead = Agent(
     instructions=&quot;You handle customers&#x27; emails about their invoices with us.&quot;,
     capabilities=[CollectionsHarness(), SubAgents(agents=[SubAgent(disputes)])],  # adds delegate_task
 )</pre></div>
-<div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>lead tools offered: [&#x27;read_email&#x27;, &#x27;lookup_invoice&#x27;, &#x27;mark_paid&#x27;, &#x27;record_payment&#x27;, &#x27;delegate_task&#x27;]
+<div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>lead tools offered: [&#x27;read_email&#x27;, &#x27;lookup_invoice&#x27;, &#x27;mark_paid&#x27;, &#x27;record_payment&#x27;, &#x27;delegate_task&#x27;]
 lead output: Handed to a person: INV-2041 is disputed: the customer says they were quoted 3,900.
 requests counted on the lead run (lead and delegate): 4</pre></div>
       <div class="prose measure">
@@ -355,7 +355,7 @@ requests counted on the lead run (lead and delegate): 4</pre></div>
     </div>
   </section>
 </main>
-<footer><div class="wrap"><p>Every snippet runs offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0: <code>uv run code/reference/verify.py</code>.</p></div></footer>
+<footer><div class="wrap"><p>The examples run offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0. <a href="../index.html#get-the-code">Get the code</a></p></div></footer>
 <script src="../assets/course.js"></script>
 </body>
 </html>

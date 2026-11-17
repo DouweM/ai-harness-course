@@ -49,7 +49,7 @@
           <div class="msg user"><span class="who">user</span><div class="body">INV-2041 is overdue.</div></div>
           <div class="msg next"><span class="who">TestModel calls all four</span><div class="body"><span class="caret"></span></div></div>
         </div>
-        <div class="code focus" data-keys="7,10" data-run="uv run code/part2/ch9_testing.py"><div class="code-head"><span class="file">code/part2/ch9_testing.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from pydantic_ai import DeferredToolRequests
+        <div class="code" data-lines="30" data-src="code/part2/ch9_testing.py" data-run="uv run code/part2/ch9_testing.py"><div class="code-head"><span class="file">code/part2/ch9_testing.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai import DeferredToolRequests
 from pydantic_ai.models.test import TestModel
 
 from billing import CLOSE_STARTS, FakeBilling
@@ -63,7 +63,7 @@ assert isinstance(result.output, DeferredToolRequests)
 print(&#x27;waiting for a person:&#x27;, sorted(call.tool_name for call in result.output.approvals))
 print(&#x27;tool results sent back:&#x27;, [p.tool_name for m in result.all_messages() for p in m.parts if p.part_kind == &#x27;tool-return&#x27;])
 print(&#x27;ledger writes:       &#x27;, deps.billing.writes)</pre></div>
-        <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>waiting for a person: [&#x27;mark_paid&#x27;]
+        <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>waiting for a person: [&#x27;mark_paid&#x27;]
 tool results sent back: [&#x27;read_email&#x27;, &#x27;lookup_invoice&#x27;, &#x27;record_payment&#x27;]
 ledger writes:        []</pre></div>
         <div class="prose measure">
@@ -88,7 +88,7 @@ ledger writes:        []</pre></div>
             <tr><td>all</td><td>No test reaches a real model</td><td><code>test_a_forgotten_override_fails_loudly</code></td></tr>
           </tbody>
         </table></div>
-        <div class="code focus" data-keys="12,15,26,35,39,51,55,58,61" data-run="uv run code/part2/test_billing_agent.py"><div class="code-head"><span class="file">code/part2/test_billing_agent.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">import asyncio
+        <div class="code" data-lines="30" data-src="code/part2/test_billing_agent.py" data-run="uv run code/part2/test_billing_agent.py"><div class="code-head"><span class="file">code/part2/test_billing_agent.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">import asyncio
 
 import pytest
 
@@ -173,7 +173,7 @@ def test_a_forgotten_override_fails_loudly():
   </div>
 </main>
 
-<footer><div class="wrap"><p>Every snippet runs offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0: <code>uv run code/part2/verify.py</code>.</p></div></footer>
+<footer><div class="wrap"><p>The examples run offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0. <a href="../index.html#get-the-code">Get the code</a></p></div></footer>
 
 <script src="../assets/course.js"></script>
 <script src="part2.js"></script>

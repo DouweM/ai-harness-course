@@ -36,21 +36,14 @@ def snippet(file: str, name: str) -> str:
 
 
 def code_card(m: re.Match[str]) -> str:
-    file, name, label, keys = m.group(1), m.group(2), m.group(3) or f'code/part2/{m.group(1)}', m.group(4)
+    # One plain card per snippet: every line of the snippet shows, nothing is dimmed or highlighted (the snippet markers
+    # in the source already cut it to what matters). Long snippets show their first 30 lines and a "Show all" button,
+    # and every card links to the full file. `keys=` is accepted for older sources and ignored.
+    file, name, label = m.group(1), m.group(2), m.group(3) or f'code/part2/{m.group(1)}'
     body = snippet(file, name)
-    if keys:  # a focus card: only the lines matching `keys` show until the reader asks for all of them
-        hits = [i for i, line in enumerate(body.split('\n')) if re.search(keys, line)]
-        if not hits:
-            raise SystemExit(f'{file}:{name}: no line matches {keys!r}')
-        return (
-            f'<div class="code focus" data-keys="{",".join(map(str, hits))}" data-run="uv run code/part2/{file}">'
-            f'<div class="code-head"><span class="file">{html.escape(label)}</span>'
-            f'<button class="copy" type="button">Copy</button></div>'
-            f'<pre data-lang="py" data-hl="1">{html.escape(body)}</pre></div>'
-        )
-    long = ' long' if body.count('\n') > 22 else ''
+    long = ''  # shown in full: a cut-off card hides the lines that matter behind the imports
     return (
-        f'<div class="code{long}" data-run="uv run code/part2/{file}">'
+        f'<div class="code{long}" data-lines="30" data-src="code/part2/{file}" data-run="uv run code/part2/{file}">'
         f'<div class="code-head"><span class="file">{html.escape(label)}</span>'
         f'<button class="copy" type="button">Copy</button></div>'
         f'<pre data-lang="py">{html.escape(body)}</pre></div>'
@@ -64,7 +57,7 @@ def out_card(m: re.Match[str]) -> str:
         first, last = (int(x) for x in span.split('-'))
         lines = lines[first - 1 : last]
     return (
-        '<div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div>'
+        '<div class="code out"><div class="code-head"><span class="file">// output</span></div>'
         f'<pre>{html.escape(chr(10).join(lines))}</pre></div>'
     )
 
@@ -106,7 +99,7 @@ def build(src: Path) -> None:
 {body.strip()}
 </main>
 
-<footer><div class="wrap"><p>Every snippet runs offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0: <code>uv run code/part2/verify.py</code>.</p></div></footer>
+<footer><div class="wrap"><p>The examples run offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0. <a href="../index.html#get-the-code">Get the code</a></p></div></footer>
 
 <script src="../assets/course.js"></script>
 {extra}<script src="part2.js"></script>

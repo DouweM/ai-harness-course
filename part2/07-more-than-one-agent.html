@@ -52,7 +52,7 @@
             <tr><td>An agent that delegates</td><td>The parent model</td><td>Self-contained sub-tasks with their own context</td><td>A tool that runs another agent; <a href="https://pydantic.dev/docs/ai/harness/subagents/"><code>SubAgents</code></a></td></tr>
           </tbody>
         </table></div>
-        <div class="code focus" data-keys="7,20,23,34,38" data-run="uv run code/part2/ch7_multi.py"><div class="code-head"><span class="file">code/part2/ch7_multi.py, delegating as a tool</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from pydantic import BaseModel
+        <div class="code" data-lines="30" data-src="code/part2/ch7_multi.py" data-run="uv run code/part2/ch7_multi.py"><div class="code-head"><span class="file">code/part2/ch7_multi.py, delegating as a tool</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic import BaseModel
 
 from pydantic_ai import Agent, RunContext, ToolOutput, UsageLimits
 
@@ -121,13 +121,13 @@ async def check_for_dispute(ctx: RunContext[Deps], email_id: str) -&gt; DisputeC
           <div class="stage" data-label="What happened" hidden>
             <p class="eyebrow"><span class="dia"></span>What happened</p>
             <p class="headline">It finished. The limit counted 5 requests; 13 were sent.</p>
-            <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>without usage=ctx.usage: finished; the limit counted 5 requests, 13 were sent</pre></div>
+            <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>without usage=ctx.usage: finished; the limit counted 5 requests, 13 were sent</pre></div>
             <p class="measure">Each agent run counts its own usage. Without <code>usage=</code>, the classifier's 8 requests happened in runs of their own, invisible to the parent's limit. A delegate stuck retrying, or a model that keeps delegating, runs up a bill your ceiling never sees.</p>
           </div>
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix: one line</p>
             <p class="measure">Pass <code>usage=ctx.usage</code>, and the delegate counts on the parent's total: the limit sees every request in the tree. Pass the same <code>usage_limits=</code> too, so the delegate stops itself mid-run instead of when control comes back. <code>SubAgents</code> does both.</p>
-            <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>with usage=ctx.usage   : stopped: The next request would exceed the request_limit of 8</pre></div>
+            <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>with usage=ctx.usage   : stopped: The next request would exceed the request_limit of 8</pre></div>
             <p class="source"><b>Offline, deterministic.</b> Stand-in models for both agents; the counting is Pydantic AI 2.68's real behavior. <code>SubAgents</code> forwards usage by default.</p>
             <div class="tok-says"><div class="tk" data-tok="12" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>My teammate and I share one budget now. When it runs out, we both stop.</p></div></div>
           </div>
@@ -140,7 +140,7 @@ async def check_for_dispute(ctx: RunContext[Deps], email_id: str) -&gt; DisputeC
         <div class="prose measure">
           <p>A handoff doesn't need another agent. Make it an output type: the run ends with an <code>Escalation</code>, and your code routes it to the billing team's queue. Your code decides what happens next, and tests can check it.</p>
         </div>
-        <div class="code focus" data-keys="0,16" data-run="uv run code/part2/ch7_multi.py"><div class="code-head"><span class="file">code/part2/ch7_multi.py, a handoff as output</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">class Escalation(BaseModel):
+        <div class="code" data-lines="30" data-src="code/part2/ch7_multi.py" data-run="uv run code/part2/ch7_multi.py"><div class="code-head"><span class="file">code/part2/ch7_multi.py, a handoff as output</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">class Escalation(BaseModel):
     &quot;&quot;&quot;Hand this email to a person on the billing team.&quot;&quot;&quot;
 
     reason: str
@@ -180,7 +180,7 @@ triage = Agent(  # a handoff is an output type: the run ends, and your code rout
   </div>
 </main>
 
-<footer><div class="wrap"><p>Every snippet runs offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0: <code>uv run code/part2/verify.py</code>.</p></div></footer>
+<footer><div class="wrap"><p>The examples run offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0. <a href="../index.html#get-the-code">Get the code</a></p></div></footer>
 
 <script src="../assets/course.js"></script>
 <script src="part2.js"></script>

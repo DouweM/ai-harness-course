@@ -39,7 +39,7 @@
         <div class="prose measure">
           <p>Every time someone fixes what your agent or an older LLM call decided, they label a case: a real input and the answer they stand behind. Export 20 and you have a dataset. Dana's week alone gave you three: Tuesday's promise, Wednesday's correction and Friday's dispute. Ours has emails like those and more. Then pick evaluators for two questions: did it decide like the team, and did it make the expensive mistake? Here that is a promise in the ledger the customer never made.</p>
         </div>
-        <div class="code" data-focus="6,9,16,21,24" data-run="uv run code/part3/ch3_evals.py">
+        <div class="code" data-src="code/part3/ch3_evals.py" data-run="uv run code/part3/ch3_evals.py">
           <div class="code-head"><span class="file">code/part3/ch3_evals.py &middot; pydantic-evals 2.x</span></div>
 <pre data-lang="py">def corrections_dataset() -&gt; Dataset[Email, bool, dict[str, Any]]:
     rows = [json.loads(line) for line in (DATA / 'corrections.jsonl').read_text().splitlines()]
@@ -75,7 +75,7 @@ class NoPromiseNobodyMade(Evaluator[Email, Decision]):
           <p>Arm A is the simplest version of Part 1 chapter 1's agent: one call returning JSON with a confidence, written to the ledger at 70 or more. Arm B is the kind of agent Part 2 builds: a typed answer form, a lookup tool, and code that writes only a promise made to us, for an invoice we know. Its form has two fields Part 2's doesn't: <code>addressed_to_us</code>, whether the promise is made to us rather than to someone else, and <code>evidence</code>, the email's own words that back the answer (<code>code/part3/eval_world.py</code>). This is <code>promise_router</code>, the classifier chapter 2 froze specs for.</p>
           <p>That is a rewrite, not one change, so this chapter answers "did the move pay off, and on which cases?". Measuring one idea at a time is chapter 4.</p>
         </div>
-        <div class="code" data-focus="6,13-16" data-run="uv run code/part3/ch3_evals.py">
+        <div class="code" data-src="code/part3/ch3_evals.py" data-run="uv run code/part3/ch3_evals.py">
           <div class="code-head"><span class="file">code/part3/ch3_evals.py &middot; the two tasks</span></div>
 <pre data-lang="py">def make_tasks(model_for: Any):
     async def single_shot_call(email: Email) -&gt; Decision:
@@ -180,7 +180,7 @@ report.print(baseline=baseline, include_input=True)</pre>
         <div class="prose measure">
           <p>With <code>logfire.configure()</code>, each <code>evaluate()</code> call is an experiment in Logfire, and each case links to its full trace. From CI, Pydantic Evals records branch and commit, so a pull request compares against its base. Evaluators that need no label also run on production traffic through the <code>OnlineEvaluation</code> capability, sampled, in the background:</p>
         </div>
-        <div class="code" data-focus="1,6,13-15" data-run="uv run code/part3/ch3_online_evals.py">
+        <div class="code" data-src="code/part3/ch3_online_evals.py" data-run="uv run code/part3/ch3_online_evals.py">
           <div class="code-head"><span class="file">code/part3/ch3_online_evals.py</span></div>
 <pre data-lang="py">class EvidenceQuotesTheEmail(Evaluator):
     """A commitment must quote words that are actually in the email."""

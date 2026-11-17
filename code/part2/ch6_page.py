@@ -11,7 +11,7 @@ import _offline  # noqa: F401  (placeholder API keys; nothing is sent)
 
 import asyncio
 
-from pydantic_ai import Agent, ModelMessagesTypeAdapter
+from pydantic_ai import ModelMessagesTypeAdapter
 from pydantic_ai.messages import (
     InstructionBaselinePart,
     InstructionDeltaPart,
@@ -43,17 +43,27 @@ def reads_its_page(messages: list[ModelMessage], info: AgentInfo) -> ModelRespon
     return ModelResponse(parts=[TextPart('Hi Dana, a reminder that the first half of INV-2041, 2,060.00, is due today.')])
 
 
+class WireArrives(FakeBilling):
+    """The demo's clock: while the agent looks the invoice up, it becomes 10:46 and the bank feed shows the wire."""
+
+    def __init__(self, feed: list[str]):
+        super().__init__()
+        self.feed = feed
+
+    async def get_invoice(self, number: str):
+        if not self.feed:
+            self.feed.append(WIRE_LINE)  # your sync job, appending what the bank just reported
+        return await super().get_invoice(number)
+
+
 # --8<-- [start:midrun]
 async def draft_note(*, live: bool) -> tuple[str, list[ModelMessage]]:
     ledger_feed: list[str] = []  # your sync job appends here when the bank reports a payment
-    deps = Deps(FakeBilling(), WIRE_RECEIVED, closing=True,
-                ledger_changes=ledger_feed if live else list(ledger_feed))  # live list, or a copy taken at the start
+    changes = ledger_feed if live else list(ledger_feed)  # the live list, or a copy taken at the start
+    deps = Deps(WireArrives(ledger_feed), WIRE_RECEIVED, closing=True, ledger_changes=changes)
     with collections.override(model=FunctionModel(reads_its_page)):
-        async with collections.iter(ASK, deps=deps) as run:
-            async for node in run:
-                if Agent.is_call_tools_node(node) and not ledger_feed:  # the lookup runs; the clock reaches 10:46
-                    ledger_feed.append(WIRE_LINE)
-    return str(run.result.output), run.result.all_messages()
+        result = await collections.run(ASK, deps=deps)
+    return result.output, result.all_messages()
 # --8<-- [end:midrun]
 
 

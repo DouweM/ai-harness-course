@@ -42,7 +42,7 @@
         <div class="prose measure">
           <p class="story"><span class="when">Wednesday 18 Nov, 16:40</span>"Correction on INV-2041: we'll pay half this Friday and the rest by the 30th. Dana." The agent still has Tuesday's form: one amount, one due date.</p>
         </div>
-        <div class="code" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">code/part2/ch5_answer_form.py, Tuesday&#x27;s form</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from datetime import date
+        <div class="code" data-lines="30" data-src="code/part2/ch5_answer_form.py" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">code/part2/ch5_answer_form.py, Tuesday&#x27;s form</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from datetime import date
 from decimal import Decimal
 
 from pydantic import BaseModel
@@ -84,7 +84,7 @@ class OnePromise(BaseModel):  # Tuesday&#x27;s form: one amount, one date
               <div class="arm"><h4>One amount, one date <small>kept both halves</small></h4><div class="tally fail" data-k="0" data-n="15" data-label="runs"></div></div>
               <div class="arm"><h4>A list of installments <small>kept both halves</small></h4><div class="tally good" data-k="15" data-n="15" data-label="runs"></div></div>
             </div>
-            <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>one          claude-sonnet-5-5  kept both halves 0/5  4120.00 on 2026-11-30
+            <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>one          claude-sonnet-5-5  kept both halves 0/5  4120.00 on 2026-11-30
 one          gpt-6.1-sol        kept both halves 0/5  2060 on 2026-11-20; 4120 on 2026-11-30
 one          claude-haiku-5-5   kept both halves 0/5  4120.00 on 2026-11-30
 installments claude-sonnet-5-5  kept both halves 5/5  
@@ -94,7 +94,7 @@ installments claude-haiku-5-5   kept both halves 5/5  </pre></div>
           </div>
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix: a form that holds it, checked against the ledger</p>
-            <div class="code focus" data-keys="8,16,17,35,43" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">code/part2/ch5_answer_form.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from dataclasses import dataclass
+            <div class="code" data-lines="30" data-src="code/part2/ch5_answer_form.py" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">code/part2/ch5_answer_form.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from dataclasses import dataclass
 
 from pydantic_ai import Agent, ModelRetry, RunContext, ToolOutput
 
@@ -140,7 +140,7 @@ async def matches_the_ledger(ctx: RunContext[Deps], promise: Promise) -&gt; Prom
             raise ModelRetry(f&#x27;{invoice.number} is for {invoice.amount}; the installments add up to {total}.&#x27;)
     return promise</pre></div>
             <p class="measure">The type catches shape. The output validator catches facts that need your systems, like installments that add up to more than the invoice, and sends the model back with the real balance. The error becomes the next message; nobody writes a retry loop:</p>
-            <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>model reads: {&quot;error&quot;:&quot;INV-2041 is for 4120.00; the installments add up to 6180.00.&quot;}
+            <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>model reads: {&quot;error&quot;:&quot;INV-2041 is for 4120.00; the installments add up to 6180.00.&quot;}
 recorded:    [(&#x27;2060.00&#x27;, &#x27;2026-11-20&#x27;), (&#x27;2060.00&#x27;, &#x27;2026-11-30&#x27;)]</pre></div>
             <div class="tok-says"><div class="tk" data-tok="10" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>You gave me one box, so I wrote one promise in it. A row per promise, and I wrote both.</p></div></div>
           </div>
@@ -154,7 +154,7 @@ recorded:    [(&#x27;2060.00&#x27;, &#x27;2026-11-20&#x27;), (&#x27;2060.00&#x27
           <p>The same form can reach the model three ways. <b>Tool output</b> offers an output tool to call, works with every tool-calling model and mixes freely with other tools. <b>Native output</b> uses the provider's own structured-output mode. <b>Prompted output</b> puts the schema in the instructions and parses JSON text. A list of types is a union: one output tool per type, and the model picks. Validation, validators and retries work the same in all three.</p>
           <p>Without a wrapper, the model profile picks: tool output on most models, but native output on Claude models when the request thinks, which Sonnet 5.5 does by default (since 2.52). Pin <code>ToolOutput(...)</code> to keep the tool path on every model, as this course does (on a thinking Claude request the output tool is offered rather than forced, so a text reply costs one retry).</p>
         </div>
-        <div class="code" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">code/part2/ch5_answer_form.py, the three modes</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai import NativeOutput, PromptedOutput
+        <div class="code" data-lines="30" data-src="code/part2/ch5_answer_form.py" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">code/part2/ch5_answer_form.py, the three modes</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai import NativeOutput, PromptedOutput
 
 tool_form = ToolOutput(Promise)  # the model &quot;calls&quot; a final_result tool: works with every tool-calling model
 native_form = NativeOutput(Promise)  # the provider&#x27;s own structured-output mode
@@ -193,7 +193,7 @@ either = [Promise, str]  # a union: the model can also answer in plain text</pre
   </div>
 </main>
 
-<footer><div class="wrap"><p>Every snippet runs offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0: <code>uv run code/part2/verify.py</code>.</p></div></footer>
+<footer><div class="wrap"><p>The examples run offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0. <a href="../index.html#get-the-code">Get the code</a></p></div></footer>
 
 <script src="../assets/course.js"></script>
 <script src="part2.js"></script>

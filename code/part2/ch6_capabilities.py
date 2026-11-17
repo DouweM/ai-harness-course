@@ -61,10 +61,10 @@ def reads_its_page(messages: list[ModelMessage], info: AgentInfo) -> ModelRespon
 
 # --8<-- [start:steps]
 STEPS = [  # each step moves one more piece of chapters 2 to 5 into the capability
-    ('Nothing packaged: the second agent gets the tool, not the rules', dict(hide=False, notice=False, approval=False), True),
-    ('Move in: hide mark_paid during close', dict(hide=True, notice=False, approval=False), True),
-    ('Move in: the close notice', dict(hide=True, notice=True, approval=False), True),
-    ('Move in: approval. Monday, close is over', dict(hide=True, notice=True, approval=True), False),
+    ('Only the tool is copied, none of its rules', dict(hide=False, notice=False, approval=False), True),
+    ('Add the rule that hides mark_paid during close', dict(hide=True, notice=False, approval=False), True),
+    ('Add the close notice too', dict(hide=True, notice=True, approval=False), True),
+    ('Add approval too (now it is Monday, close is over)', dict(hide=True, notice=True, approval=True), False),
 ]
 # --8<-- [end:steps]
 

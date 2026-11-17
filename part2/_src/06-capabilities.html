@@ -78,9 +78,9 @@ Fri 10:46: bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.</m
       <section id="midrun">
         <h2>What can change during a run</h2>
         <div class="prose measure">
-          <p>The wire shows up at 10:46, in the middle of the run. The ledger instruction from <code>billing_world</code> is read before every request, so it can carry the change, but only if it reads the ledger when it runs. Here are two versions of the same agent: one loads the changes into its deps when the run starts, the usual way to pass state; the other reads them live.</p>
+          <p>The wire shows up at 10:46, in the middle of the run. The ledger instruction from <code>billing_world</code> is read before every request, so it can carry the change, but only if it reads the ledger when it runs. Here are two versions of the same agent: one copies the changes into its deps when the run starts, the usual way to pass state; the other hands it the live list. In this demo the wire arrives while the agent is looking the invoice up.</p>
         </div>
-        {{code ch6_page.py midrun "code/part2/ch6_page.py · pydantic-ai 2.68" keys="ledger_changes=|async with collections.iter|is_call_tools_node|ledger_feed.append"}}
+        {{code ch6_page.py midrun "code/part2/ch6_page.py · pydantic-ai 2.68"}}
         {{out ch6_page 1-2}}
         <div class="prose measure">
           <p>The first note asks Dana for money that is already on its way. Nothing failed: the model wrote from its page, and its page was from 10:45. The second read the ledger before the request after the lookup, and Pydantic AI appended the change at the end of the page, in your voice. Here is that page as the model read it, piece by piece:</p>
@@ -154,36 +154,36 @@ Fri 10:46: bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.</m
         <div class="prose measure">
           <p>So far every insertion lives on one agent.</p>
           <p class="story"><span class="when">Friday 20 Nov, 11:00</span>Half an hour after Dana's wire went out, the team adds a reminders agent: it drafts the reminder for each open invoice. It needs <code>mark_paid</code> too, for customers who say they already paid. Close is still running.</p>
-          <p>The quick way is to register the same function on the new agent. Step through what that gives it, then move each rule from chapters 2 to 5 into one capability, one at a time:</p>
+          <p>The quick way is to register the same function on the new agent. Step through what that gives it, and what changes as each rule from chapters 2 to 5 comes along:</p>
         </div>
-        <div class="viz seq" data-stop>
-          <p class="eyebrow"><span class="dia"></span>Package it, one piece at a time</p>
+        <div class="viz seq" data-stop data-intro="<b>The point:</b> the rules from chapters 2 to 5 can all live in one capability, and any agent that wears it gets a tool and its rules together. Here a new reminders agent gets <code>mark_paid</code>, the tool that marks an invoice paid in the ledger. A colleague asks it to mark INV-2045 paid while month-end close is running, when nothing may be written to the ledger. Each step adds one more rule to the capability; watch what the agent answers and whether the ledger gets a write.">
+          <p class="eyebrow"><span class="dia"></span>Give the new agent the rules, one at a time</p>
           <h4>The reminders agent during close. A colleague: "INV-2045 was paid in full by wire this morning. Mark it paid."</h4>
           <ol class="seq-steps">
-            <li class="bad" data-mood="happy" data-say="mark_paid is right here. Done!"><span class="ico">1</span><div><span class="who">{{out-inline ch6_capabilities 1}}</span><pre>{{out-inline ch6_capabilities 2}}
+            <li class="bad" data-caption="Only the tool is copied over, without its rules. The agent marks the invoice paid during close: the ledger gets a write it should not. This is the failure." data-mood="happy" data-say="mark_paid is right here. Done!"><span class="ico">1</span><div><span class="who">{{out-inline ch6_capabilities 1}}</span><pre>{{out-inline ch6_capabilities 2}}
 {{out-inline ch6_capabilities 4}}
 {{out-inline ch6_capabilities 5}}</pre></div></li>
-            <li class="bad" data-mood="unsure" data-say="It worked on the other agent. Unknown tool? I'll say try later."><span class="ico">2</span><div><span class="who">{{out-inline ch6_capabilities 6}}</span><pre>{{out-inline ch6_capabilities 7}}
+            <li class="bad" data-caption="Add the rule from <a href='03-tools.html'>chapter 3</a> that hides <code>mark_paid</code> from the model while close is running. Nothing is written now, but the model cannot see why the tool is gone, so it says to try again later, which is wrong." data-mood="unsure" data-say="It worked on the other agent. Unknown tool? I'll say try later."><span class="ico">2</span><div><span class="who">{{out-inline ch6_capabilities 6}}</span><pre>{{out-inline ch6_capabilities 7}}
 {{out-inline ch6_capabilities 9}}
 {{out-inline ch6_capabilities 10}}</pre></div></li>
-            <li class="good" data-mood="happy" data-say="Close is running. I can tell Dana exactly when."><span class="ico">3</span><div><span class="who">{{out-inline ch6_capabilities 11}}</span><pre>{{out-inline ch6_capabilities 13}}
+            <li class="good" data-caption="Add the close notice: the one line from <a href='03-tools.html'>chapter 3</a> that tells the model close is running until Monday. Now it gives the real answer: Monday." data-mood="happy" data-say="Close is running. I can tell Dana exactly when."><span class="ico">3</span><div><span class="who">{{out-inline ch6_capabilities 11}}</span><pre>{{out-inline ch6_capabilities 13}}
 {{out-inline ch6_capabilities 14}}
 {{out-inline ch6_capabilities 15}}</pre></div></li>
-            <li class="good" data-mood="curious" data-say="Monday. I can ask, and a person decides."><span class="ico">4</span><div><span class="who">{{out-inline ch6_capabilities 16}}</span><pre>{{out-inline ch6_capabilities 17}}
+            <li class="good" data-caption="Add approval, also from <a href='03-tools.html'>chapter 3</a>: <code>mark_paid</code> waits for a person to say yes. It is Monday now and close is over, so the tool is back, and the write waits for a person instead of happening on the model's say-so." data-mood="curious" data-say="Monday. I can ask, and a person decides."><span class="ico">4</span><div><span class="who">{{out-inline ch6_capabilities 16}}</span><pre>{{out-inline ch6_capabilities 17}}
 {{out-inline ch6_capabilities 19}}
 {{out-inline ch6_capabilities 20}}</pre></div></li>
           </ol>
-          <div class="btn-row"><button class="btn seq-play" type="button">Play</button><button class="btn ghost seq-step" type="button">Next step</button></div>
-          <div class="viz-tok seq-tok"><span data-tok="11" data-crop="face"></span><p class="seq-say" aria-live="polite">Press play.</p></div>
+          <div class="btn-row"></div>
+          <div class="viz-tok seq-tok"><span data-tok="11" data-crop="face"></span><p class="seq-say" aria-live="polite"></p></div>
           <p class="source"><b>Offline, deterministic.</b> Tool lists, notices and ledger writes are Pydantic AI 2.68's real behavior; the replies come from a stand-in model that answers from its page (Part 3 chapter 4 shows what real models do). <code>code/part2/ch6_capabilities.py</code></p>
         </div>
-        <p class="measure">Step 1 is the failure: the new agent got the tool without its rules, and wrote to the ledger during close. Once the rules travel with the tool, every agent that has one has the other.</p>
+        <p class="measure">Step 1 is the failure: the new agent got the tool without its rules. Once the rules travel with the tool in one capability, every agent that has the tool has the rules too.</p>
       </section>
 
       <section id="world">
         <h2>The collections world, packaged</h2>
         <div class="prose measure">
-          <p><code>Capability</code> has the decorators an agent has, so moving the code over is a change of prefix. Each highlighted line is a chapter: the received date (2), the close notice and the hidden, gated <code>mark_paid</code> (3), errors that say whose problem it is (3). And <code>record_payment</code> now waits for a person too, with its argument checks in <code>args_validator=</code>, so a person is never asked to approve a call that was going to be rejected. Chapters 7 to 9 and Part 3 import this file. A capability can also contribute model settings, a fallback model, history processing and hooks around every request and tool call.</p>
+          <p><code>Capability</code> has the decorators an agent has, so moving the code over is a change of prefix. In it you will find one piece per chapter: the received date (chapter 2), the close notice and the hidden, gated <code>mark_paid</code> (chapter 3), and errors that say whose problem it is (chapter 3). And <code>record_payment</code> now waits for a person too, with its argument checks in <code>args_validator=</code>, so a person is never asked to approve a call that was going to be rejected. Chapters 7 to 9 and Part 3 import this file. A capability can also contribute model settings, a fallback model, history processing and hooks around every request and tool call.</p>
         </div>
         {{code billing_world.py world "code/part2/billing_world.py · pydantic-ai 2.59+" keys="billing_world = Capability|name='received'|name='close'|return None if ctx.deps.closing|requires_approval=True, prepare|args_validator=valid_payment|raise ToolFailed"}}
         {{code billing_world.py agents "code/part2/billing_world.py, two agents, one world" keys="output_type=\[ToolOutput|capabilities=\[billing_world|Caching\(\)"}}

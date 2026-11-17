@@ -36,16 +36,16 @@ runtime: 8
       <section id="hidden">
         <h2>The tool that left</h2>
         <div class="prose measure"><p>Thursday, during close, a colleague who misread Dana's Tuesday email asks the agent to mark INV-2041 paid. The model used <code>mark_paid</code> on Wednesday, for another invoice, so it tries again. Step through what happens.</p></div>
-        <div class="viz seq" data-stop>
+        <div class="viz seq" data-stop data-intro="Thursday, month-end close is running, so mark_paid is hidden from the model. The model remembers using it on Wednesday and tries again. Step through what happens, first without a word about close, then with one line added.">
           <ol class="seq-steps">
-            <li data-mood="curious" data-say="I used mark_paid on Wednesday. Let me do that again."><span class="ico">1</span><div><span class="who">model &rarr; tool call</span><pre>mark_paid({"invoice_number": "INV-2041"})</pre></div></li>
-            <li class="bad" data-mood="unsure" data-say="Unknown? It worked on Wednesday. Did I misspell it?"><span class="ico">&times;</span><div><span class="who">back to the model: this request didn't offer it</span><pre>{{out-inline ch3_tools 1}}</pre></div></li>
-            <li class="bad" data-mood="worried" data-say="I'll say it failed. I don't know why, or when it's back."><span class="ico">2</span><div><span class="who">the reply drafted for Dana</span><pre>{{out-inline ch3_tools 2}}</pre></div></li>
-            <li data-mood="curious" data-say="Oh, there's a line on my page now."><span class="ico">+</span><div><span class="who">add one line, appended when close starts</span><pre>Month-end close is running until Monday: mark_paid is unavailable, so say so.</pre></div></li>
-            <li class="good" data-mood="happy" data-say="Close is running. I can say exactly that."><span class="ico">&check;</span><div><span class="who">the reply drafted for Dana now</span><pre>{{out-inline ch3_tools 4}}</pre></div></li>
+            <li data-caption="The model calls mark_paid, as it did on Wednesday." data-mood="curious" data-say="I used mark_paid on Wednesday. Let me do that again."><span class="ico">1</span><div><span class="who">model &rarr; tool call</span><pre>mark_paid({"invoice_number": "INV-2041"})</pre></div></li>
+            <li class="bad" data-caption="This request didn't offer mark_paid, so Pydantic AI sends back an unknown-tool error. Nothing is written." data-mood="unsure" data-say="Unknown? It worked on Wednesday. Did I misspell it?"><span class="ico">&times;</span><div><span class="who">back to the model: this request didn't offer it</span><pre>{{out-inline ch3_tools 1}}</pre></div></li>
+            <li class="bad" data-caption="The model doesn't know why the tool is gone, so it tells Dana to try again later, which is wrong all of Thursday and Friday." data-mood="worried" data-say="I'll say it failed. I don't know why, or when it's back."><span class="ico">2</span><div><span class="who">the reply drafted for Dana</span><pre>{{out-inline ch3_tools 2}}</pre></div></li>
+            <li data-caption="Now add one line to the instructions, appended when close starts, that says close is running and mark_paid is unavailable." data-mood="curious" data-say="Oh, there's a line on my page now."><span class="ico">+</span><div><span class="who">add one line, appended when close starts</span><pre>Month-end close is running until Monday: mark_paid is unavailable, so say so.</pre></div></li>
+            <li class="good" data-caption="With that line on its page, the model tells Dana the truth: close is running until Monday." data-mood="happy" data-say="Close is running. I can say exactly that."><span class="ico">&check;</span><div><span class="who">the reply drafted for Dana now</span><pre>{{out-inline ch3_tools 4}}</pre></div></li>
           </ol>
-          <div class="btn-row"><button class="btn seq-play" type="button">Play</button><button class="btn ghost seq-step" type="button">Next step</button></div>
-          <div class="viz-tok seq-tok"><span data-tok="8" data-crop="face"></span><p class="seq-say" aria-live="polite">Press play.</p></div>
+          <div class="btn-row"></div>
+          <div class="viz-tok seq-tok"><span data-tok="8" data-crop="face"></span><p class="seq-say" aria-live="polite"></p></div>
         </div>
         <div class="prose measure">
           <p>The gate held both times: nothing was written ({{out-inline ch3_tools 3}}). What changed is what the model could tell the customer. "Please try again later" is wrong on Thursday and Friday, so Dana is told to try again. This is Part 1 chapter 2's tool that left quietly: none of 80 conversations noticed on their own, and one line saying so fixed it on most models. What models do when the tool is hidden and nobody says so is stranger than "try later": <a href="../part3/04-run-your-own-probe.html">Part 3, chapter 4</a> probes it.</p>

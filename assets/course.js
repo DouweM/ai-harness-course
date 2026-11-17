@@ -533,10 +533,15 @@
       if (b) b.addEventListener('click', function () {
         copyText(pre.textContent, function (ok) { b.textContent = ok ? 'Copied' : 'Select and copy'; setTimeout(function () { b.textContent = 'Copy'; }, 1400); });
       });
+      var src = c.getAttribute('data-src');
+      if (src && REPO_URL && !$('.full', head)) {
+        var a = document.createElement('a'); a.className = 'full'; a.href = REPO_URL + '/blob/main/' + src; a.textContent = 'Full file';
+        a.target = '_blank'; a.rel = 'noopener'; head.insertBefore(a, $('.copy', head));
+      }
       var run = c.getAttribute('data-run');
       if (run) {
         var r = document.createElement('div'); r.className = 'run';
-        r.innerHTML = '<span>Run it:</span><code>' + esc(run) + '</code><button type="button">Copy command</button>';
+        r.innerHTML = '<span>Run it:</span><code>' + esc(run) + '</code><button type="button">Copy command</button><a class="getcode-link" href="' + href('index.html#get-the-code') + '">from the course repo: get the code</a>';
         c.appendChild(r);
         $('button', r).addEventListener('click', function (e) { var t = e.currentTarget; copyText(run, function (ok) { t.textContent = ok ? 'Copied' : 'Select and copy'; setTimeout(function () { t.textContent = 'Copy command'; }, 1400); }); });
       }

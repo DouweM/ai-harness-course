@@ -192,7 +192,7 @@ model_settings:
         <div class="prose measure">
           <p><code>ManagedPrompt</code> (Pydantic AI Harness) reads the instructions from a Logfire-managed prompt: version and label it in Logfire, roll a change out to part of the traffic, roll it back from the UI. Every span records which label produced it.</p>
         </div>
-        <div class="code" data-focus="4" data-keep data-run="uv run code/part3/ch2_model_configs.py">
+        <div class="code" data-keep data-run="uv run code/part3/ch2_model_configs.py">
           <div class="code-head"><span class="file">code/part3/ch2_model_configs.py &middot; pydantic-ai-harness[logfire]</span></div>
 <pre data-lang="py">claude_spec = AgentSpec.from_file(CONFIGS / 'claude-5.yaml')
 managed = Agent(

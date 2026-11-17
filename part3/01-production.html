@@ -123,7 +123,7 @@
         <div class="prose measure">
           <p>Part 2 built the waiting: the run ends with <code>DeferredToolRequests</code>, you store the <code>Conversation</code>, and a new run continues it with the person's decision. Production adds two things. When only some calls need a person, the cleanest gate is conditional: register an <code>args_validator=</code> that raises <code>ApprovalRequired()</code> only for amounts over 1,000, so small payments never become a question and bad arguments never reach anyone. When something else answers approvals in process (a policy, a bot, a second model), <code>HandleDeferredToolCalls</code> runs it inside the run, so a person only sees the ones that need a person:</p>
         </div>
-        <div class="code" data-run="uv run code/part3/ch1_weekend.py">
+        <div class="code" data-src="code/part3/ch1_weekend.py" data-run="uv run code/part3/ch1_weekend.py">
           <div class="code-head"><span class="file">code/part3/ch1_weekend.py, a policy</span></div>
 <pre data-lang="py">async def small_amounts(ctx: RunContext[Deps], requests: DeferredToolRequests) -&gt; DeferredToolResults | None:
     """Approve payments up to 1,000 inside the run; return None for the rest, so they wait for a person."""
@@ -137,7 +137,7 @@ collections.run(..., capabilities=[HandleDeferredToolCalls(small_amounts)])</pre
         <div class="prose measure"><p>When a crash would cost more than a rerun, or the workflow itself should hold the wait, put the run on a durable engine. It journals each model request and tool call, so a crash anywhere replays what finished:</p></div>
         <details class="deeper" open><summary>The durable version (DBOS)</summary>
           <p>The docs' end-to-end service, without the HTTP routes and runnable offline. The workflow itself waits up to a week for the decision; on restart DBOS replays what finished. Temporal, Prefect and Pydantic AI Harness's Postgres engines (Absurd, pgtask) attach the same way, as a capability; Restate wraps the agent in its own class. A policy handler without a resume token isn't journaled, so it reruns on replay. A deploy changes what in-flight runs replay against: let them drain, or follow the engine's versioning guidance.</p>
-          <div class="code long" data-run="uv run code/part3/ch1_durable.py"><pre data-lang="py">@DBOS.workflow()
+          <div class="code" data-src="code/part3/ch1_durable.py" data-run="uv run code/part3/ch1_durable.py"><pre data-lang="py">@DBOS.workflow()
 async def collections_run(prompt: str) -&gt; str:
     result = await agent.run(prompt)
     while isinstance(output := result.output, DeferredToolRequests):

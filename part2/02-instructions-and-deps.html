@@ -42,7 +42,7 @@
         <div class="prose measure">
           <p class="story"><span class="when">Tuesday 17 Nov, 09:02</span>Dana's email arrives, and your billing system asks the agent about it. The agent's prompt was written the obvious way: an f-string with today's date, built when the module loads. The service was deployed last Thursday and hasn't restarted since.</p>
         </div>
-        <div class="code focus" data-keys="13,17" data-run="uv run code/part2/ch2_instructions.py"><div class="code-head"><span class="file">code/part2/ch2_instructions.py, the obvious way</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from pydantic import BaseModel
+        <div class="code" data-lines="30" data-src="code/part2/ch2_instructions.py" data-run="uv run code/part2/ch2_instructions.py"><div class="code-head"><span class="file">code/part2/ch2_instructions.py, the obvious way</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic import BaseModel
 
 from pydantic_ai import Agent, ToolOutput
 
@@ -78,7 +78,7 @@ Hi, INV-2041 will be paid this Friday. Thanks, Dana</div></div>
         </div>
         <aside class="notes"><p>No prediction here: everyone sees it coming. Spend the time on where the date comes from: the email's arrival, not the clock.</p></aside>
         <h3>The fix: a fact from deps, every request</h3>
-        <div class="code focus" data-keys="10,16,22,24" data-run="uv run code/part2/ch2_instructions.py"><div class="code-head"><span class="file">code/part2/ch2_instructions.py · deps and an instructions function</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from dataclasses import dataclass
+        <div class="code" data-lines="30" data-src="code/part2/ch2_instructions.py" data-run="uv run code/part2/ch2_instructions.py"><div class="code-head"><span class="file">code/part2/ch2_instructions.py · deps and an instructions function</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from dataclasses import dataclass
 
 from pydantic_ai import RunContext
 
@@ -103,14 +103,14 @@ agent = Agent(
 @agent.instructions  # rebuilt for every request, from this run&#x27;s deps
 def when_it_arrived(ctx: RunContext[Deps]) -&gt; str:
     return f&#x27;The email was received on {ctx.deps.received:%A %Y-%m-%d}.&#x27;</pre></div>
-        <div class="code" data-run="uv run code/part2/ch2_instructions.py"><div class="code-head"><span class="file">code/part2/ch2_instructions.py, both, side by side</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from billing import DANA_ID, RECEIVED, new_email
+        <div class="code" data-lines="30" data-src="code/part2/ch2_instructions.py" data-run="uv run code/part2/ch2_instructions.py"><div class="code-head"><span class="file">code/part2/ch2_instructions.py, both, side by side</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from billing import DANA_ID, RECEIVED, new_email
 
 deps = Deps(billing=FakeBilling(), received=RECEIVED)  # Tuesday 17 Nov, five days after deploy
 with baked.override(model=FunctionModel(reads_the_page)):
     print(&#x27;baked at import:&#x27;, baked.run_sync(new_email(DANA_ID), deps=deps).output.due_date)
 with agent.override(model=FunctionModel(reads_the_page)):
     print(&#x27;from deps:      &#x27;, agent.run_sync(new_email(DANA_ID), deps=deps).output.due_date)</pre></div>
-        <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>baked at import: 2026-11-13
+        <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>baked at import: 2026-11-13
 from deps:       2026-11-20</pre></div>
         <p class="source"><b>Offline, deterministic.</b> A <code>FunctionModel</code> stands in for the model: it reads the email, then works out "this Friday" from the date on its page, the way models did in Part 1. Use the date the email arrived, a fact your code knows, rather than today's: a queue that works through yesterday's mail would pick the wrong week.</p>
         <div class="tok-says"><div class="tk" data-tok="7" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>My badge said Thursday the 12th, so that was my world. Now it is rewritten every time I start.</p></div></div>
@@ -121,7 +121,7 @@ from deps:       2026-11-20</pre></div>
         <div class="prose measure">
           <p>An instructions function runs before every request, so its line is always current. For a value that can change while a conversation is open, like month-end close starting on Thursday, give it a name and <code>on_change='append'</code>: the old instructions stay as they were, and the change arrives at the end of the page, at the moment it happened. Part 1 chapter 4 showed why: rewriting the top left some models writing like their own past (Grok and Qwen 0 of 24), while appending the change worked on all six models shown, 24 of 24 each. Chapter 3 uses this for a tool that leaves.</p>
         </div>
-        <div class="code focus" data-keys="8,10" data-run="uv run code/part2/ch2_instructions.py"><div class="code-head"><span class="file">code/part2/ch2_instructions.py, a value that changes · pydantic-ai 2.59+</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">@dataclass
+        <div class="code" data-lines="30" data-src="code/part2/ch2_instructions.py" data-run="uv run code/part2/ch2_instructions.py"><div class="code-head"><span class="file">code/part2/ch2_instructions.py, a value that changes · pydantic-ai 2.59+</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">@dataclass
 class CloseDeps(Deps):
     closing: bool = False  # month-end close is running
 
@@ -161,7 +161,7 @@ def close_notice(ctx: RunContext[CloseDeps]) -&gt; str | None:
   </div>
 </main>
 
-<footer><div class="wrap"><p>Every snippet runs offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0: <code>uv run code/part2/verify.py</code>.</p></div></footer>
+<footer><div class="wrap"><p>The examples run offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0. <a href="../index.html#get-the-code">Get the code</a></p></div></footer>
 
 <script src="../assets/course.js"></script>
 <script src="part2.js"></script>

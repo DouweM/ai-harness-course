@@ -159,3 +159,25 @@ horizontal scroll at 360px.
 
 `<div class="deeper measure"><p class="eyebrow">Go deeper: ...</p><p>...</p></div>`. Always open, never a fold:
 for the advanced reader who needs one more paragraph (when a variant is the right call, an edge of a guarantee).
+
+## Steppers and code views (rules, 2026-11-16)
+
+**Steppers** (`.viz.seq` in Part 2, the Part 1 chapter 1 request stepper, the Part 3 architecture stepper):
+
+- The reader advances by hand: Back and Next, never autoplay. A Play button, if any, is slow and pausable, and nothing
+  starts on scroll.
+- The point comes first: `data-intro` on the `.seq` is the caption shown before step 1, and says what the stepper is
+  meant to show. The caption and the buttons sit above the steps.
+- Every step has `data-caption`: one plain sentence on what changed and why it matters. Every term in it is already
+  defined where the reader meets it, or links back to where it was (a chapter link).
+- Step labels are plain words a newcomer understands ("Add the close notice too"), never shorthand ("Move in").
+- The count is visible: "Step 2 of 4".
+
+**Code views:**
+
+- A card shows its whole snippet: the snippet markers in the source cut it to the lines that matter. No collapsed
+  regions, no dimmed lines, no unexplained highlights. `keys=` in `{{code ...}}` is accepted and ignored.
+- Each card links to the full file in the public repo ("Full file", when `REPO_URL` is set) and its run line links to
+  "Get the code" on the home page.
+- Output cards are labelled "// output", without verification badges; verification lives in the verify scripts and
+  AGENTS.md.

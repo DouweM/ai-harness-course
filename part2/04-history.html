@@ -42,7 +42,7 @@
         <div class="prose measure">
           <p>Each run starts from what you pass it. Store <code>result.conversation</code> per conversation, load it on the next email, maybe in another process, and pass it back. Three days of Dana's thread:</p>
         </div>
-        <div class="code focus" data-keys="9,10,11" data-run="uv run code/part2/ch4_history.py"><div class="code-head"><span class="file">code/part2/ch4_history.py · pydantic-ai 2.55+</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from pydantic_ai import ConversationTypeAdapter
+        <div class="code" data-lines="30" data-src="code/part2/ch4_history.py" data-run="uv run code/part2/ch4_history.py"><div class="code-head"><span class="file">code/part2/ch4_history.py · pydantic-ai 2.55+</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai import ConversationTypeAdapter
 
 agent = make_agent()
 database: dict[str, bytes] = {}  # yours: a table keyed by conversation id
@@ -56,7 +56,7 @@ with agent.override(model=FunctionModel(looks_up_then_answers)):
         database[&#x27;dana&#x27;] = ConversationTypeAdapter.dump_json(result.conversation)  # store the whole thing
 
 print(&#x27;stored messages by Thursday night:&#x27;, len(result.all_messages()))</pre></div>
-        <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>stored messages by Thursday night: 16</pre></div>
+        <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>stored messages by Thursday night: 16</pre></div>
         <p class="small muted measure">In production: key it by conversation id, check the caller may see that conversation before loading it, and lock or version the row, so two of Dana's emails processed at once don't both continue Tuesday's copy.</p>
       </section>
 
@@ -65,10 +65,10 @@ print(&#x27;stored messages by Thursday night:&#x27;, len(result.all_messages())
         <div class="prose measure">
           <p class="story"><span class="when">Friday 20 Nov, 10:30</span>Dana writes that the first half is on its way. In production the thread is now long, and every request pays for all of it. Something has to go. The old workaround is a history processor that keeps the last few messages. <code>ClearToolResults</code> blanks old tool results instead; it comes from <code>pydantic-ai-harness</code>, Pydantic AI Harness for short: a package of ready-made capabilities on top of Pydantic AI, from the same team (chapter 6 opens it up). Note <code>exclude_tools</code>: Dana's emails are tool results, and they can't be fetched back the way a lookup can.</p>
         </div>
-        <div class="code" data-run="uv run code/part2/ch4_history.py"><div class="code-head"><span class="file">code/part2/ch4_history.py, the old way</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import ProcessHistory
+        <div class="code" data-lines="30" data-src="code/part2/ch4_history.py" data-run="uv run code/part2/ch4_history.py"><div class="code-head"><span class="file">code/part2/ch4_history.py, the old way</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import ProcessHistory
 
 keep_the_last_four = ProcessHistory(lambda messages: messages[-4:])  # the old workaround: cut from the front</pre></div>
-        <div class="code" data-run="uv run code/part2/ch4_history.py"><div class="code-head"><span class="file">code/part2/ch4_history.py, clearing old results · pydantic-ai-harness 0.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai_harness.compaction import ClearToolResults
+        <div class="code" data-lines="30" data-src="code/part2/ch4_history.py" data-run="uv run code/part2/ch4_history.py"><div class="code-head"><span class="file">code/part2/ch4_history.py, clearing old results · pydantic-ai-harness 0.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai_harness.compaction import ClearToolResults
 
 clear_old_results = ClearToolResults(
     max_messages=8,  # in production: max_fraction=0.7 of the model&#x27;s window
@@ -107,7 +107,7 @@ clear_old_results = ClearToolResults(
           <div class="stage" data-label="What Friday's page holds" hidden>
             <p class="eyebrow"><span class="dia"></span>What Friday's page holds</p>
             <p class="headline">Cutting lost the correction, and the page now starts mid-exchange. Clearing kept every message.</p>
-            <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>Friday, cut to the last four messages:
+            <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>Friday, cut to the last four messages:
   messages on the page:  4
   Wednesday&#x27;s correction: GONE
   starts with:            ModelResponse [&#x27;ToolCallPart&#x27;]
@@ -134,7 +134,7 @@ Friday, old tool results cleared:
         <div class="prose measure">
           <p><code>TieredCompaction</code> is Pydantic AI Harness's recommended default: it clears tool results first and only summarizes older turns with a model call when clearing doesn't free enough. A summary is the one step that can drop what the customer said, so tell the summarizer what to keep. In Part 1 chapter 4 a summary that dropped the user's rule led every model to break it, 80 times out of 80; the same summary with the rule carried over verbatim fixed it on all four models, 40 of 40. The prompt below does that for Dana's promises. A custom prompt replaces the default's rule about who said what, so it states that rule too: Dana's words arrive as <code>read_email</code> results, and a summary that turns them into "the customer requires" has promoted data to an instruction.</p>
         </div>
-        <div class="code focus" data-keys="2,4,5,6,10,17" data-run="uv run code/part2/ch4_history.py"><div class="code-head"><span class="file">code/part2/ch4_history.py, compaction · pydantic-ai-harness 0.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from pydantic_ai_harness.compaction import SummarizingCompaction, TieredCompaction
+        <div class="code" data-lines="30" data-src="code/part2/ch4_history.py" data-run="uv run code/part2/ch4_history.py"><div class="code-head"><span class="file">code/part2/ch4_history.py, compaction · pydantic-ai-harness 0.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai_harness.compaction import SummarizingCompaction, TieredCompaction
 
 compaction = TieredCompaction(
     tiers=[
@@ -185,7 +185,7 @@ compaction = TieredCompaction(
   </div>
 </main>
 
-<footer><div class="wrap"><p>Every snippet runs offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0: <code>uv run code/part2/verify.py</code>.</p></div></footer>
+<footer><div class="wrap"><p>The examples run offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0. <a href="../index.html#get-the-code">Get the code</a></p></div></footer>
 
 <script src="../assets/course.js"></script>
 <script src="part2.js"></script>

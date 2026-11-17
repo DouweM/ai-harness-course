@@ -102,7 +102,9 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: .9375rem; }
 .seq-steps li.good .ico { background: var(--tip); }
 .seq-steps li.you .ico { background: var(--role-system); }
 .seq-steps pre { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font: .8125rem/1.45 var(--font-mono); color: var(--code-text); }
-.seq .btn-row { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+.seq .btn-row { margin: 12px 0 14px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.seq-count { font: 600 .8125rem var(--font-mono); color: var(--text-muted); margin-left: 4px; }
+.seq-cap { margin-top: 14px; padding: 12px 14px; border-left: 3px solid var(--accent-strong); background: var(--surface); font-size: 1rem; line-height: 1.5; min-height: 3em; }
 @media (prefers-reduced-motion: reduce) { .seq-steps li { transition: none; transform: none; } }
 
 /* Tool list per request (ch3) */

@@ -43,27 +43,35 @@
     });
   });
 
-  /* ---------- step player: steps light up one by one ---------- */
+  /* ---------- step player: the reader steps through by hand ----------
+     Each step has a plain caption (data-caption); the .seq's data-intro is the caption before step 1. No autoplay:
+     Back and Next, and a visible "Step n of N". Tok's line (data-say) is a reaction under the caption. */
   $$('.seq').forEach(function (seq) {
     var steps = $$('.seq-steps > li', seq), face = $('.seq-tok [data-tok]', seq), say = $('.seq-say', seq);
-    var playBtn = $('.seq-play', seq), stepBtn = $('.seq-step', seq), i = -1, timer = null;
+    var row = $('.btn-row', seq), i = -1;
+    row.innerHTML = '';
+    var cap = document.createElement('div'); cap.className = 'seq-cap'; cap.setAttribute('aria-live', 'polite');
+    var back = document.createElement('button'); back.type = 'button'; back.className = 'btn ghost seq-back'; back.textContent = 'Back';
+    var next = document.createElement('button'); next.type = 'button'; next.className = 'btn seq-next';
+    var count = document.createElement('span'); count.className = 'seq-count';
+    row.appendChild(back); row.appendChild(next); row.appendChild(count);
+    var list = $('.seq-steps', seq);  // the caption and the buttons come first, so the point is read before the steps
+    list.parentNode.insertBefore(cap, list); list.parentNode.insertBefore(row, list);
     function show(n) {
-      i = n;
-      steps.forEach(function (s, k) { s.classList.toggle('on', k <= n); s.classList.toggle('now', k === n); });
-      var cur = steps[n];
-      if (cur) { tok(face, cur.getAttribute('data-mood')); if (say) say.textContent = cur.getAttribute('data-say') || ''; }
-      stepBtn.textContent = n >= steps.length - 1 ? 'Start over' : 'Next step';
+      i = Math.max(-1, Math.min(steps.length - 1, n));
+      steps.forEach(function (s, k) { s.classList.toggle('on', k <= i); s.classList.toggle('now', k === i); });
+      var cur = steps[i];
+      cap.innerHTML = i < 0 ? '<b>Before you start.</b> ' + (seq.getAttribute('data-intro') || '')
+        : '<b>Step ' + (i + 1) + '.</b> ' + (cur.getAttribute('data-caption') || '');
+      count.textContent = i < 0 ? steps.length + ' steps' : 'Step ' + (i + 1) + ' of ' + steps.length;
+      back.disabled = i < 0;
+      next.textContent = i < 0 ? 'Start' : i >= steps.length - 1 ? 'Start over' : 'Next step';
+      if (face) tok(face, cur ? cur.getAttribute('data-mood') : '');
+      if (say) say.textContent = cur ? cur.getAttribute('data-say') || '' : '';
     }
-    function stop() { if (timer) { clearInterval(timer); timer = null; } playBtn.textContent = 'Play'; }
-    stepBtn.addEventListener('click', function () { stop(); show(i >= steps.length - 1 ? 0 : i + 1); });
-    playBtn.addEventListener('click', function () {
-      if (timer) { stop(); return; }
-      if (REDUCED) { show(steps.length - 1); return; }
-      show(i >= steps.length - 1 ? 0 : i + 1); playBtn.textContent = 'Pause';
-      timer = setInterval(function () { if (i >= steps.length - 1) { stop(); return; } show(i + 1); }, 1500);
-    });
+    back.addEventListener('click', function () { show(i - 1); });
+    next.addEventListener('click', function () { show(i >= steps.length - 1 ? -1 : i + 1); });
     show(-1);
-    stepBtn.textContent = 'Next step';
   });
 
 })();

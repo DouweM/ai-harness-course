@@ -293,6 +293,8 @@ button { font: inherit; color: inherit; }
 .code-head .file { font-family: var(--font-mono); font-size: .8125rem; color: var(--accent-strong); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .code-head .copy { border: 0; background: none; color: var(--text-muted); font-family: var(--font-mono); font-size: .8125rem; cursor: pointer; min-height: 44px; min-width: 52px; padding: 0 10px; }
 .code-head .copy:hover { color: var(--accent-strong); }
+.code-head .full { font-family: var(--font-mono); font-size: .8125rem; color: var(--text-muted); padding: 0 6px; min-height: 44px; display: inline-flex; align-items: center; }
+.code-head .full:hover { color: var(--accent-strong); }
 .code pre { margin: 0; padding: 14px; overflow-x: auto; font-family: var(--font-mono); font-size: .8125rem; line-height: 1.55; color: var(--code-text); tab-size: 4; }
 @media (min-width: 900px) { .code pre { font-size: .875rem; } }
 @media (max-width: 640px) { .code pre { white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: hidden; font-size: .8125rem; } }
@@ -762,3 +764,11 @@ body.talk .point { font-size: clamp(1.5rem, .9rem + 1.6vw, 2.6rem); max-width: 3
 .fine { font-size: .875rem; color: var(--text-muted); max-width: 72ch; margin: 10px 0 0; }
 .fine b { color: var(--text); font-weight: 600; }
 body.talk .fine:not(.talk-keep) { display: none; }
+
+/* get the code (home page, Part 2 ch1) */
+.getcode { border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); padding: 16px 18px; margin: 8px 0 24px; max-width: 760px; }
+.getcode h3 { margin: 0 0 6px; }
+.getcode p { margin: 0 0 10px; }
+.getcode-cmd { margin: 0; padding: 10px 14px; background: var(--code-bg); color: var(--code-text); border-radius: 8px; font: .875rem/1.5 var(--font-mono); overflow-x: auto; }
+.run .getcode-link { font-size: .8125rem; color: var(--text-muted); margin-left: 6px; }
+.run .getcode-link:hover { color: var(--accent-strong); }

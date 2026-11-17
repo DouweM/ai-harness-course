@@ -92,24 +92,21 @@ Fri 10:46: bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.</m
       <section id="midrun">
         <h2>What can change during a run</h2>
         <div class="prose measure">
-          <p>The wire shows up at 10:46, in the middle of the run. The ledger instruction from <code>billing_world</code> is read before every request, so it can carry the change, but only if it reads the ledger when it runs. Here are two versions of the same agent: one loads the changes into its deps when the run starts, the usual way to pass state; the other reads them live.</p>
+          <p>The wire shows up at 10:46, in the middle of the run. The ledger instruction from <code>billing_world</code> is read before every request, so it can carry the change, but only if it reads the ledger when it runs. Here are two versions of the same agent: one copies the changes into its deps when the run starts, the usual way to pass state; the other hands it the live list. In this demo the wire arrives while the agent is looking the invoice up.</p>
         </div>
-        <div class="code focus" data-keys="3,5,7,8" data-run="uv run code/part2/ch6_page.py"><div class="code-head"><span class="file">code/part2/ch6_page.py · pydantic-ai 2.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">async def draft_note(*, live: bool) -&gt; tuple[str, list[ModelMessage]]:
+        <div class="code" data-lines="30" data-src="code/part2/ch6_page.py" data-run="uv run code/part2/ch6_page.py"><div class="code-head"><span class="file">code/part2/ch6_page.py · pydantic-ai 2.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">async def draft_note(*, live: bool) -&gt; tuple[str, list[ModelMessage]]:
     ledger_feed: list[str] = []  # your sync job appends here when the bank reports a payment
-    deps = Deps(FakeBilling(), WIRE_RECEIVED, closing=True,
-                ledger_changes=ledger_feed if live else list(ledger_feed))  # live list, or a copy taken at the start
+    changes = ledger_feed if live else list(ledger_feed)  # the live list, or a copy taken at the start
+    deps = Deps(WireArrives(ledger_feed), WIRE_RECEIVED, closing=True, ledger_changes=changes)
     with collections.override(model=FunctionModel(reads_its_page)):
-        async with collections.iter(ASK, deps=deps) as run:
-            async for node in run:
-                if Agent.is_call_tools_node(node) and not ledger_feed:  # the lookup runs; the clock reaches 10:46
-                    ledger_feed.append(WIRE_LINE)
-    return str(run.result.output), run.result.all_messages()</pre></div>
-        <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>Deps took a copy of the ledger changes at 10:45: Hi Dana, a reminder that the first half of INV-2041, 2,060.00, is due today.
+        result = await collections.run(ASK, deps=deps)
+    return result.output, result.all_messages()</pre></div>
+        <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>Deps took a copy of the ledger changes at 10:45: Hi Dana, a reminder that the first half of INV-2041, 2,060.00, is due today.
 Deps read the live list, appended on change:    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on the 30th.</pre></div>
         <div class="prose measure">
           <p>The first note asks Dana for money that is already on its way. Nothing failed: the model wrote from its page, and its page was from 10:45. The second read the ledger before the request after the lookup, and Pydantic AI appended the change at the end of the page, in your voice. Here is that page as the model read it, piece by piece:</p>
         </div>
-        <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>operator You handle customers&#x27; emails about their invoices with us, and record what they promise.     instructions, every request
+        <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>operator You handle customers&#x27; emails about their invoices with us, and record what they promise.     instructions, every request
 operator Amounts and invoice numbers come from our billing system, never from an email alone.         instructions, every request
 operator Month-end close is running until Monday: mark_paid is unavailable, so say so.                instructions, every request
 operator This message was received on Friday 2026-11-20.                                              instructions, every request
@@ -186,38 +183,38 @@ model    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on t
         <div class="prose measure">
           <p>So far every insertion lives on one agent.</p>
           <p class="story"><span class="when">Friday 20 Nov, 11:00</span>Half an hour after Dana's wire went out, the team adds a reminders agent: it drafts the reminder for each open invoice. It needs <code>mark_paid</code> too, for customers who say they already paid. Close is still running.</p>
-          <p>The quick way is to register the same function on the new agent. Step through what that gives it, then move each rule from chapters 2 to 5 into one capability, one at a time:</p>
+          <p>The quick way is to register the same function on the new agent. Step through what that gives it, and what changes as each rule from chapters 2 to 5 comes along:</p>
         </div>
-        <div class="viz seq" data-stop>
-          <p class="eyebrow"><span class="dia"></span>Package it, one piece at a time</p>
+        <div class="viz seq" data-stop data-intro="<b>The point:</b> the rules from chapters 2 to 5 can all live in one capability, and any agent that wears it gets a tool and its rules together. Here a new reminders agent gets <code>mark_paid</code>, the tool that marks an invoice paid in the ledger. A colleague asks it to mark INV-2045 paid while month-end close is running, when nothing may be written to the ledger. Each step adds one more rule to the capability; watch what the agent answers and whether the ledger gets a write.">
+          <p class="eyebrow"><span class="dia"></span>Give the new agent the rules, one at a time</p>
           <h4>The reminders agent during close. A colleague: "INV-2045 was paid in full by wire this morning. Mark it paid."</h4>
           <ol class="seq-steps">
-            <li class="bad" data-mood="happy" data-say="mark_paid is right here. Done!"><span class="ico">1</span><div><span class="who">Nothing packaged: the second agent gets the tool, not the rules</span><pre>  tools offered: [&#x27;mark_paid&#x27;]
+            <li class="bad" data-caption="Only the tool is copied over, without its rules. The agent marks the invoice paid during close: the ledger gets a write it should not. This is the failure." data-mood="happy" data-say="mark_paid is right here. Done!"><span class="ico">1</span><div><span class="who">Only the tool is copied, none of its rules</span><pre>  tools offered: [&#x27;mark_paid&#x27;]
   outcome:       Done: INV-2045 is marked paid.
   ledger writes: 1</pre></div></li>
-            <li class="bad" data-mood="unsure" data-say="It worked on the other agent. Unknown tool? I'll say try later."><span class="ico">2</span><div><span class="who">Move in: hide mark_paid during close</span><pre>  tools offered: none
+            <li class="bad" data-caption="Add the rule from <a href='03-tools.html'>chapter 3</a> that hides <code>mark_paid</code> from the model while close is running. Nothing is written now, but the model cannot see why the tool is gone, so it says to try again later, which is wrong." data-mood="unsure" data-say="It worked on the other agent. Unknown tool? I'll say try later."><span class="ico">2</span><div><span class="who">Add the rule that hides mark_paid during close</span><pre>  tools offered: none
   outcome:       I wasn&#x27;t able to mark INV-2045 paid. Please try again later.
   ledger writes: 0</pre></div></li>
-            <li class="good" data-mood="happy" data-say="Close is running. I can tell Dana exactly when."><span class="ico">3</span><div><span class="who">Move in: the close notice</span><pre>  close notice:  on the page
+            <li class="good" data-caption="Add the close notice: the one line from <a href='03-tools.html'>chapter 3</a> that tells the model close is running until Monday. Now it gives the real answer: Monday." data-mood="happy" data-say="Close is running. I can tell Dana exactly when."><span class="ico">3</span><div><span class="who">Add the close notice too</span><pre>  close notice:  on the page
   outcome:       Close is running, so I can mark INV-2045 paid on Monday.
   ledger writes: 0</pre></div></li>
-            <li class="good" data-mood="curious" data-say="Monday. I can ask, and a person decides."><span class="ico">4</span><div><span class="who">Move in: approval. Monday, close is over</span><pre>  tools offered: [&#x27;mark_paid&#x27;]
+            <li class="good" data-caption="Add approval, also from <a href='03-tools.html'>chapter 3</a>: <code>mark_paid</code> waits for a person to say yes. It is Monday now and close is over, so the tool is back, and the write waits for a person instead of happening on the model's say-so." data-mood="curious" data-say="Monday. I can ask, and a person decides."><span class="ico">4</span><div><span class="who">Add approval too (now it is Monday, close is over)</span><pre>  tools offered: [&#x27;mark_paid&#x27;]
   outcome:       waits for a person
   ledger writes: 0</pre></div></li>
           </ol>
-          <div class="btn-row"><button class="btn seq-play" type="button">Play</button><button class="btn ghost seq-step" type="button">Next step</button></div>
-          <div class="viz-tok seq-tok"><span data-tok="11" data-crop="face"></span><p class="seq-say" aria-live="polite">Press play.</p></div>
+          <div class="btn-row"></div>
+          <div class="viz-tok seq-tok"><span data-tok="11" data-crop="face"></span><p class="seq-say" aria-live="polite"></p></div>
           <p class="source"><b>Offline, deterministic.</b> Tool lists, notices and ledger writes are Pydantic AI 2.68's real behavior; the replies come from a stand-in model that answers from its page (Part 3 chapter 4 shows what real models do). <code>code/part2/ch6_capabilities.py</code></p>
         </div>
-        <p class="measure">Step 1 is the failure: the new agent got the tool without its rules, and wrote to the ledger during close. Once the rules travel with the tool, every agent that has one has the other.</p>
+        <p class="measure">Step 1 is the failure: the new agent got the tool without its rules. Once the rules travel with the tool in one capability, every agent that has the tool has the rules too.</p>
       </section>
 
       <section id="world">
         <h2>The collections world, packaged</h2>
         <div class="prose measure">
-          <p><code>Capability</code> has the decorators an agent has, so moving the code over is a change of prefix. Each highlighted line is a chapter: the received date (2), the close notice and the hidden, gated <code>mark_paid</code> (3), errors that say whose problem it is (3). And <code>record_payment</code> now waits for a person too, with its argument checks in <code>args_validator=</code>, so a person is never asked to approve a call that was going to be rejected. Chapters 7 to 9 and Part 3 import this file. A capability can also contribute model settings, a fallback model, history processing and hooks around every request and tool call.</p>
+          <p><code>Capability</code> has the decorators an agent has, so moving the code over is a change of prefix. In it you will find one piece per chapter: the received date (chapter 2), the close notice and the hidden, gated <code>mark_paid</code> (chapter 3), and errors that say whose problem it is (chapter 3). And <code>record_payment</code> now waits for a person too, with its argument checks in <code>args_validator=</code>, so a person is never asked to approve a call that was going to be rejected. Chapters 7 to 9 and Part 3 import this file. A capability can also contribute model settings, a fallback model, history processing and hooks around every request and tool call.</p>
         </div>
-        <div class="code focus" data-keys="18,24,29,62,65,78,84" data-run="uv run code/part2/billing_world.py"><div class="code-head"><span class="file">code/part2/billing_world.py · pydantic-ai 2.59+</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from dataclasses import dataclass, field
+        <div class="code" data-lines="30" data-src="code/part2/billing_world.py" data-run="uv run code/part2/billing_world.py"><div class="code-head"><span class="file">code/part2/billing_world.py · pydantic-ai 2.59+</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 
@@ -302,7 +299,7 @@ async def record_payment(ctx: RunContext[Deps], invoice_number: str, amount: Dec
         return await ctx.deps.billing.record_payment(invoice_number, amount, idempotency_key=ctx.tool_call_id)
     except LedgerUnavailable:
         raise ToolFailed(&#x27;Nothing was recorded: the ledger is unavailable. Tell the customer it will be recorded later.&#x27;)</pre></div>
-        <div class="code focus" data-keys="22,23,31" data-run="uv run code/part2/billing_world.py"><div class="code-head"><span class="file">code/part2/billing_world.py, two agents, one world</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from pydantic import BaseModel
+        <div class="code" data-lines="30" data-src="code/part2/billing_world.py" data-run="uv run code/part2/billing_world.py"><div class="code-head"><span class="file">code/part2/billing_world.py, two agents, one world</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic import BaseModel
 
 
 class Installment(BaseModel):
@@ -344,7 +341,7 @@ reminders = Agent(  # Friday&#x27;s second job, in the same world
         <div class="prose measure">
           <p>Pydantic AI ships the capabilities that need provider or loop support, and the Harness (<code>pydantic-ai-harness</code>) ships the rest. Four this agent would add, each in one line:</p>
         </div>
-        <div class="code focus" data-keys="7,8,10,11" data-run="uv run code/part2/ch6_capabilities.py"><div class="code-head"><span class="file">code/part2/ch6_capabilities.py, built-ins</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from pydantic_ai.capabilities import Caching, ModelFallback
+        <div class="code" data-lines="30" data-src="code/part2/ch6_capabilities.py" data-run="uv run code/part2/ch6_capabilities.py"><div class="code-head"><span class="file">code/part2/ch6_capabilities.py, built-ins</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import Caching, ModelFallback
 from pydantic_ai_harness.compaction import ClearToolResults
 from pydantic_ai_harness.system_reminders import Reminder, SystemReminders
 
@@ -380,7 +377,7 @@ builtins = [
         <div class="prose measure">
           <p>Three ways in, from least to most code. <code>Capability(...)</code> with decorators, as above. <code>Hooks()</code> with <code>@hooks.on.&lt;event&gt;</code>, for one lifecycle hook, like an audit log on the reminders agent only. And a subclass of <code>AbstractCapability</code> when the rule needs configuration, tests or a package of its own: here the close rule, as a class that hides every writing tool.</p>
         </div>
-        <div class="code focus" data-keys="5,8,11" data-run="uv run code/part2/billing_world.py"><div class="code-head"><span class="file">code/part2/billing_world.py, a hook</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">import logging
+        <div class="code" data-lines="30" data-src="code/part2/billing_world.py" data-run="uv run code/part2/billing_world.py"><div class="code-head"><span class="file">code/part2/billing_world.py, a hook</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">import logging
 
 from pydantic_ai.capabilities import Hooks
 
@@ -392,7 +389,7 @@ audit = Hooks[Deps]()
 async def log_tool_calls(ctx: RunContext[Deps], *, call, tool_def, args, result):
     log.info(&#x27;%s(%s) returned %r [call %s]&#x27;, tool_def.name, args, result, call.tool_call_id)
     return result  # a hook may also change the result, or raise ModelRetry to send it back</pre></div>
-        <div class="code focus" data-keys="5,11,15,19,22" data-run="uv run code/part2/ch6_capabilities.py"><div class="code-head"><span class="file">code/part2/ch6_capabilities.py, a capability as a class</span><button class="copy" type="button">Copy</button></div><pre data-lang="py" data-hl="1">from pydantic_ai.capabilities import AbstractCapability
+        <div class="code" data-lines="30" data-src="code/part2/ch6_capabilities.py" data-run="uv run code/part2/ch6_capabilities.py"><div class="code-head"><span class="file">code/part2/ch6_capabilities.py, a capability as a class</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import AbstractCapability
 from pydantic_ai.messages import InstructionPart
 
 
@@ -423,13 +420,13 @@ class ReadOnlyDuringClose(AbstractCapability[Deps]):
         <div class="prose measure">
           <p>The Harness also ships whole agents built the same way. <code>Coder</code> is a coding agent in two lines: <code>LocalWorkspace('.')</code> (or a sandbox) for where it works, and <code>Coder()</code>. Taking it apart shows five capabilities and some plumbing:</p>
         </div>
-        <div class="code" data-run="uv run code/part2/ch6_capabilities.py"><div class="code-head"><span class="file">code/part2/ch6_capabilities.py, taking Coder apart · pydantic-ai-harness 0.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai_harness.coder import Coder  # uv add &quot;pydantic-ai-harness[coder]&quot;
+        <div class="code" data-lines="30" data-src="code/part2/ch6_capabilities.py" data-run="uv run code/part2/ch6_capabilities.py"><div class="code-head"><span class="file">code/part2/ch6_capabilities.py, taking Coder apart · pydantic-ai-harness 0.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai_harness.coder import Coder  # uv add &quot;pydantic-ai-harness[coder]&quot;
 
 coder = Coder()
 print([type(part).__name__ for part in coder.capabilities if not type(part).__name__.startswith(&#x27;_&#x27;)])
 cleared = next(part for part in coder.capabilities if isinstance(part, ClearToolResults))
 print(f&#x27;a cleared file read becomes: {cleared.placeholder!r}, past {cleared.max_fraction:.0%} of the window&#x27;)</pre></div>
-        <div class="code out"><div class="code-head"><span class="file">// output, recorded by verify.py</span></div><pre>[&#x27;RequireWorkspace&#x27;, &#x27;Capability&#x27;, &#x27;FileSystem&#x27;, &#x27;Shell&#x27;, &#x27;RepoContext&#x27;, &#x27;SubAgents&#x27;, &#x27;ClearToolResults&#x27;, &#x27;RepairToolArguments&#x27;]
+        <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>[&#x27;RequireWorkspace&#x27;, &#x27;Capability&#x27;, &#x27;FileSystem&#x27;, &#x27;Shell&#x27;, &#x27;RepoContext&#x27;, &#x27;SubAgents&#x27;, &#x27;ClearToolResults&#x27;, &#x27;RepairToolArguments&#x27;]
 a cleared file read becomes: &#x27;[tool result cleared]&#x27;, past 70% of the window</pre></div>
         <div class="exploded">
           <div class="blk5"><b>FileSystem</b><span>read_file, write_file, edit_file, list_files, grep</span></div>
@@ -465,7 +462,7 @@ a cleared file read becomes: &#x27;[tool result cleared]&#x27;, past 70% of the 
   </div>
 </main>
 
-<footer><div class="wrap"><p>Every snippet runs offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0: <code>uv run code/part2/verify.py</code>.</p></div></footer>
+<footer><div class="wrap"><p>The examples run offline on pydantic-ai 2.68.0 and pydantic-ai-harness 0.68.0. <a href="../index.html#get-the-code">Get the code</a></p></div></footer>
 
 <script src="../assets/course.js"></script>
 <script src="part2.js"></script>
