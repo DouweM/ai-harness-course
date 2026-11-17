@@ -994,6 +994,7 @@
     body.classList.toggle('talk', on);
     body.classList.toggle('show-notes', on && !!state.notes);
     state.talk = on; save();
+    if (typeof applyTheme === 'function') applyTheme();
     var tb = $('#talkBtn'); if (tb) tb.setAttribute('aria-pressed', on ? 'true' : 'false');
     puzzles.forEach(paint);
     collectStops();
@@ -1018,7 +1019,9 @@
      ====================================================================== */
   var THEMES = ['auto', 'light', 'dark'], NAMES = { auto: 'Auto', light: 'Light', dark: 'Dark' };
   function applyTheme() {
-    if (state.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', state.theme);
+    // talk mode presents in light unless the presenter picked a theme explicitly: the dark palette is hard to read on a projector
+    var t = body.classList.contains('talk') && state.theme === 'auto' ? 'light' : state.theme;
+    if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
     var l = $('#themeLabel'); if (l) l.textContent = NAMES[state.theme] || 'Auto';
     var b = $('#themeBtn'); if (b) b.title = 'Theme: ' + (NAMES[state.theme] || 'Auto');
   }
