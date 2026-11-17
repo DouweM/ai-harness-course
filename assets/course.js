@@ -854,8 +854,9 @@
      Ask your agent
      ====================================================================== */
   function askPrompt(followup) {
-    var online = SITE_URL ? ', online at ' + SITE_URL.replace(/\/$/, '') + '/' + chapter.path : '';
-    var head = 'I\'m reading the chapter "' + chapter.title + '" (' + chapter.path + ' in this repo' + online + ') of the harness engineering course. Read AGENTS.md first, then the chapter, then ';
+    var online = SITE_URL ? ' (' + SITE_URL.replace(/\/$/, '') + '/' + chapter.path.replace(/\.html$/, '') + ')' : '';
+    var repo = REPO_URL ? ' The course repo is ' + REPO_URL + ': if you are not already in a clone of it, clone it first (or read its files on GitHub), since the chapter\'s code and notes live there.' : '';
+    var head = 'I\'m reading the chapter "' + chapter.title + '"' + online + ' of the course "Harness engineering with Pydantic AI".' + repo + ' Read AGENTS.md first, then ' + chapter.path + ', then ';
     if (followup) return head + 'help me with this: ' + followup;
     return head + 'help me go deeper on it. Start by asking me whether I want to (1) go deeper on a concept, (2) map the chapter onto my own agent\'s code, or (3) run the chapter\'s code from code/. Don\'t change my code unless I ask.';
   }
@@ -867,7 +868,7 @@
       var extra = $$('.ask-followups li').map(function (li) { return li.textContent.trim(); });
       var ups = extra.length ? extra : (chapter.ask || []);
       dlg.innerHTML = '<div class="dlg"><h2 id="askTitle">Ask your agent about this chapter</h2>' +
-        '<p class="hint">Start Claude Code (or any coding agent) in this repo, then paste. It reads <code>AGENTS.md</code>, which tells it how to help: the knowledge notes and docs behind this chapter, how to run the code, and not to rewrite your code unasked.</p>' +
+        '<p class="hint">Copy this and paste it into Claude Code, Codex, Cursor or any coding agent. The prompt links this chapter and the course repo, so it works even if you haven\'t cloned anything; the agent reads <code>AGENTS.md</code>, which tells it how to help and not to rewrite your code unasked.</p>' +
         '<div class="chips" role="group" aria-label="Pick a follow-up"><button class="chip" type="button" data-up="" aria-pressed="true">Let it ask me what I want: go deeper, map it to my agent, or run the code</button>' +
         ups.map(function (u) { return '<button class="chip" type="button" data-up="' + esc(u) + '" aria-pressed="false">' + esc(u) + '</button>'; }).join('') + '</div>' +
         '<label class="sr-only" for="askText">Prompt</label><textarea id="askText" readonly></textarea>' +
