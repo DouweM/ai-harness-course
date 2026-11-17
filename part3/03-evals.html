@@ -20,7 +20,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 3 &middot; Production, and measuring what works</p>
         <h1>Evals and experiments</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">If people correct your agent today, their corrections are your eval set. If nobody does yet, label 20 cases from your traces. <b>Run the old way and the new way on them, and judge both on the mistake that costs you, case by case.</b></p>
+        <p class="point">If people correct your agent today, their corrections are your eval set: the test cases you compare versions on. If nobody does yet, label 20 cases from your traces. <b>Run the old way and the new way on them, and judge both on the mistake that costs you, case by case.</b></p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -37,7 +37,7 @@
       <section id="dataset">
         <h2>The dataset you already have</h2>
         <div class="prose measure">
-          <p>Every time someone fixes what your agent or an older LLM call decided, they label a case: a real input and the answer they stand behind. Export 20 and you have a dataset. Dana's week alone gave you three: Tuesday's promise, Wednesday's correction and Friday's dispute. Ours has emails like those and more. Then pick evaluators for two questions: did it decide like the team, and did it make the expensive mistake? Here that is a promise in the ledger the customer never made.</p>
+          <p>Every time someone fixes what your agent or an older LLM call decided, they create a labeled case: a real input and the answer they stand behind. Export 20 and you have a dataset. Dana's week alone gave you three: Tuesday's promise, Wednesday's correction and Friday's dispute. Ours has emails like those and more. Then pick evaluators, the checks that score each answer, for two questions: did it decide like the team, and did it make the expensive mistake? Here that is recording a promise to pay that the customer never made.</p>
         </div>
         <div class="code" data-src="code/part3/ch3_evals.py" data-run="uv run code/part3/ch3_evals.py">
           <div class="code-head"><span class="file">code/part3/ch3_evals.py &middot; pydantic-evals 2.x</span></div>
@@ -70,10 +70,10 @@ class NoPromiseNobodyMade(Evaluator[Email, Decision]):
       </section>
 
       <section id="arms">
-        <h2>Two arms: before Part 2, and after</h2>
+        <h2>Two arms: the agent before Part 2, and after</h2>
         <div class="prose measure">
-          <p>Arm A is the simplest version of Part 1 chapter 1's agent: one call returning JSON with a confidence, written to the ledger at 70 or more. Arm B is the kind of agent Part 2 builds: a typed answer form, a lookup tool, and code that writes only a promise made to us, for an invoice we know. Its form has two fields Part 2's doesn't: <code>addressed_to_us</code>, whether the promise is made to us rather than to someone else, and <code>evidence</code>, the email's own words that back the answer (<code>code/part3/eval_world.py</code>). This is <code>promise_router</code>, the classifier chapter 2 froze specs for.</p>
-          <p>That is a rewrite, not one change, so this chapter answers "did the move pay off, and on which cases?". Measuring one idea at a time is chapter 4.</p>
+          <p>An experiment compares versions, called arms, on the same cases. Arm A is the simplest version of Part 1 chapter 1's agent: one call returning JSON with a confidence, written to the ledger at 70 or more. Arm B is the kind of agent Part 2 builds: a typed answer form, a lookup tool, and code that writes only a promise made to us, for an invoice we know. Its form has two fields Part 2's doesn't: <code>addressed_to_us</code>, whether the promise is made to us rather than to someone else, and <code>evidence</code>, the email's own words that back the answer (<code>code/part3/eval_world.py</code>). This is <code>promise_router</code>, the classifier chapter 2 froze specs for.</p>
+          <p>Arm B changes many things at once, so this chapter answers "did the move pay off, and on which cases?". Measuring one idea at a time is chapter 4.</p>
         </div>
         <div class="code" data-src="code/part3/ch3_evals.py" data-run="uv run code/part3/ch3_evals.py">
           <div class="code-head"><span class="file">code/part3/ch3_evals.py &middot; the two tasks</span></div>
@@ -178,7 +178,7 @@ report.print(baseline=baseline, include_input=True)</pre>
       <section id="logfire">
         <h2>In Logfire, and on live traffic</h2>
         <div class="prose measure">
-          <p>With <code>logfire.configure()</code>, each <code>evaluate()</code> call is an experiment in Logfire, and each case links to its full trace. From CI, Pydantic Evals records branch and commit, so a pull request compares against its base. Evaluators that need no label also run on production traffic through the <code>OnlineEvaluation</code> capability, sampled, in the background:</p>
+          <p>With <code>logfire.configure()</code>, each <code>evaluate()</code> call is an experiment in Logfire, and each case links to its full trace. Run from CI (the tests that run on every pull request), Pydantic Evals records the branch and commit, so a pull request compares against its base. Evaluators that need no label also run on production traffic through the <code>OnlineEvaluation</code> capability, sampled, in the background:</p>
         </div>
         <div class="code" data-src="code/part3/ch3_online_evals.py" data-run="uv run code/part3/ch3_online_evals.py">
           <div class="code-head"><span class="file">code/part3/ch3_online_evals.py</span></div>
@@ -203,7 +203,7 @@ agent = Agent(
 )</pre>
         </div>
         <details class="deeper"><summary>Go deeper: habits that make the comparison trustworthy</summary>
-          <p>Run each case more than once (<code>repeat=3</code>) when outputs vary. Add cases as corrections come in, especially the surprising ones. Give an LLM judge a small <code>sample_rate</code> and a concurrency cap online, and await <code>wait_for_evaluations()</code> on shutdown so pending scores aren't lost. The cases online evals flag are next month's dataset.</p>
+          <p>Run each case more than once (<code>repeat=3</code>) when outputs vary. Add cases as corrections come in, especially the surprising ones. Give an LLM judge a small <code>sample_rate</code> and a concurrency cap online, and await <code>wait_for_evaluations()</code> on shutdown so pending scores aren't lost. The cases your production checks (online evals) flag are the best ones to add to the dataset next.</p>
         </details>
         <ul class="docs">
           <li><a href="https://pydantic.dev/docs/ai/evals/evals/">Pydantic Evals</a></li>

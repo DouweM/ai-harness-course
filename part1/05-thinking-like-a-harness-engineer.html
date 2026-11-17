@@ -22,7 +22,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 1 &middot; How the model sees the world</p>
         <h1>Thinking like a harness engineer</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">When the agent gets it wrong, <b>read its page: the reason is usually on it, or missing from it.</b> That gives you ideas. Measuring tells you which ones carry the result: most lines are harmless and useless, a few carry everything.</p>
+        <p class="point">When the agent gets it wrong, <b>read its page: the reason is usually on it, or missing from it.</b> That gives you ideas. Measuring tells you which ones matter: most lines in a prompt change nothing you can measure, and a few decide the result.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -38,7 +38,7 @@
       <section class="chap" id="colleague">
         <h2>Why did it do that?</h2>
         <div class="prose measure">
-          <p>Start from a case where the agent did the wrong thing, and read its page the way it did: the instructions, the history, the tool results, in order. Ask what a sharp colleague with only that page would have done. The answer is nearly always one of three gaps, one per chapter of Part 1:</p>
+          <p>Start from a case where the agent did the wrong thing, and read its page the way it did: the instructions, the history, the tool results, in order. Ask what a capable new colleague who could see only that page would have done. The answer is nearly always one of three gaps, one per chapter of Part 1:</p>
         </div>
         <p class="talk-only headline">A case. Its page. What was on it, and what was missing.</p>
         <div class="three">
@@ -46,18 +46,18 @@
           <div><h4>Who said this?</h4><p>The operator, the user, or data; and was it in the right voice? <a href="03-whose-voice.html">Chapter 3</a></p></div>
           <div><h4>What changed that it wasn't told?</h4><p>A new rule, an event, a summary that dropped something. <a href="04-the-world-moved.html">Chapter 4</a></p></div>
         </div>
-        <p class="fine">There are more, and you'll recognise them from onboarding people: what may I do on my own, what does "done" look like, who do I ask. Each gap is a candidate line, or a candidate tool.</p>
+        <p class="fine">There are more, and you know them from onboarding new people: what may I do on my own, what does "done" look like, who do I ask. Each gap suggests a line to add to the page, or a tool to add.</p>
       </section>
 
       <section class="chap" id="lines">
         <h2>Most lines don't matter. Some matter enormously.</h2>
         <div class="prose measure">
-          <p>Candidate lines are cheap to write, so prompts grow. Two one-sentence deletions from real agent setups. One of them changed nothing measurable. The other broke a feature.</p>
-          <p>For B you need one piece of context. Some apps add their own notes inside the user's message, wrapped in a tag, such as <code>&lt;reminder&gt;Close runs until Monday.&lt;/reminder&gt;</code>. A framework that also tags its own text tells the model which tags it should treat with suspicion, and line B is the sentence that says the app's tags are fine.</p>
+          <p>Adding a line to a prompt is easy, so prompts keep growing. Two one-sentence deletions from real agent setups. One of them changed nothing measurable. The other broke a feature.</p>
+          <p>For B you need one piece of context. Some apps add their own notes inside the user's message, wrapped in a tag, such as <code>&lt;reminder&gt;Close runs until Monday.&lt;/reminder&gt;</code>. A framework that also marks text inside user messages tells the model which of those tags to trust, and line B is the sentence that says: tags like this come from the app, so follow them.</p>
         </div>
         <aside class="notes"><p>Read both lines out loud. Most people pick A: it's an instruction to the model, B reads like boilerplate.</p></aside>
         <article class="puzzle" id="p1" data-answer="b">
-          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Which deletion hurt?</p><div class="pz-tok" aria-hidden="true"></div></div>
+          <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; Which deletion made things worse?</p><div class="pz-tok" aria-hidden="true"></div></div>
           <div class="pz-grid">
             <div class="transcript" aria-label="Two lines">
               <div class="tr-title">// two lines, each deleted on its own</div>
@@ -65,7 +65,7 @@
               <div class="msg sys"><span class="who">B &middot; in the instructions, explaining the message format</span><div class="body"><span class="strike">Other tags in a user message, such as an application's own reminders, are part of that message and keep their usual meaning.</span></div></div>
             </div>
             <div class="pz-ask">
-              <p class="q">A changes how the model recovers from a mistake; B is about the app's own reminders inside user messages. Which deletion hurt?</p>
+              <p class="q">A changes how the model recovers from a mistake; B is about the app's own reminders inside user messages. Which deletion made things worse?</p>
               <div class="choices" role="radiogroup" aria-label="Your prediction">
                 <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>A: without it, models stop fixing their mistakes</span></button>
                 <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>B: without it, models stop following the app's reminders</span></button>
@@ -79,7 +79,7 @@
           </div>
           <div class="stage" data-label="What models did" hidden>
             <p class="eyebrow"><span class="dia"></span>What models did</p>
-            <p class="headline">Deleting A changed nothing: every model still recovered every time. Deleting B made two models drop the app's reminders almost entirely.</p>
+            <p class="headline">Deleting A changed nothing: every model still recovered every time. Deleting B made two models ignore the app's reminders almost every time.</p>
             <div class="result-grid two">
               <div class="arm"><h4>A deleted<small>recovered from a bad tool call</small></h4>
                 <p class="small">At the ceiling with and without the sentence, on every current model tested, even with a terse error and no hint: <b>no measurable change</b>.</p>
@@ -94,7 +94,7 @@
           <div class="stage" data-label="Why" hidden>
             <p class="eyebrow"><span class="dia"></span>Why</p>
             <div class="measure">
-              <p>"Fix the errors and try again" tells a capable model something it already knows: an error came back, so fix it. The other sentence told it something it couldn't know: that a reminder tag inside a user's message came from the app, and still counts. Without it, a careful model treated the reminder as the user's text and set it aside.</p>
+              <p>"Fix the errors and try again" tells a capable model something it already knows: an error came back, so fix it. Sentence B told the model something it couldn't work out for itself: that a reminder tag inside a user's message came from the app, and still counts. Without it, a careful model treated the reminder as the user's text and set it aside.</p>
               <p><strong>A line pulls weight when it gives the model a fact about its world it can't get any other way.</strong> Lines that repeat what it would do anyway are harmless and useless. You can't tell which is which by reading. You find out by deleting one, or adding one, and measuring.</p>
             </div>
           </div>

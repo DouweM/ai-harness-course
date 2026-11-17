@@ -23,7 +23,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
         <h1>Instructions and deps</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">Standing rules go in <code>instructions=</code>. <b>Facts that change go in deps, and an instructions function writes them onto the page every request.</b> A fact frozen into a string goes stale without anyone noticing.</p>
+        <p class="point">Standing rules go in <code>instructions=</code>. <b>Facts that change go in deps (the data your code passes into each run), and an instructions function writes them onto the page every request.</b> A fact frozen into a string goes stale without anyone noticing.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -40,7 +40,7 @@
         <h2>The date that froze</h2>
         <aside class="notes"><p>The point: facts from your app belong in deps and an instructions function, not in an f-string at import. The stakes: a promise recorded for a Friday that already passed.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Tuesday 17 Nov, 09:02</span>Dana's email arrives, and your billing system asks the agent about it. The agent's prompt was written the obvious way: an f-string with today's date, built when the module loads. The service was deployed last Thursday and hasn't restarted since.</p>
+          <p class="story"><span class="when">Tuesday 17 Nov, 09:02</span>Dana's email arrives, and your billing system asks the agent about it. The agent's prompt was written the obvious way: a Python f-string with today's date, built once when the service starts and imports the file. The service started last Thursday and has been running ever since, so the string still says Thursday.</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch2_instructions.py" data-run="uv run code/part2/ch2_instructions.py"><div class="code-head"><span class="file">code/part2/ch2_instructions.py, the obvious way</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic import BaseModel
 
@@ -112,7 +112,7 @@ with agent.override(model=FunctionModel(reads_the_page)):
     print(&#x27;from deps:      &#x27;, agent.run_sync(new_email(DANA_ID), deps=deps).output.due_date)</pre></div>
         <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>baked at import: 2026-11-13
 from deps:       2026-11-20</pre></div>
-        <p class="source"><b>Offline, deterministic.</b> A <code>FunctionModel</code> stands in for the model: it reads the email, then works out "this Friday" from the date on its page, the way models did in Part 1. Use the date the email arrived, a fact your code knows, rather than today's: a queue that works through yesterday's mail would pick the wrong week.</p>
+        <p class="source"><b>Offline, deterministic.</b> A <code>FunctionModel</code> stands in for the model: it reads the email, then works out "this Friday" from the date on its page, the way models did in Part 1. Use the date the email arrived, a fact your code knows, rather than today's: if your app handles some emails a day late, "this Friday" would point at the wrong week.</p>
         <div class="tok-says"><div class="tk" data-tok="7" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>My badge said Thursday the 12th, so that was my world. Now it is rewritten every time I start.</p></div></div>
       </section>
 
@@ -136,7 +136,7 @@ def close_notice(ctx: RunContext[CloseDeps]) -&gt; str | None:
           <thead><tr><th>The old way</th><th>Now</th></tr></thead>
           <tbody>
             <tr><td>An f-string prompt, built once</td><td><code>@agent.instructions</code> from deps, every request</td></tr>
-            <tr><td>Re-render the system prompt when something changes</td><td><code>on_change='append'</code>: the change, at the end</td></tr>
+            <tr><td>Rebuild the instructions when something changes</td><td><code>on_change='append'</code>: the change, at the end</td></tr>
             <tr><td>Globals for clients and settings</td><td>Typed deps, swapped for fakes in a test</td></tr>
           </tbody>
         </table></div>
@@ -145,7 +145,7 @@ def close_notice(ctx: RunContext[CloseDeps]) -&gt; str | None:
       <section id="now">
         <div class="rule">
           <p class="eyebrow">What you can do now</p>
-          <p>Grep your prompts for f-strings and <code>.format(</code>. Every interpolated fact becomes a deps field and an instructions function; every value that can change mid-conversation gets a name and <code>on_change='append'</code>.</p>
+          <p>Search your prompt code for f-strings and <code>.format(</code>. Every changing value inserted into a prompt becomes a deps field and an instructions function; every value that can change mid-conversation gets a name and <code>on_change='append'</code>.</p>
         </div>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>

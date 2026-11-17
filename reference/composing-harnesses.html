@@ -39,7 +39,7 @@
 <section class="wrap">
     <p class="eyebrow" style="margin-top:28px"><span class="dia"></span>Reference</p>
     <h1>How harnesses are composed in Pydantic AI</h1>
-    <p class="lede measure">The harness is everything around the model: instructions, tools, the history you keep, and the code that decides what happens next. In Pydantic AI you build it as a list: <code>Agent(capabilities=[...])</code>. This page is the reference for how that list turns into one request: what each capability can add, in what order, and what happens when two of them want the same thing.</p>
+    <p class="lede measure">The harness is everything around the model: instructions, tools, the history you keep, and the code that decides what happens next. In Pydantic AI you build it as a list: <code>Agent(capabilities=[...])</code>. This page is the reference for how that list turns into one request: what each capability can add, in what order, and how Pydantic AI combines them when several capabilities add the same kind of thing.</p>
     <p class="measure">Part 2, <a href="../part2/06-capabilities.html">chapter 6</a> tells the story of why you package a harness into capabilities; the <a href="capabilities.html">Capability gallery</a> is where you find one. Every snippet here runs offline: <code>uv run code/reference/composing_harnesses.py</code>.</p>
     <ol class="toc-mini">
       <li><a href="#contributions">What one capability contributes</a></li>
@@ -53,19 +53,19 @@
     <section id="contributions">
       <h2>What one capability contributes</h2>
       <div class="prose measure">
-        <p>A capability is a class with optional methods. Each method it overrides adds one kind of thing to the agent. <code>Capability(...)</code> with decorators covers instructions and tools; <code>Hooks()</code> covers lifecycle hooks; a subclass of <code>AbstractCapability</code> covers everything. The right-hand column is the rule that matters once there are several.</p>
+        <p>A capability is a class with optional methods. Each method it overrides adds one kind of thing to the agent. <code>Capability(...)</code> with decorators covers instructions and tools; <code>Hooks()</code> covers lifecycle hooks; a subclass of <code>AbstractCapability</code> covers everything. The right-hand column says how Pydantic AI combines what several capabilities add.</p>
       </div>
       <div class="tbl-wrap">
 <table class="tbl">
   <thead><tr><th>Contribution</th><th>How a capability adds it</th><th>When several capabilities add one</th></tr></thead>
   <tbody>
-    <tr><td>Instructions</td><td><code>instructions=</code>, <code>@cap.instructions</code>, <code>get_instructions()</code></td><td>Concatenated, sorted by how much they can change: static text first, then dynamic parts with <code>on_change='append'</code>, then dynamic parts that rewrite. Within a tier, the agent's own come first, then each capability in list order. This keeps the start of the request stable for the <a href="https://pydantic.dev/docs/ai/capabilities/caching/">prompt cache</a>.</td></tr>
+    <tr><td>Instructions</td><td><code>instructions=</code>, <code>@cap.instructions</code>, <code>get_instructions()</code></td><td>Joined together, ordered by how much they can change: fixed text first, then dynamic parts with <code>on_change='append'</code>, then dynamic parts that rewrite. Within a tier, the agent's own come first, then each capability in list order. This keeps the start of the request stable for the <a href="https://pydantic.dev/docs/ai/capabilities/caching/">prompt cache</a>.</td></tr>
     <tr><td>Tools</td><td><code>@cap.tool</code>, <code>tools=</code>, <code>get_toolset()</code>, <code>get_native_tools()</code></td><td>Combined into one toolset. Two tools with the same name are a <code>UserError</code>; namespace one with <a href="https://pydantic.dev/docs/ai/capabilities/prefix-tools/"><code>prefix_tools()</code></a>.</td></tr>
     <tr><td>Which tools this request offers</td><td><code>prepare_tools()</code>, <code>prepare_output_tools()</code></td><td>Chained in list order: each sees the list the previous one returned. A tool filtered out can't be called either.</td></tr>
     <tr><td>Model settings</td><td><code>get_model_settings()</code>, a dict or a per-step callable</td><td>Layered key by key: the model's own settings, then the agent's <code>model_settings</code>, then each capability in list order, then the run's <code>model_settings</code>. The later layer wins a key.</td></tr>
     <tr><td>The model</td><td><code>get_model()</code>, <code>resolve_model_id()</code>, <code>get_wrapper_model()</code> (<a href="https://pydantic.dev/docs/ai/capabilities/model-fallback/">ModelFallback</a>, <a href="https://pydantic.dev/docs/ai/capabilities/select-model/">SelectModel</a>)</td><td>Selection: the last one listed that picks a model wins. Model wrappers nest, the first listed outermost.</td></tr>
     <tr><td>History</td><td><a href="https://pydantic.dev/docs/ai/capabilities/process-history/"><code>ProcessHistory</code></a>, compaction, or your own <code>before_model_request</code></td><td>Runs as a <code>before_model_request</code> hook, so in list order, each on the previous one's output. A history processor's result is kept for later requests.</td></tr>
-    <tr><td>Hooks around model requests</td><td><code>wrap_model_request</code>, <code>before_model_request</code>, <code>prepare_model_request</code> (per attempt), <code>after_model_request</code>, <code>on_model_request_error</code></td><td>Middleware: the first capability is the outermost layer. See the order below.</td></tr>
+    <tr><td>Hooks around model requests</td><td><code>wrap_model_request</code>, <code>before_model_request</code>, <code>prepare_model_request</code> (per attempt), <code>after_model_request</code>, <code>on_model_request_error</code></td><td>Nested, like layers: the first capability's hooks start first and finish last. See the order below.</td></tr>
     <tr><td>Hooks around tool calls</td><td><code>wrap_tool_execute</code>, <code>before_tool_execute</code>, <code>after_tool_execute</code>, <code>on_tool_execute_error</code>, and the same for argument validation</td><td>The same middleware order, per tool call.</td></tr>
     <tr><td>Run and output hooks</td><td><code>wrap_run</code>, <code>before_run</code>, <code>after_run</code>, output validation and processing, the event stream</td><td>The same middleware order.</td></tr>
     <tr><td>Per-run state</td><td><code>for_agent()</code> at construction, <code>for_run()</code> at each run start</td><td>Each capability binds itself; return a fresh instance from <code>for_run()</code> for state that must not leak between runs.</td></tr>
@@ -80,7 +80,7 @@
     <section id="several">
       <h2>Several capabilities on one agent</h2>
       <div class="prose measure">
-        <p>The list order is the composition order. All the capabilities on an agent become one <code>CombinedCapability</code> that follows middleware semantics, the way web framework middleware does: every <code>wrap_*</code> is entered before any <code>before_*</code> runs, <code>before_*</code> hooks fire first to last, <code>after_*</code> hooks fire last to first. Two traced capabilities, <code>A</code> then <code>B</code>:</p>
+        <p>The list order is the composition order. All the capabilities on an agent become one <code>CombinedCapability</code> that nests the hooks like layers, the way web framework middleware does: every <code>wrap_*</code> is entered before any <code>before_*</code> runs, <code>before_*</code> hooks fire first to last, <code>after_*</code> hooks fire last to first. Two traced capabilities, <code>A</code> then <code>B</code>:</p>
       </div>
 <div class="code" data-src="code/reference/composing_harnesses.py" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">Two capabilities that record when their hooks run, from composing_harnesses.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">def traced(name: str) -&gt; Hooks[Deps]:
     hooks = Hooks[Deps]()
@@ -114,7 +114,7 @@ ordered = Agent(&#x27;anthropic:claude-sonnet-5-5&#x27;, deps_type=Deps, capabil
 <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>model request: A: wrap enter &gt; B: wrap enter &gt; A: before &gt; B: before &gt; B: after &gt; A: after &gt; B: wrap exit &gt; A: wrap exit
 tool call:     A: wraps lookup_invoice &gt; B: wraps lookup_invoice</pre></div>
       <div class="prose measure">
-        <p>So the first capability sees the request first and the response last. Put a guard or an audit log first when it must see everything the others do, including what they change. A capability that has to sit at one position wherever it's listed declares it with <code>get_ordering()</code>: <code>position='outermost'</code> or <code>'innermost'</code>, <code>wraps=[...]</code>, <code>wrapped_by=[...]</code>, and <code>requires=[...]</code> for a capability that must be present. <code>Hooks(ordering=...)</code> takes the same constraints.</p>
+        <p>So the first capability's hooks run before the others' on the way in, and after them on the way out. Put a check or an audit log (a record of every request) first when it must see everything the others do, including what they change. A capability that has to sit at one position wherever it's listed declares it with <code>get_ordering()</code>: <code>position='outermost'</code> or <code>'innermost'</code>, <code>wraps=[...]</code>, <code>wrapped_by=[...]</code>, and <code>requires=[...]</code> for a capability that must be present. <code>Hooks(ordering=...)</code> takes the same constraints.</p>
         <h3>What collides, and what merges</h3>
       </div>
 <div class="code" data-src="code/reference/composing_harnesses.py" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, two capabilities with a lookup_invoice tool</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import Capability
@@ -140,7 +140,7 @@ the same agent, run(capabilities=[Temperature(temperature=0.9)]): {&#x27;tempera
   <thead><tr><th>Two capabilities that both</th><th>What happens</th><th>What to do</th></tr></thead>
   <tbody>
     <tr><td>Register a tool with the same name</td><td><code>UserError</code> when the run starts</td><td>Rename one, or wrap its capability: <code>ledger.prefix_tools('ledger')</code> gives <code>ledger_lookup_invoice</code>.</td></tr>
-    <tr><td>Carry an <code>id</code> you chose, the same one</td><td><code>UserError</code> when the agent is built</td><td>Give each its own <code>id</code>.</td></tr>
+    <tr><td>Two capabilities given the same <code>id</code> by hand</td><td><code>UserError</code> when the agent is built</td><td>Give each its own <code>id</code>.</td></tr>
     <tr><td>Are one class with a fixed default <code>id</code> (<code>Thinking</code>, <code>WebSearch</code>, the <code>Temperature</code> above)</td><td>Merged field by field: a field only one sets is kept, a field both set takes the later one</td><td>Nothing: two packaged capabilities can each bring a <code>WebSearch</code>. A class whose fields must agree overrides <code>combine()</code> and raises.</td></tr>
     <tr><td>Set the same model setting</td><td>The later one in the list wins, with no warning</td><td>Order the list. The run's <code>model_settings</code> beat every capability.</td></tr>
     <tr><td>One on the agent, one passed to <code>run(capabilities=[...])</code>, same <code>id</code></td><td>The run's replaces the agent's outright; no merge</td><td>Use it to change one setting for one run.</td></tr>
@@ -148,19 +148,19 @@ the same agent, run(capabilities=[Temperature(temperature=0.9)]): {&#x27;tempera
 </table>
       </div>
       <div class="prose measure">
-        <p>Capabilities don't call each other. To share state, put it in your deps, or have one capability <a href="https://pydantic.dev/docs/ai/capabilities/overview/#capability-events">emit an event</a> another listens for.</p>
+        <p>Capabilities don't call each other directly. To share state, put it in your deps, or have one capability <a href="https://pydantic.dev/docs/ai/capabilities/overview/#capability-events">emit an event</a> another listens for.</p>
       </div>
     </section>
 
     <section id="bundles">
       <h2>Bundles: a capability made of capabilities</h2>
       <div class="prose measure">
-        <p>A bundle is a <code>CombinedCapability</code>: a capability whose parts are capabilities. Put one in an agent's list and its parts take its place, in order, so every rule above applies to the parts as if you'd listed them yourself. A capability listed after the bundle can override one of its settings, as <code>Temperature</code> does in <a href="#your-own">your own harness</a> below.</p>
+        <p>A bundle is a <code>CombinedCapability</code>: one capability that groups several others. Put one in an agent's list and its parts take its place, in order, so every rule above applies to the parts as if you'd listed them yourself. A capability listed after the bundle can override one of its settings, as <code>Temperature</code> does in <a href="#your-own">your own harness</a> below.</p>
         <p>Three more ways to package:</p>
         <ul>
           <li><b>A plain <code>Capability</code></b> is a bundle of instructions and tools, closest to a skill. With <code>defer_loading=True</code> it becomes an <a href="https://pydantic.dev/docs/ai/capabilities/on-demand/">on-demand capability</a>: a one-line catalog entry until the model loads it.</li>
           <li><b>A <code>WrapperCapability</code></b> wraps one capability and changes some of what it does; <code>PrefixTools</code> is one.</li>
-          <li><b>A package</b>: a capability published as <code>pydantic-ai-&lt;name&gt;</code>, usable from Python or an <a href="https://pydantic.dev/docs/ai/core-concepts/agent-spec/">agent spec</a> file. See <a href="https://pydantic.dev/docs/ai/capabilities/custom/#publishing-capabilities">publishing capabilities</a>.</li>
+          <li><b>A package</b>: a capability published as a Python package, usually named <code>pydantic-ai-&lt;name&gt;</code>, so other projects can install it, usable from Python or an <a href="https://pydantic.dev/docs/ai/core-concepts/agent-spec/">agent spec</a> file. See <a href="https://pydantic.dev/docs/ai/capabilities/custom/#publishing-capabilities">publishing capabilities</a>.</li>
         </ul>
         <p>The Harness's prebuilt harnesses, <a href="https://pydantic.dev/docs/ai/harness/coder/">Coder</a> and <a href="https://pydantic.dev/docs/ai/harness/researcher/">Researcher</a>, are bundles: subclasses of <code>CombinedCapability</code> whose constructor picks the parts.</p>
       </div>
@@ -192,7 +192,7 @@ for i, part in enumerate(Coder().capabilities, 1):  # a CombinedCapability: a li
 <table class="tbl">
   <thead><tr><th>Part, in order</th><th>What it adds to the request</th><th>To change it</th></tr></thead>
   <tbody>
-    <tr><td><code>RequireWorkspace</code></td><td>Nothing: fails the run at its start when no workspace is attached</td><td>Attach <code>LocalWorkspace('.')</code> or a sandbox next to <code>Coder()</code>; that's where the swap happens.</td></tr>
+    <tr><td><code>RequireWorkspace</code></td><td>No instructions or tools; it stops the run at its start when no workspace is attached</td><td>Attach <code>LocalWorkspace('.')</code> or a sandbox next to <code>Coder()</code>; that's where the swap happens.</td></tr>
     <tr><td><code>Capability</code> (<code>coder_instructions</code>)</td><td>Instructions: how to work, verify and finish, plus the project directory</td><td><code>Coder(instructions='...')</code> appends to them.</td></tr>
     <tr><td><a href="https://pydantic.dev/docs/ai/harness/filesystem/"><code>FileSystem</code></a></td><td>Tools: <code>read_file</code>, <code>write_file</code>, <code>edit_file</code>, <code>list_files</code>, <code>grep</code></td><td><code>unrestricted_filesystem=True</code>, or your own <code>FileSystem(read_only=True)</code> in a list of pieces.</td></tr>
     <tr><td><a href="https://pydantic.dev/docs/ai/harness/shell/"><code>Shell</code></a></td><td>Tool: <code>shell</code>, unrestricted, with timeouts</td><td>Your own <code>Shell(allowed_commands=[...])</code> in a list of pieces.</td></tr>
@@ -219,7 +219,7 @@ Coder(sub_agents=False, repo_context=False):
   AGENTS.md in the instructions: False
   sub-agent roster in the instructions: False</pre></div>
       <div class="prose measure">
-        <p>For anything the flags don't cover (a command allowlist, a different compaction, read-only files), list the pieces yourself. The gallery's <a href="capabilities.html#coder">reviewer</a> is <code>Coder</code>'s pieces, chosen differently: it reads and runs tests but never writes. What you add next to <code>Coder</code>, like <a href="https://pydantic.dev/docs/ai/harness/permissions/"><code>Permissions</code></a> for approvals, composes like any other capability, and a delegate to <code>self</code> gets it too.</p>
+        <p>For anything <code>Coder</code>'s options don't cover (a command allowlist, a different compaction, read-only files), list the pieces yourself. The gallery's <a href="capabilities.html#coder">reviewer</a> is <code>Coder</code>'s pieces, chosen differently: it reads and runs tests but has no file-writing tools. What you add next to <code>Coder</code>, like <a href="https://pydantic.dev/docs/ai/harness/permissions/"><code>Permissions</code></a> for approvals, composes like any other capability, and when <code>Coder</code> starts a fresh run of itself as a sub-agent, that run gets it too.</p>
       </div>
     </section>
 
@@ -318,7 +318,7 @@ lead = Agent(
 lead output: Handed to a person: INV-2041 is disputed: the customer says they were quoted 3,900.
 requests counted on the lead run (lead and delegate): 4</pre></div>
       <div class="prose measure">
-        <p>Four requests: two from the lead, two from the delegate, counted on one usage, so a <code>UsageLimits</code> on the lead bounds the whole tree. A handoff, where the run ends and your code routes the case, is an output type rather than a capability; chapter 7 shows it. For a whole graph of agents, see <a href="https://pydantic.dev/docs/ai/guides/multi-agent-applications/">multi-agent applications</a>.</p>
+        <p>Four requests: two from the parent agent, two from the sub-agent it delegated to, counted on one usage, so a <code>UsageLimits</code> on the lead bounds the whole tree. A handoff, where the run ends and your code routes the case, is an output type rather than a capability; chapter 7 shows it. For a whole graph of agents, see <a href="https://pydantic.dev/docs/ai/guides/multi-agent-applications/">multi-agent applications</a>.</p>
       </div>
     </section>
 

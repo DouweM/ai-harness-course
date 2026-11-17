@@ -33,7 +33,7 @@ classifier = Agent(
     output_type=ToolOutput(DisputeCheck),
     tools=[read_email],
 )
-LIMITS = UsageLimits(request_limit=8)  # your cost ceiling for one email, for the whole tree
+LIMITS = UsageLimits(request_limit=8)  # your request limit for one email, for the whole tree
 
 collections = Agent(
     'anthropic:claude-sonnet-5-5',
@@ -48,7 +48,7 @@ collections = Agent(
 async def check_for_dispute(ctx: RunContext[Deps], email_id: str) -> DisputeCheck:
     """Ask the dispute classifier about an email."""
     ask = f'Does email {email_id} dispute one of our invoices?'
-    result = await classifier.run(ask, deps=ctx.deps, usage=ctx.usage, usage_limits=LIMITS)  # one count, one ceiling
+    result = await classifier.run(ask, deps=ctx.deps, usage=ctx.usage, usage_limits=LIMITS)  # one shared total, one limit
     return result.output
 # --8<-- [end:delegate_core]
 # --8<-- [end:delegate]

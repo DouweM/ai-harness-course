@@ -20,7 +20,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 3 &middot; Production, and measuring what works</p>
         <h1>Production architectures</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">A run dies with its process; the conversation is what outlives it. <b>Waiting ends the run, every write is safe to repeat, and every run leaves a trace.</b></p>
+        <p class="point">An agent run lives in your server's memory, so when the server stops or restarts, the run stops too; the saved conversation is what survives. <b>So a run that waits for a person ends and starts again later, every write is safe to repeat, and every run leaves a trace (a record of its model requests and tool calls).</b></p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -35,10 +35,10 @@
     <div class="wrap" data-chapter-end>
 
       <section id="week">
-        <h2>One run, one week</h2>
+        <h2>One payment request, Friday to Monday</h2>
         <div class="prose measure">
           <p class="story"><span class="when">Friday 20 Nov, 17:40</span>The bank confirms the first half of Dana's wire, sent that morning. Part 2's billing agent asks to record 2,060.00 against INV-2041, and <code>record_payment</code> needs a person (Part 2, chapter 6). Nobody approves until Monday. Over the weekend the ledger has an outage and you deploy.</p>
-          <p>Two questions decide how it runs. <b>How does the run begin, and who is waiting?</b> The bank's confirmation, and nobody: it is a job on the task queue you already run. <b>What does a crash cost?</b> Two model requests and one payment written behind a key, so starting again is fine and this agent needs no durable engine. An engine pays when runs are long or a side effect can't be repeated or keyed (the DBOS version below). Step through the week:</p>
+          <p>Two questions decide how it runs. <b>How does the run begin, and who is waiting?</b> The bank's confirmation, and nobody: it is a job on the task queue you already run. <b>What does a crash cost?</b> Two model requests and one payment written with an idempotency key (an id sent with the write, so the ledger ignores a repeat of the same request). Starting again is fine, so this agent needs no durable engine: a system that saves each finished step and resumes from there after a crash. An engine pays off when runs are long or a side effect can't be safely repeated (the DBOS version below). Step through the week:</p>
         </div>
         <div class="arch" data-arch data-stop>
           <div class="arch-lanes">
@@ -79,7 +79,7 @@
             {"t": "Afterwards.", "c": "Every model request, tool call and approval is on a trace, filterable by your tenant and agent version. That trace is where chapter 3's eval cases come from."}
           ]</script>
         </div>
-        <p class="fine">This design needs only a stored <code>Conversation</code>. On a durable engine such as DBOS, the dashed boxes are also journaled, so a crash inside a run replays what finished instead of starting it again.</p>
+        <p class="fine">This design needs only a stored <code>Conversation</code>. On a durable engine such as DBOS, the steps in dashed boxes are also saved as they finish, so a crash inside a run picks up from the last finished step instead of starting again.</p>
         <aside class="notes"><p>Click through the eight steps. Land three things: waiting ends the run, the write is keyed on something a retry cannot change, everything is on a trace.</p></aside>
       </section>
 
@@ -158,7 +158,7 @@ async def collections_run(prompt: str) -&gt; str:
 
       <section id="bounds">
         <h2>Bounded, and on a trace</h2>
-        <div class="prose measure"><p>Two lines of setup, and the weekend is one trace per run: Friday's with your metadata, Monday's continuing the same conversation, and the replayed write with its key.</p></div>
+        <div class="prose measure"><p>Two lines of setup, and the weekend is one trace (a record of each model request and tool call) per run: Friday's with your metadata, Monday's continuing the same conversation, and the replayed write with its key.</p></div>
         <div class="code"><div class="code-head"><span class="file">uv run code/part3/ch1_observability.py, the span tree</span></div><pre data-lang="sh">Friday 17:40: the bank confirms the first half
   invoke_agent collections  metadata={&#x27;tenant&#x27;: &#x27;t_042&#x27;, &#x27;agent_version&#x27;: &#x27;collections-2026-11-20&#x27;}
     chat stand-in
@@ -173,7 +173,7 @@ Monday 09:15: approved
           <table class="p3-table">
             <thead><tr><th>Concern</th><th>What to use</th></tr></thead>
             <tbody>
-              <tr><td>A stuck loop</td><td><code>UsageLimits(request_limit=..., cost_limit=...)</code> per run; keep <code>request_limit</code>, cost is best-effort.</td></tr>
+              <tr><td>An agent that keeps calling the model</td><td><code>UsageLimits(request_limit=..., cost_limit=...)</code> per run; keep <code>request_limit</code>: it is exact, while the cost limit is only as accurate as the price data for your model.</td></tr>
               <tr><td>A budget longer than a run</td><td><code>SpendLimits</code> (Harness), with a shared store across workers, or Gateway spending caps.</td></tr>
               <tr><td>A provider outage</td><td>Retry transient errors with one retry owner and a small budget; fall back with <code>ModelFallback</code> when it stays down.</td></tr>
               <tr><td>Which tenant was this?</td><td><code>metadata={...}</code> on <code>run()</code> lands on the run span.</td></tr>

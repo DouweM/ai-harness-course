@@ -22,7 +22,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 1 &middot; How the model sees the world</p>
         <h1>What you're talking to</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">The model reads <b>one page, from the top, every time</b>, and writes what comes next. Everything it knows about your situation is on that page. You write the page.</p>
+        <p class="point">The model reads <b>one page, from the top, every time</b>, and writes what comes next. The page is everything it receives for one request: its instructions, the tool definitions and the conversation so far. It knows the world from its training, but everything it knows about your situation is on that page. You write the page.</p>
         <p class="lede">Part 1 has no framework code. It's about the other side of the API call: what the model sees, and what it does with it. Meet <span class="tokname-pill">Tok</span>, our stand-in for the model. Right now Tok is a single token. By the end of this chapter it is an assistant, answering from the one page it reads.</p>
       </div>
       <div class="tok-box">
@@ -39,10 +39,10 @@
       <section class="chap" id="zoom">
         <h2>One request, zooming out</h2>
         <div class="prose measure">
-          <p><b>The example you follow through the whole course:</b> a company sends invoices, and some customers pay late. An agent helps its billing team: it reads customers' emails, notes when someone promises to pay, and records payments when they arrive. One customer, Dana, owes money on invoice INV-2041.</p>
-          <p>Tuesday 17 November, 09:02. An email lands: "Hi, INV-2041 will be paid this Friday. Thanks, Dana." Your code asks a model whether Dana promises to pay, and by when. Follow that one request, zooming out from the metal to the picture worth designing with.</p>
+          <p><b>The example you follow through the whole course:</b> a company sends invoices, and some customers pay late. An agent helps its billing team: it reads customers' emails, notes when someone promises to pay, and records payments when they arrive. One customer, Dana, owes money on invoice INV-2041. The billing words the course uses are explained in <a href="../reference/the-example.html">the running example, in plain words</a>.</p>
+          <p>Tuesday 17 November, 09:02. An email lands: "Hi, INV-2041 will be paid this Friday. Thanks, Dana." Your code asks a model whether Dana promises to pay, and by when. Follow that one request through four levels of detail, from the tokens the model actually sees to the level you design an agent at.</p>
         </div>
-        <p class="talk-only headline">One request. Zoom out four times. Design at the last level.</p>
+        <p class="talk-only headline">One request, four levels of detail. You design at the last one.</p>
         <aside class="notes"><p>Walk down the four steps. Don't linger on tokens. The payoff is steps 3 and 4: an assistant answering from the only page it has. Chapter 2 gives it tools and makes it an agent.</p></aside>
 
         <div class="zoom">
@@ -57,7 +57,7 @@
                 <div class="row"><span class="tokname"> "2026</span><span class="track"><span class="fill" style="width:7%"></span></span><span class="pct">7%</span></div>
                 <div class="row"><span class="tokname"> "2025</span><span class="track"><span class="fill" style="width:3%"></span></span><span class="pct">3%</span></div>
               </div>
-              <p>True, but too low a level to design an agent at. (Why it leans towards <code>null</code> is chapter 2.)</p>
+              <p>True, but too low a level to design an agent at. (Chapter 2 explains why it is most likely to answer <code>null</code> here.)</p>
             </div>
           </div>
 
@@ -73,7 +73,7 @@ Answer as JSON with is_commitment and due_date.
 Hi, INV-2041 will be paid this Friday. Thanks, Dana
 <span class="mk">&lt;|assistant|&gt;</span>
 {"is_commitment": true, "due_date": <span class="cur"></span></pre>
-              <p>Each provider has its own markers, and you never see them. The model always does.</p>
+              <p>Each provider has its own markers for who is speaking. The API hides them from you, but the model reads them on every request.</p>
             </div>
           </div>
 
@@ -89,7 +89,7 @@ Hi, INV-2041 will be paid this Friday. Thanks, Dana
             <div class="tk" data-tok="1" data-crop="face" data-mood="happy" aria-hidden="true"></div>
             <div>
               <h3><span class="n">4</span>It answers from its picture of the situation</h3>
-              <p>The picture to design with: a sharp new colleague on their first morning. They know the world, not your company, and only what's on the desk in front of them.</p>
+              <p>The picture to design with: a capable new colleague on their first morning. They know the world in general, but not your company, and they know only what's on the desk in front of them.</p>
               <div class="worldview">
                 <div><b>Knows from training</b>What invoices and promises are; how people hedge; what Friday means.</div>
                 <div><b>Knows from this page</b>Its job, Dana's email, the shape of the answer.</div>
@@ -104,9 +104,9 @@ Hi, INV-2041 will be paid this Friday. Thanks, Dana
       <section class="chap" id="first-day">
         <h2>Every request is its first day</h2>
         <div class="prose measure">
-          <p>From Tok's side there is no conversation, only a page. Each request starts a fresh Tok that reads the whole page from the top, writes one reply, and is gone. The next one gets the same page, a little longer.</p>
+          <p>From Tok's side there is no conversation, only a page. Each request starts a fresh Tok that reads the whole page from the top, writes one reply, and is gone. The next one gets the same page, a little longer. Press <b>Send request</b> below three times, and watch what each new Tok knows.</p>
         </div>
-        <p class="talk-only headline">No memory between requests. Each one re-reads the whole page.</p>
+        <p class="talk-only headline">No memory between requests. Each one reads the whole page again.</p>
         <aside class="notes"><p>Press "Send request" three times. Point out that request 3's Tok knows the date only because it is on the page now: the page carried it, not a memory.</p></aside>
         <div class="play" id="stepper" data-stop>
           <div class="stepper">
@@ -143,7 +143,7 @@ Hi, INV-2041 will be paid this Friday. Thanks, Dana
             <div class="pz-ask">
               <p class="q">A new model, from another company, writes the next reply. The page even says the earlier replies came from a different model. What does it do?</p>
               <div class="choices" role="radiogroup" aria-label="Your prediction">
-                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Mentions the switch, since the page says so</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Mentions the switch, since the page says another model wrote the earlier replies</span></button>
                 <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Re-checks the earlier answers, since it didn't write them</span></button>
                 <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Carries on as if it wrote them all, and never mentions it</span></button>
                 <button class="choice" role="radio" aria-checked="false" data-choice="d" type="button"><span class="key">D</span><span>Depends on the model</span></button>

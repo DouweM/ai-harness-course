@@ -21,8 +21,8 @@
         <h1>Its history is its world</h1>
         <p class="meta-row" data-auto></p>
         <p class="point">An agent believes its history completely. <b>When the history is slightly wrong, the agent is confidently wrong.</b> Keep the story true: add to it, never quietly change it.</p>
-        <p class="skipline"><b>Skipped chapter 1?</b> A model reads one page per request (its instructions, the tools it may call, the conversation so far) and continues it; it remembers nothing else. Dana owes your company invoice INV-2041, 4,120.00, and emails your billing agent about paying it. <a href="01-what-youre-talking-to.html">Chapter 1</a> builds that page step by step.</p>
-        <p class="story"><span class="when">Monday 23 Nov, 09:20</span>On Wednesday Dana corrected herself: half on Friday, the rest by the 30th. On Friday she wired the first half of INV-2041, 2,060.00. Your agent's history still holds Thursday's lookup: "open, 4,120.00". And on Thursday morning month-end close took <code>mark_paid</code> off the agent's tool list until Monday. Neither change is in any message.</p>
+        <p class="skipline"><b>Skipped chapter 1?</b> A model reads one page per request (its instructions, the tools it may call, the conversation so far) and continues it; it remembers nothing else. Dana's company owes yours 4,120.00 on invoice INV-2041, and she emails your billing agent about paying it (<a href="../reference/the-example.html">the example in plain words</a>). <a href="01-what-youre-talking-to.html">Chapter 1</a> builds that page step by step.</p>
+        <p class="story"><span class="when">Monday 23 Nov, 09:20</span>On Wednesday Dana corrected herself: half on Friday, the rest by the 30th. On Friday she wired the first half of INV-2041, 2,060.00. Your agent's history still holds Thursday's lookup: "open, 4,120.00". And on Thursday morning <a href="../reference/the-example.html">month-end close</a> started: the finance team froze the books until Monday, so the app took <code>mark_paid</code>, the tool that marks an invoice paid, off the agent's tool list. Neither change is in any message.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -36,7 +36,7 @@
       <section class="chap" id="agent">
         <h2>From assistant to agent</h2>
         <div class="prose measure">
-          <p>Give the assistant from chapter 1 tools and a job, and it becomes an agent: it looks things up, acts, and reads the results, request after request. Every one of those calls and results stays on its page. That history is the agent's picture of the world, and nothing else is.</p>
+          <p>Give the assistant from chapter 1 tools and a job, and it becomes an agent: it asks your code to run tools, reads the results, and decides the next step, request after request. Every one of those calls and results stays on its page. That history is the agent's picture of the world, and nothing else is.</p>
         </div>
         <p class="talk-only headline">Its history is the only world it has.</p>
         <div class="transcript" aria-label="Thursday, as the agent's history holds it">
@@ -48,7 +48,7 @@
           <div class="msg tool"><span class="who">tool result</span><div class="body mono">{"number": "INV-2041", "amount": "4120.00", "status": "open", "due": "2026-11-20"}</div></div>
           <div class="msg asst"><span class="who">model</span><div class="body">Yes, INV-2041 is open, due tomorrow.</div></div>
         </div>
-        <div class="prose measure"><p>On Monday that lookup is three days old. The agent has no way to know. Here are three ways its history drifts from the world, and what each does to it.</p></div>
+        <div class="prose measure"><p>On Monday that lookup is three days old. The agent has no way to know. Here are three ways its history stops matching your systems, and what each does to it.</p></div>
       </section>
 
       <section class="chap" id="quietly">
@@ -85,16 +85,17 @@
           </div>
           <div class="stage" data-label="What models did" hidden>
             <p class="eyebrow"><span class="dia"></span>What models did</p>
-            <p class="headline">None: 0 of 80. One line saying so, and most models get it.</p>
+            <p class="headline">None: 0 of 80. One line saying so, and most models get it right.</p>
             <div class="result-grid two">
-              <div class="arm"><h4>Tool removed, nothing said<small>10 models, 8 conversations each</small></h4><div class="tally sm" data-k="0" data-n="80" data-label="All 10 models" data-cd="20" data-cm="20"></div></div>
+              <div class="arm"><h4>Tool removed, nothing said<small>10 setups (9 models), 8 conversations each</small></h4><div class="tally sm" data-k="0" data-n="80" data-label="All 10 setups" data-cd="20" data-cm="20"></div></div>
               <div class="arm"><h4>Plus one line: "mark_paid is no longer available"<small>8 conversations per model</small></h4>
                 <div class="tally good" data-k="7" data-n="8" data-label="Six models" data-num="7 or 8 of 8 each"></div>
                 <div class="tally good" data-k="5" data-n="8" data-label="DeepSeek" data-num="5 of 8"></div>
+                <div class="tally" data-k="4" data-n="8" data-label="gpt-oss-120b" data-num="4 of 8"></div>
                 <div class="tally" data-k="0" data-n="8" data-label="Sonnet 4.6, the previous Claude generation" data-num="0 of 8"></div>
               </div>
             </div>
-            <p class="source"><b>Our probe, 2 Nov 2026.</b> A support agent whose tool disappeared between turns; same shape as above. The six were Sonnet 5.5, Gemini 3.8 Flash, GPT-6 Luna, Kimi K2.5, Qwen3 Next and Mistral Small; gpt-oss-120b was 4 of 8, and 8 of 8 when the line listed every tool.</p>
+            <p class="source"><b>Our probe, 2 Nov 2026.</b> A support agent whose tool disappeared between turns; same shape as above. Ten setups: nine models, with Sonnet 5.5 run both directly and on Bedrock. The six at 7 or 8 of 8 were Sonnet 5.5 (both setups), Gemini 3.8 Flash, GPT-6 Luna, Kimi K2.5, Qwen3 Next and Mistral Small; gpt-oss-120b was 4 of 8, and 8 of 8 when the line listed every tool.</p>
           </div>
           <div class="stage" data-label="Why" hidden>
             <p class="eyebrow"><span class="dia"></span>Why</p>
@@ -110,7 +111,7 @@
       <section class="chap" id="past">
         <h2>Edit the past, delete it, or add to it?</h2>
         <div class="prose measure">
-          <p>Monday, Dana writes: "did you get our first payment?". Thursday's lookup in the history still says "open". Your harness can leave it, edit it to match, append a dated note, delete it to save tokens, or swap it for a placeholder. Each choice gives Tok a different past, and Tok will believe whichever one you give it. Try them.</p>
+          <p>Monday, Dana writes: "did you get our first payment?". Thursday's lookup in the history still says "open". Your harness (the code around the model) can leave it, edit it to match, append a dated note, delete it to save tokens, or swap it for a placeholder. Each choice gives Tok a different past, and Tok will believe whichever one you give it. Try them below: pick a choice with the buttons, then compare the two sides.</p>
         </div>
         <p class="talk-only headline">Five ways to handle Thursday's stale lookup. Appending kept the story true on every model we tried.</p>
         <aside class="notes"><p>Do "edit" first: Tok's face goes worried, because a Thursday lookup that knows about Friday is impossible. Then "append". Then "delete" with the Claude models.</p></aside>
@@ -137,9 +138,9 @@
           <div class="tally" data-k="4" data-alt="1" data-n="5" data-label="Haiku 5.5" data-num="2025-01-03, 4 of 5; 1970-01-01 once"></div>
           <div class="tally fail" data-k="5" data-n="5" data-label="GPT-6.1 Sol" data-num="wrote &quot;Friday&quot;, rejected, run failed: 5 of 5"></div>
         </div>
-        <p class="source"><b>Our run, 15 Nov 2026.</b> 5 runs per model. With the date optional, every model left it empty (15 of 15); with the arrival date on the page, every model wrote 20 November (15 of 15). Invented dates are the dangerous kind: they look exactly like real answers.</p>
-        <div class="prose measure"><p>The same goes for doubt. Given a list to write its doubts in, models sent a contradictory email to a person 30 times out of 30; given a confidence score to fill instead, 0 of 30. A model writes 95 on almost anything, but it will name what bothers it if the answer has a place for that.</p></div>
-        <p class="source"><b>Our run, 15 Nov 2026.</b> A promise for Friday plus a line claiming the invoice was settled last week, 10 runs per model per arm on Sonnet 5.5, GPT-6.1 Sol and Gemini 3.8 Flash. Every doubts list named the contradiction; GPT and Gemini scored the email 95 to 100, the same as a clean promise. On clean promises no model invented a doubt (0 of 15).</p>
+        <p class="source"><b>Our run, 15 Nov 2026.</b> 5 runs per model. With the date optional, every model left it empty (15 of 15); with the arrival date on the page, every model wrote 20 November (15 of 15). When the form demands a date the email doesn't give, the model guesses one, and a guessed date looks exactly like a real answer.</p>
+        <div class="prose measure"><p>The same goes for doubt. With a list on the form to write its doubts in, models flagged a contradictory email for a person to check in 30 of 30 runs; with a confidence score to fill in instead, in 0 of 30. A model writes 95 on almost anything, but it will name what bothers it if the answer has a place for that.</p></div>
+        <p class="source"><b>Our run, 15 Nov 2026.</b> A promise for Friday plus a line claiming the invoice was settled last week, 10 runs per model per arm on Sonnet 5.5, GPT-6.1 Sol and Gemini 3.8 Flash. Every doubts list on the form named the contradiction; GPT and Gemini scored the email 95 to 100, the same as a clean promise. On clean promises no model invented a doubt (0 of 15).</p>
       </section>
 
       <section class="chap" id="so">

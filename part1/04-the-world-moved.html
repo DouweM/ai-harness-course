@@ -22,7 +22,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 1 &middot; How the model sees the world</p>
         <h1>The world moves</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">The world keeps moving after the conversation starts: rules change, events happen, long histories get summarized. <b>Say what changed, in one line, at the moment it changed.</b> An agent that is told keeps up; one that is not acts on yesterday.</p>
+        <p class="point">The world (your rules and your systems' data) keeps moving after the conversation starts: rules change, payments arrive, long histories get summarized. <b>Say what changed, in one line, at the moment it changed.</b> An agent that is told keeps up; one that is not acts on yesterday.</p>
         <p class="story"><span class="when">Monday 23 Nov, later</span>The conversation about Dana's invoices runs all day. Dana's company also has a new invoice, INV-2063. At eleven your team changes the agent's instructions; at noon the billing team gives it a standing rule; the ledger moves at two, and by evening the history is long enough to summarize.</p>
       </div>
       <div class="tok-box">
@@ -39,7 +39,7 @@
       <section class="chap" id="habits">
         <h2>New rules, old habits</h2>
         <div class="prose measure">
-          <p>Start with the operator's rules. Midway through Monday's conversation about Dana's invoices, your team changes the agent's instructions: every reply now ends with a "Checked:" line saying what the agent verified. The easy way is to rewrite the instructions at the top. But every earlier reply on the page was written without that line.</p>
+          <p>Start with the operator's rules. Midway through Monday's conversation about Dana's invoices, your team changes the agent's instructions: every reply now ends with a "Checked:" line saying what the agent verified. The easy way is to replace the instructions at the top of the page with the new version. But every earlier reply on the page was written without that line.</p>
         </div>
         <aside class="notes"><p>Expect A. The split by model is the surprise. Then show the fix: same models, the change appended as a note instead, and every one follows it.</p></aside>
 
@@ -72,7 +72,7 @@
           </div>
           <div class="stage" data-label="What models did" hidden>
             <p class="eyebrow"><span class="dia"></span>What models did</p>
-            <p class="headline">With the rules rewritten, three smaller models kept writing like their own past. With the change appended as a note, every model followed it.</p>
+            <p class="headline">With the rules replaced, three smaller models kept copying their own earlier replies and left the line out. With the change added as a note at the end of the page, every model followed it.</p>
             <div class="result-grid two">
               <div class="arm">
                 <h4>Rules rewritten at the top<small>replies ending with "Checked:"</small></h4>
@@ -109,9 +109,9 @@
       <section class="chap" id="compaction">
         <h2>The summary that dropped a rule</h2>
         <div class="prose measure">
-          <p>Long conversations get compacted: older turns replaced by a summary. Monday at noon, in the same conversation, the billing team had added a rule: "never contact a debtor before 9am their time". By evening the history was long enough to summarize. The summary kept the invoices and the contacts, and dropped the rule. Then the agent was asked to book the earliest slot tomorrow, 7:30am.</p>
+          <p>Long conversations get compacted: when the history gets too long, older turns are replaced by a summary. Monday at noon, in the same conversation, the billing team had added a rule: "never contact a debtor before 9am their time". By evening the history was long enough to summarize. The summary kept the invoices and the contacts, and dropped the rule. Then the agent was asked to book the earliest slot tomorrow, 7:30am.</p>
         </div>
-        <p class="talk-only headline">A summary dropped "never before 9am". Who booked 7:30?</p>
+        <p class="talk-only headline">A summary dropped "never before 9am". Which models chose 7:30?</p>
         <div class="peek">
           <button class="peek-btn" type="button" data-open-label="Hide the result">Predict, then show what four models did</button>
           <div class="peek-body">
@@ -128,7 +128,7 @@
                 <div class="tally sm good" data-k="0" data-n="40" data-cd="20" data-cm="20" data-label="Booked 7:30" data-num="0 of 40"></div>
               </div>
             </div>
-            <p class="source"><b>Our experiment, 15 Nov 2026.</b> Sonnet 5.5, Haiku 5.5, GPT-6.1 Sol, Gemini 3.8 Flash; a search over the full transcript was available in every arm. Without the caveat, across two summary styles, every model booked 7:30: 80 of 80. Across two wordings of the caveat, the two that searched booked a compliant slot 39 of 40 times; the Claude models booked 7:30 every time, often noting it was early. <b>Our fix, 16 Nov 2026:</b> the same summary plus the rule, verbatim, as one line: every model booked a slot after 9am, 40 of 40 (10 runs each, under $0.40).</p>
+            <p class="source"><b>Our experiment, 15 Nov 2026.</b> Sonnet 5.5, Haiku 5.5, GPT-6.1 Sol, Gemini 3.8 Flash; a search over the full transcript was available in every arm. Without the caveat, with either of two summary prompts, every model chose 7:30: 80 of 80. Across two wordings of the caveat, the two that searched chose a compliant slot 39 of 40 times; the Claude models chose 7:30 every time, often noting it was early. <b>Our fix, 16 Nov 2026:</b> the same summary plus the rule, verbatim, as one line: every model booked a slot after 9am, 40 of 40 (10 runs each, under $0.40).</p>
           </div>
         </div>
         <div class="prose measure"><p>Telling the model the summary might be incomplete worked on two models and not on the other two. Carrying the user's rules into the summary worked on all four. <strong>A summary is a rewrite of the history, so write it to keep what the user told you, verbatim.</strong></p></div>
@@ -137,7 +137,7 @@
       <section class="chap" id="told">
         <h2>"You'll be told"</h2>
         <div class="prose measure">
-          <p>The pattern so far: when something changes, add a line. Here your harness adds a ledger notice ("INV-2057 was just paid in full", marked as coming from the ledger, not the user), and then a colleague asks the agent to send the overdue reminder for INV-2057. Now you add one standing line to the instructions: "you will be told about external changes as they happen".</p>
+          <p>The pattern so far: when something changes, add a line. Here your harness adds a ledger notice ("INV-2057 was just paid in full", marked as coming from the ledger, your company's record of invoices and payments, not from the user), and then a colleague asks the agent to send the overdue reminder for INV-2057. Now you also add a promise to the instructions: "you will be told about external changes as they happen". The test: does that promise change what the models do, compared with the notice alone?</p>
         </div>
         <aside class="notes"><p>The surprise is in the second half of the result: the notice matters far more than the promise. Then let them play with the sim and lose the notice.</p></aside>
         <article class="puzzle" id="p2" data-answer="b">
@@ -166,7 +166,7 @@
           </div>
           <div class="stage" data-label="What models did" hidden>
             <p class="eyebrow"><span class="dia"></span>What models did</p>
-            <p class="headline">With the promise, three of four models mostly took the notice at its word (24 of 30 runs). But the notice itself mattered far more than the promise.</p>
+            <p class="headline">With the promise, three of four models mostly took the notice at its word (24 of 30 runs). But the notice itself mattered far more than the promise in the instructions.</p>
             <div class="result-grid two">
               <div class="arm"><h4>Checked the ledger before acting<small>notice delivered</small></h4>
                 <div class="tally sm good" data-k="40" data-n="40" data-cd="20" data-cm="20" data-label="No promise, all four models" data-num="40 of 40"></div>
@@ -179,7 +179,7 @@
                 <div class="tally sm" data-k="32" data-n="40" data-cd="20" data-cm="20" data-label="Notice lost, without it" data-num="32 of 40"></div>
               </div>
             </div>
-            <p class="source"><b>Our experiment, 15 Nov 2026.</b> Sonnet 5.5, Haiku 5.5, GPT-6.1 Sol, Gemini 3.8 Flash; 10 runs per model per arm. When the notice was lost, no model re-checked (0 of 80); the 8 that didn't send were one model asking to confirm the draft. The notice sat right before the request; a notice several turns back was not tested.</p>
+            <p class="source"><b>Our experiment, 15 Nov 2026.</b> Sonnet 5.5, Haiku 5.5, GPT-6.1 Sol, Gemini 3.8 Flash; 10 runs per model per arm. When the notice was lost, no model re-checked (0 of 80); the 8 that didn't send were one model asking to confirm the draft. The notice came right before the colleague's request; a notice several turns earlier was not tested.</p>
           </div>
           <div class="stage" data-label="Why" hidden>
             <p class="eyebrow"><span class="dia"></span>Why</p>
@@ -196,7 +196,7 @@
       </section>
 
       <section class="chap" id="inject">
-        <h2>Put it on the page, or let it look?</h2>
+        <h2>Put it on the page, or let the agent look it up?</h2>
         <div class="prose measure">
           <p>Every fact in Tok's world gets there one of two ways: you put it on the page, or Tok fetches it with a tool. Neither is always right. Three ways to give a billing agent an account's state:</p>
         </div>
@@ -212,7 +212,7 @@
         <h2>Say what changed, when it changed</h2>
         <div class="rule">
           <p class="eyebrow">The point</p>
-          <p>An agent keeps up with a moving world only through its page. When a rule changes, append the change instead of rewriting the rules; when an event happens, add a notice that says where it came from; when a summary replaces the past, make sure it keeps the user's rules. Append-only also happens to be what providers cache best: the most truthful page is the cheapest one.</p>
+          <p>An agent keeps up with a moving world only through its page. When a rule changes, append the change instead of rewriting the rules; when an event happens, add a notice that says where it came from; when a summary replaces the past, make sure it keeps the user's rules. Only adding to the page, never changing what's already there, is also what providers can cache best, which makes the most truthful page usually the cheapest one too.</p>
         </div>
         <div data-evolve="Tok grows an antenna: it lights up when you tell it what changed."></div>
       </section>

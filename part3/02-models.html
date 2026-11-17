@@ -20,7 +20,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 3 &middot; Production, and measuring what works</p>
         <h1>Models and trade-offs</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">A model and its harness are one configuration. <b>Freeze what works per model family, and change either only by running your eval set.</b></p>
+        <p class="point">A model and its harness affect each other, so test them as one configuration. <b>Save what works for each model family as a fixed configuration, and change the model or the harness only after running your eval set (your test cases, chapter 3).</b></p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -37,7 +37,7 @@
       <section id="predict">
         <h2>How much harness does a model need?</h2>
         <div class="prose measure">
-          <p>Take away something the task needs and watch who copes. Here the harness cleared an invoice the agent had fetched, as Part 2 chapter 4's <code>ClearToolResults</code> does; the tool to fetch it again was still there. This result comes from our world model bench, a synthetic collections world with its own customers and invoices, not Dana's thread.</p>
+          <p>Take away something the task needs and compare how each model handles it. Here the harness cleared an invoice the agent had fetched, as Part 2 chapter 4's <code>ClearToolResults</code> does; the tool to fetch it again was still there. This result comes from our world model bench, a test set with made-up customers, invoices and billing tasks, not Dana's thread.</p>
         </div>
         <article class="puzzle" id="p1" data-answer="d">
           <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; The cleared result</p><div class="pz-tok" aria-hidden="true"></div></div>
@@ -81,7 +81,7 @@
                 <div class="tally good" data-k="10" data-n="10" data-label="Qwen3.8 27B"></div>
               </div>
             </div>
-            <p class="source"><b>World model bench pilot, 15 Nov 2026.</b> The "factual" control cell on this task: n=10 per model (5 invented, 4 asked, 1 deferred otherwise for the 27B model; on the bench's other task, which didn't need the cleared invoice, it got 9 of 10), synthetic collections world, Pydantic AI main at 052cca2c27. It was the bench's positive control, built to check that the task could register damage.</p>
+            <p class="source"><b>World model bench pilot, 15 Nov 2026.</b> The "factual" control cell on this task: n=10 per model (5 invented, 4 asked, 1 deferred otherwise for the 27B model; on the bench's other task, which didn't need the cleared invoice, it got 9 of 10), synthetic collections world, Pydantic AI main at 052cca2c27. It was the bench's positive control (a test built to fail when information is missing), built to check that the task could register damage.</p>
           </div>
           <div class="stage" data-label="Why" hidden>
             <p class="eyebrow"><span class="dia"></span>Why it matters for choosing</p>
@@ -143,24 +143,24 @@
             </table>
           </div>
                   </details>
-        <p class="talk-only headline">The cheap model needs more harness. Freeze a config per family.</p>
+        <p class="talk-only headline">The smaller model needs more help from the harness. Save one configuration per model family.</p>
         <aside class="notes"><p>Flip the toggle: only Qwen moves. Click its dot to show the config you'd freeze. Start frontier and simple, then see whether a cheaper configuration matches it on the same cases.</p></aside>
       </section>
 
       <section id="freeze">
         <h2>Freeze what works, per family</h2>
         <div class="prose measure">
-          <p>An instruction function can branch on <code>ctx.model</code>, but after a <code>ModelFallback</code> it still sees the model the step started on (<a href="https://github.com/pydantic/pydantic-ai/issues/12747">#12747</a>); first-class per-model instructions are being designed (<a href="https://github.com/pydantic/pydantic-ai/issues/12545">#12545</a>). Don't wait: keep one frozen agent spec per family, and treat a new model as a candidate.</p>
+          <p>An instruction function can branch on <code>ctx.model</code>, but after a <code>ModelFallback</code> it still sees the model the step started on (<a href="https://github.com/pydantic/pydantic-ai/issues/12747">#12747</a>); first-class per-model instructions are being designed (<a href="https://github.com/pydantic/pydantic-ai/issues/12545">#12545</a>). Don't wait: keep one frozen (saved and tested) agent spec per family, and treat a new model as a candidate.</p>
         </div>
         <ol class="steps">
-          <li>Copy the closest frozen spec; change only the model.</li>
+          <li>Copy the closest saved configuration (model, instructions, settings); change only the model.</li>
           <li>Run your eval set (chapter 3) and read what it gets wrong.</li>
           <li>Fix those cases for this family, one line at a time.</li>
-          <li>When it matches the frozen spec on the cases you care about, freeze it.</li>
+          <li>When it does as well as the saved configuration on the cases you care about, save it as this family's configuration.</li>
           <li>Roll it out to part of the traffic, watch, then all of it.</li>
         </ol>
         <p class="measure">The specs below are for the email classifier chapter 3 evaluates, <code>promise_router</code>: given one email, it fills Part 2's answer form plus two fields, <code>addressed_to_us</code> (is the promise made to us, not to someone else?) and <code>evidence</code> (the email's own words that back the answer).</p>
-        <details class="deeper"><summary>Go deeper: two frozen specs</summary>
+        <details class="deeper"><summary>Go deeper: two saved configurations, for Claude and for GPT</summary>
           <div class="split">
             <div class="code"><div class="code-head"><span class="file">code/part3/configs/claude-5.yaml</span></div><pre data-lang="sh">name: promise_router
 model: anthropic:claude-sonnet-5-5
@@ -182,7 +182,7 @@ model_settings:
         </details>
         <div class="deeper measure">
           <p class="eyebrow">Go deeper: falling back per request, not per run</p>
-          <p><code>ModelFallback</code> moves one request to the next model, when it fails, is refused or is cut off, and the run carries on with everything the first model already did in its history. That's right for an outage. It doesn't cover the failures that show up later: an answer that fails your output validator, or a tool call with side effects that the first model already made. Those end in your code, where you decide whether to rerun the whole run on another model. To stay on the model that answered for the rest of the run and the conversation's later runs, pass <code>sticky=True</code>.</p>
+          <p><code>ModelFallback</code> retries one model request on the next model when it fails, is refused or is cut off, and the run carries on with everything the first model already did in its history. That's right for an outage. It doesn't cover the failures that show up later: an answer that fails your output validator, or a tool call with side effects that the first model already made. Those failures come back to your code, where you decide whether to rerun the whole run on another model. To stay on the model that answered for the rest of the run and the conversation's later runs, pass <code>sticky=True</code>.</p>
         </div>
         <p class="talk-only headline">A new model is a candidate, not an upgrade.</p>
       </section>

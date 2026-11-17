@@ -33,15 +33,15 @@
   <section class="wrap">
     <p class="eyebrow" style="margin-top:28px"><span class="dia"></span>Reference</p>
     <h1>Capability gallery</h1>
-    <p class="measure">Every capability with its own docs page in Pydantic AI (<span class="pkg">core</span>) or Pydantic AI Harness, <code>pydantic-ai-harness</code> (<span class="pkg">harness</span>): what it does, the line that adds it to an agent, the release its docs page first shipped in, and its docs. Part 2, <a href="../part2/06-capabilities.html">chapter 6</a> explains what a capability is; this page is for finding one. Check here before writing your own.</p>
+    <p class="measure">A capability is a reusable piece you add to an agent: tools, instructions, history handling, checks. This page lists every capability with its own docs page in Pydantic AI (<span class="pkg">core</span>) or Pydantic AI Harness, <code>pydantic-ai-harness</code> (<span class="pkg">harness</span>): what it does, the line that adds it to an agent, the first release that documented it, and its docs. Part 2, <a href="../part2/06-capabilities.html">chapter 6</a> explains what a capability is; this page is for finding one. Check here before writing your own.</p>
     <div class="gal-tools"><input id="q" type="search" placeholder="Search: compaction, approval, Slack..." aria-label="Search capabilities"><span class="gal-count" id="count">106 capabilities</span></div>
     <div class="chips" role="group" aria-label="Filter by job"><button class="chip" type="button" data-job="" aria-pressed="true">All</button><button class="chip" type="button" data-job="Model and cost" aria-pressed="false">Model and cost</button><button class="chip" type="button" data-job="Tools" aria-pressed="false">Tools</button><button class="chip" type="button" data-job="Workspace and sandboxes" aria-pressed="false">Workspace and sandboxes</button><button class="chip" type="button" data-job="History and context" aria-pressed="false">History and context</button><button class="chip" type="button" data-job="Control and safety" aria-pressed="false">Control and safety</button><button class="chip" type="button" data-job="More than one agent" aria-pressed="false">More than one agent</button><button class="chip" type="button" data-job="Whole agents" aria-pressed="false">Whole agents</button><button class="chip" type="button" data-job="Runtime and observability" aria-pressed="false">Runtime and observability</button><button class="chip" type="button" data-job="Integrations" aria-pressed="false">Integrations</button></div>
     <div class="gal" id="gal"></div>
 
     <section id="coder" style="margin:40px 0">
-      <h2>Coder, taken apart</h2>
+      <h2>The pieces Coder is built from</h2>
       <div class="prose measure">
-        <p>The Harness's <code>Coder</code> is a coding agent built from capabilities on this page: <code>FileSystem</code>, <code>Shell</code>, <code>RepoContext</code>, <code>SubAgents</code> and <code>ClearToolResults</code>, plus its instructions, output limits and argument repair. Pick the same pieces yourself and you get a different agent. A reviewer that reads the code and runs the tests but never writes a file:</p>
+        <p>The Harness's <code>Coder</code> is a coding agent built from capabilities on this page: <code>FileSystem</code>, <code>Shell</code>, <code>RepoContext</code>, <code>SubAgents</code> and <code>ClearToolResults</code>, plus its instructions, output limits and argument repair. Pick some of the same pieces yourself and you get an agent with different tools and behavior. A reviewer that reads the code and runs the tests, with no file-writing tools (running tests or git can still change files, so use a sandbox if you need a guarantee):</p>
       </div>
       <div class="code" data-run="uv run code/part2/ch6_capabilities.py"><div class="code-head"><span class="file">code/part2/ch6_capabilities.py, a reviewer from Coder's pieces</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import LocalWorkspace
 from pydantic_ai_harness.filesystem import FileSystem
@@ -62,7 +62,7 @@ reviewer = Agent(  # Coder's pieces, chosen yourself: reads code, runs tests, wr
     </section>
   </section>
 </main>
-<footer><div class="wrap"><p>Generated from the Pydantic AI docs by <code>tools/build_capability_gallery.py</code>: each card's sentence and example are the docs page's own; "since" is the first release whose docs include the page (renames followed). Generated from <code>v2.68.0</code>. How these combine on one agent: <a href="composing-harnesses.html">How harnesses are composed</a>.</p></div></footer>
+<footer><div class="wrap"><p>Generated from the Pydantic AI docs by <code>tools/build_capability_gallery.py</code>: each card's sentence and example are the docs page's own; "since" is the first release whose docs include the page (renames followed). Generated from <code>v2.68.0-40-g052cca2c27</code>. How these combine on one agent: <a href="composing-harnesses.html">How harnesses are composed</a>.</p></div></footer>
 <script>
 (function () {
   var CARDS = [
@@ -418,11 +418,11 @@ reviewer = Agent(  # Coder's pieces, chosen yourself: reads code, runs tests, wr
 },
 {
 "slug": "bubblewrap-sandbox",
-"title": "Bubblewrap Sandbox",
+"title": "Bubblewrapped Workspace",
 "pkg": "harness",
 "job": "Workspace and sandboxes",
-"does": "Run a Pydantic AI agent's commands in a Linux bubblewrap sandbox on the host they run on, over SSH or locally.",
-"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import BubblewrapSandbox, Coder, SSHWorkspace\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[BubblewrapSandbox(SSHWorkspace('dev@build-box', working_dir='/srv/app')), Coder()],\n)\nresult = agent.run_sync('Run the test suite and fix the first failure.')",
+"does": "Run a Pydantic AI agent's commands in a Linux bubblewrap wrapper on the host they run on, over SSH or locally.",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness import BubblewrappedWorkspace, Coder, SSHWorkspace\n\nagent = Agent(\n    'anthropic:claude-sonnet-5-5',\n    capabilities=[BubblewrappedWorkspace(SSHWorkspace('dev@build-box', working_dir='/srv/app')), Coder()],\n)\nresult = agent.run_sync('Run the test suite and fix the first failure.')",
 "since": "pydantic-ai-harness 0.52+",
 "url": "https://pydantic.dev/docs/ai/harness/bubblewrap-sandbox/"
 },
@@ -437,14 +437,14 @@ reviewer = Agent(  # Coder's pieces, chosen yourself: reads code, runs tests, wr
 "url": "https://pydantic.dev/docs/ai/harness/daytona-sandbox/"
 },
 {
-"slug": "docker-sandbox",
-"title": "Docker Sandbox",
+"slug": "docker-container",
+"title": "Docker Container",
 "pkg": "harness",
 "job": "Workspace and sandboxes",
 "does": "Run a Pydantic AI agent's commands and file edits in a local Docker or Podman container, created on first use.",
-"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.coder import Coder\nfrom pydantic_ai_harness.docker_sandbox import DockerSandbox\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[DockerSandbox(image='python:3.13-slim'), Coder()])\nresult = agent.run_sync('Write a script that prints the first 10 primes, and run it.')",
+"code": "from pydantic_ai import Agent\nfrom pydantic_ai_harness.coder import Coder\nfrom pydantic_ai_harness.docker_container import DockerContainer\n\nagent = Agent('anthropic:claude-sonnet-5-5', capabilities=[DockerContainer(image='python:3.13-slim'), Coder()])\nresult = agent.run_sync('Write a script that prints the first 10 primes, and run it.')",
 "since": "pydantic-ai-harness 0.60+",
-"url": "https://pydantic.dev/docs/ai/harness/docker-sandbox/"
+"url": "https://pydantic.dev/docs/ai/harness/docker-container/"
 },
 {
 "slug": "e2b-sandbox",

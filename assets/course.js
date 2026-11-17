@@ -26,6 +26,7 @@
   /* Reference pages: browsable, outside the chapter flow. Shown as a small row on the home page and in the contents. */
   var REFERENCE = [
     { path: 'reference/capabilities.html', title: 'Capability gallery', desc: 'Every built-in and Harness capability: what it does to the request, a snippet, the version it arrived in.' },
+    { path: 'reference/the-example.html', title: 'The running example, in plain words', desc: 'The billing words the course uses (invoice, wire, ledger, month-end close, dispute) and Dana\'s week, for readers who have never worked in billing.' },
     { path: 'reference/composing-harnesses.html', title: 'How harnesses are composed', desc: 'What each capability adds to a request and in what order, what collides, Coder taken apart, and composing your own harness and sub-agents.' }
   ];
   var CHAPTERS = [

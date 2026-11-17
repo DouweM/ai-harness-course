@@ -23,7 +23,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
         <h1>The answer form</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">The output type is the form the model fills in, and the form decides what it can say. <b>When a real answer doesn't fit, the model squeezes it in and drops the rest, without a doubt in sight.</b></p>
+        <p class="point">The output type is the form the model fills in: a Python class whose fields the answer must have. The form decides what the model can say. <b>When a real answer doesn't fit, the model squeezes it in and drops the rest, without a doubt in sight.</b></p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -69,7 +69,7 @@ class OnePromise(BaseModel):  # Tuesday&#x27;s form: one amount, one date
               <p class="q">Sonnet 5.5, GPT-6.1 Sol and Haiku 5.5, five runs each. What goes in the form?</p>
               <div class="choices" role="radiogroup" aria-label="Your prediction">
                 <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>2,060 on Friday: the next thing that should happen</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>The models refuse or flag that it doesn't fit</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>The models refuse, or say the email doesn't fit the form</span></button>
                 <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>One amount and one date, and nothing said about the rest</span></button>
               </div>
               <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
@@ -81,8 +81,8 @@ class OnePromise(BaseModel):  # Tuesday&#x27;s form: one amount, one date
             <p class="eyebrow"><span class="dia"></span>What models did</p>
             <p class="headline">All 15 runs dropped half of the promise, and none said so. 14 recorded the full 4,120 on the 30th: no Friday reminder. One GPT run recorded 2,060 on Friday: the rest forgotten.</p>
             <div class="result-grid two">
-              <div class="arm"><h4>One amount, one date <small>kept both halves</small></h4><div class="tally fail" data-k="0" data-n="15" data-label="runs"></div></div>
-              <div class="arm"><h4>A list of installments <small>kept both halves</small></h4><div class="tally good" data-k="15" data-n="15" data-label="runs"></div></div>
+              <div class="arm"><h4>One amount, one date <small>returned both payments, each with its amount and date</small></h4><div class="tally fail" data-k="0" data-n="15" data-label="runs"></div></div>
+              <div class="arm"><h4>A list of installments <small>returned both payments, each with its amount and date</small></h4><div class="tally good" data-k="15" data-n="15" data-label="runs"></div></div>
             </div>
             <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>one          claude-sonnet-5-5  kept both halves 0/5  4120.00 on 2026-11-30
 one          gpt-6.1-sol        kept both halves 0/5  2060 on 2026-11-20; 4120 on 2026-11-30
@@ -93,7 +93,7 @@ installments claude-haiku-5-5   kept both halves 5/5  </pre></div>
             <p class="source"><b>Our run, 16 Nov 2026.</b> 5 runs per model per form, tool output, the email read with <code>read_email</code>, the email's date and the invoice amount in the instructions; raw outputs in <code>code/part2/data/answer_form_runs.json</code>, about $0.10 in total.</p>
           </div>
           <div class="stage" data-label="The fix" hidden>
-            <p class="eyebrow"><span class="dia"></span>The fix: a form that holds it, checked against the ledger</p>
+            <p class="eyebrow"><span class="dia"></span>The fix: a form that holds it, checked against your invoice records</p>
             <div class="code" data-lines="30" data-src="code/part2/ch5_answer_form.py" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">The form: one row per installment, from ch5_answer_form.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">class Installment(BaseModel):
     amount: Decimal
     due_date: date
@@ -114,7 +114,7 @@ async def matches_the_ledger(ctx: RunContext[Deps], promise: Promise) -&gt; Prom
         if total &gt; invoice.amount:
             raise ModelRetry(f&#x27;{invoice.number} is for {invoice.amount}; the installments add up to {total}.&#x27;)
     return promise</pre></div>
-            <p class="measure">The type catches shape. The output validator catches facts that need your systems, like installments that add up to more than the invoice, and sends the model back with the real balance. The error becomes the next message; nobody writes a retry loop:</p>
+            <p class="measure">The type checks that the answer has the right fields and types. The output validator catches facts that need your systems, like installments that add up to more than the invoice, and sends the model back with the real balance. The error becomes the next message; nobody writes a retry loop:</p>
             <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>model reads: {&quot;error&quot;:&quot;INV-2041 is for 4120.00; the installments add up to 6180.00.&quot;}
 recorded:    [(&#x27;2060.00&#x27;, &#x27;2026-11-20&#x27;), (&#x27;2060.00&#x27;, &#x27;2026-11-30&#x27;)]</pre></div>
             <div class="tok-says"><div class="tk" data-tok="10" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>You gave me one box, so I wrote one promise in it. A row per promise, and I wrote both.</p></div></div>
@@ -126,8 +126,8 @@ recorded:    [(&#x27;2060.00&#x27;, &#x27;2026-11-20&#x27;), (&#x27;2060.00&#x27
       <section id="modes">
         <h2>Three ways to ask for structure</h2>
         <div class="prose measure">
-          <p>The same form can reach the model three ways. <b>Tool output</b> offers an output tool to call, works with every tool-calling model and mixes freely with other tools. <b>Native output</b> uses the provider's own structured-output mode. <b>Prompted output</b> puts the schema in the instructions and parses JSON text. A list of types is a union: one output tool per type, and the model picks. Validation, validators and retries work the same in all three.</p>
-          <p>Without a wrapper, the model profile picks: tool output on most models, but native output on Claude models when the request thinks, which Sonnet 5.5 does by default (since 2.52). Pin <code>ToolOutput(...)</code> to keep the tool path on every model, as this course does (on a thinking Claude request the output tool is offered rather than forced, so a text reply costs one retry).</p>
+          <p>Pydantic AI can ask the model for the same form in three ways. <b>Tool output</b> offers an output tool to call, works with every tool-calling model and mixes freely with other tools. <b>Native output</b> uses the provider's own structured-output mode. <b>Prompted output</b> puts the schema in the instructions and parses JSON text. Give a list of types and the answer can be any one of them: one output tool per type, and the model picks. Validation, validators and retries work the same in all three.</p>
+          <p>Without a wrapper, the model profile picks: tool output on most models, but native output on Claude models when the request uses extended thinking (reasoning before answering), which Sonnet 5.5 does by default (since 2.52). Pin <code>ToolOutput(...)</code> to keep the tool path on every model, as this course does (on a thinking Claude request the output tool is offered rather than forced, so if the model answers in plain text instead, Pydantic AI spends one retry asking for the form).</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch5_answer_form.py" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">code/part2/ch5_answer_form.py, the three modes</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai import NativeOutput, PromptedOutput
 
@@ -137,7 +137,7 @@ prompted_form = PromptedOutput(Promise)  # the schema goes in the instructions; 
 either = [Promise, str]  # a union: the model can also answer in plain text</pre></div>
         <div class="deeper measure">
           <p class="eyebrow">Go deeper: when prompted output is the right call</p>
-          <p>Reach for <code>PromptedOutput</code> when the other two can't carry your form: a schema too large or too nested for a provider's structured-output grammar (some reject deep unions or long enums outright), a model or gateway that stalls or degrades when a grammar is enforced, or a model with no tool calling at all. You trade enforcement for reach: the model can write JSON that doesn't fit, so validation and retries do the enforcing.</p>
+          <p>Reach for <code>PromptedOutput</code> when the other two can't carry your form: a schema too large or too nested for a provider's structured-output mode (some reject deep unions or long enums outright), a model or gateway that stalls or gets worse when the provider forces its output to follow the schema, or a model with no tool calling at all. You trade enforcement for reach: the model can write JSON with missing fields or wrong types, so validation and retries do the enforcing.</p>
         </div>
       </section>
 

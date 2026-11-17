@@ -23,7 +23,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
         <h1>More than one agent</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">Use the smallest shape that does the job. <b>When an agent delegates, hand the delegate typed facts to return, and the parent's usage to count on</b>, or your cost limit sees only half the bill.</p>
+        <p class="point">Use the smallest shape that does the job. <b>When an agent hands a sub-task to another agent, give that agent typed facts to return, and share the parent's usage counter with it</b>, or your cost limit misses what the second agent spends.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -40,7 +40,7 @@
         <h2>Smallest shape first</h2>
         <aside class="notes"><p>The point: pick the smallest shape; when you delegate, return typed facts and share usage. The prediction: a cost limit that never sees the delegate's retries.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Friday 20 Nov, 14:15</span>"Also, the amount on INV-2041 looks wrong to us: we were quoted 3,900. Dana." A dispute changes everything downstream: no reminder, no recorded promise, a person on the billing team. (That person replies on Monday: 3,900 was a quote that expired in October, and the invoice stands at 4,120.) Deciding whether an email is a dispute is a narrow job a smaller model does well.</p>
+          <p class="story"><span class="when">Friday 20 Nov, 14:15</span>"Also, the amount on INV-2041 looks wrong to us: we were quoted 3,900. Dana." A dispute, the customer saying the invoice is wrong, changes everything after it: no reminder, no recorded promise, and a person on the billing team takes over. (That person replies on Monday: 3,900 was a quote that expired in October, and the invoice stands at 4,120.) Deciding whether an email is a dispute is a narrow job a smaller model does well.</p>
           <p>An agent is a loop, and every turn costs a request. Four shapes, from cheapest:</p>
         </div>
         <div class="tbl-wrap"><table class="tbl">
@@ -48,7 +48,7 @@
           <tbody>
             <tr><td>One request</td><td>Nobody: there is one</td><td>Classifiers, extraction</td><td><a href="https://pydantic.dev/docs/ai/core-concepts/direct/"><code>pydantic_ai.direct</code></a>, or an agent without tools</td></tr>
             <tr><td>An agent</td><td>The model</td><td>Looking things up and reacting</td><td><code>Agent</code></td></tr>
-            <tr><td>A workflow</td><td>Your code, which you can test</td><td>Steps you already know</td><td>Plain Python calling agents; <a href="https://pydantic.dev/docs/ai/graph/graph/">graphs</a> when you need state machines</td></tr>
+            <tr><td>A workflow (steps your code runs in order)</td><td>Your code, which you can test</td><td>Steps you already know</td><td>Plain Python calling agents; <a href="https://pydantic.dev/docs/ai/graph/graph/">graphs</a> when you need state machines</td></tr>
             <tr><td>An agent that delegates</td><td>The parent model</td><td>Self-contained sub-tasks with their own context</td><td>A tool that runs another agent; <a href="https://pydantic.dev/docs/ai/harness/subagents/"><code>SubAgents</code></a></td></tr>
           </tbody>
         </table></div>
@@ -59,7 +59,7 @@
     output_type=ToolOutput(DisputeCheck),
     tools=[read_email],
 )
-LIMITS = UsageLimits(request_limit=8)  # your cost ceiling for one email, for the whole tree
+LIMITS = UsageLimits(request_limit=8)  # your request limit for one email, for the whole tree
 
 collections = Agent(
     &#x27;anthropic:claude-sonnet-5-5&#x27;,
@@ -74,7 +74,7 @@ collections = Agent(
 async def check_for_dispute(ctx: RunContext[Deps], email_id: str) -&gt; DisputeCheck:
     &quot;&quot;&quot;Ask the dispute classifier about an email.&quot;&quot;&quot;
     ask = f&#x27;Does email {email_id} dispute one of our invoices?&#x27;
-    result = await classifier.run(ask, deps=ctx.deps, usage=ctx.usage, usage_limits=LIMITS)  # one count, one ceiling
+    result = await classifier.run(ask, deps=ctx.deps, usage=ctx.usage, usage_limits=LIMITS)  # one shared total, one limit
     return result.output</pre></div>
       </section>
 
@@ -110,7 +110,7 @@ async def check_for_dispute(ctx: RunContext[Deps], email_id: str) -&gt; DisputeC
           </div>
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix: one line</p>
-            <p class="measure">Pass <code>usage=ctx.usage</code>, and the delegate counts on the parent's total: the limit sees every request in the tree. Pass the same <code>usage_limits=</code> too, so the delegate stops itself mid-run instead of when control comes back. <code>SubAgents</code> does both.</p>
+            <p class="measure">Pass <code>usage=ctx.usage</code>, and the second agent's requests are added to the parent's total: the limit sees every request from both agents. Pass the same <code>usage_limits=</code> too, so the delegate stops itself mid-run instead of when control comes back. <code>SubAgents</code> does both.</p>
             <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>with usage=ctx.usage   : stopped: The next request would exceed the request_limit of 8</pre></div>
             <p class="source"><b>Offline, deterministic.</b> Stand-in models for both agents; the counting is Pydantic AI 2.68's real behavior. <code>SubAgents</code> forwards usage by default.</p>
             <div class="tok-says"><div class="tk" data-tok="12" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>My teammate and I share one budget now. When it runs out, we both stop.</p></div></div>
@@ -122,7 +122,7 @@ async def check_for_dispute(ctx: RunContext[Deps], email_id: str) -&gt; DisputeC
       <section id="handoff">
         <h2>Handing off to a person</h2>
         <div class="prose measure">
-          <p>A handoff doesn't need another agent. Make it an output type: the run ends with an <code>Escalation</code>, and your code routes it to the billing team's queue. Your code decides what happens next, and tests can check it.</p>
+          <p>Handing a case to a person doesn't need another agent. Make it an output type: the run ends with an <code>Escalation</code>, and your code routes it to the billing team's queue. Your code decides what happens next, and tests can check it.</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch7_multi.py" data-run="uv run code/part2/ch7_multi.py"><div class="code-head"><span class="file">code/part2/ch7_multi.py, a handoff as output</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">class Escalation(BaseModel):
     &quot;&quot;&quot;Hand this email to a person on the billing team.&quot;&quot;&quot;
