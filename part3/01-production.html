@@ -177,7 +177,7 @@ Monday 09:15: approved
               <tr><td>A budget longer than a run</td><td><code>SpendLimits</code> (Harness), with a shared store across workers, or Gateway spending caps.</td></tr>
               <tr><td>A provider outage</td><td>Retry transient errors with one retry owner and a small budget; fall back with <code>ModelFallback</code> when it stays down.</td></tr>
               <tr><td>Which tenant was this?</td><td><code>metadata={...}</code> on <code>run()</code> lands on the run span.</td></tr>
-              <tr><td>What did it see?</td><td><code>logfire.configure()</code> plus <code>logfire.instrument_pydantic_ai()</code>. Prompts are recorded by default; <code>include_content=False</code> keeps them out.</td></tr>
+              <tr><td>What did it see?</td><td><code>logfire.configure()</code> plus <code>logfire.instrument_pydantic_ai()</code>, as in <a href="../part2/01-from-idea-to-code.html#xray">Part 2 chapter 1</a>. Prompts are recorded by default; <code>include_content=False</code> keeps them out.</td></tr>
             </tbody>
           </table>
         </div>

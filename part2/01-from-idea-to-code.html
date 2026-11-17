@@ -174,6 +174,21 @@ tool result: &#x27;From: dana@example.com\n\nHi, INV-2041 will be paid this Frid
         </article>
       </section>
 
+      <section id="xray">
+        <h2>X-ray your agent</h2>
+        <div class="prose measure">
+          <p>Printing the page works for one request. For every run of a real agent, turn on Logfire, Pydantic's observability platform, before the agent's first run. Two lines:</p>
+        </div>
+        <div class="code" data-lines="30" data-src="code/part2/ch1_from_idea_to_code.py" data-run="uv run code/part2/ch1_from_idea_to_code.py"><div class="code-head"><span class="file">Two lines at the top of ch1_from_idea_to_code.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">import logfire
+
+logfire.configure(send_to_logfire=&#x27;if-token-present&#x27;, console=False)  # no token: nothing sent, nothing printed
+logfire.instrument_pydantic_ai()  # from here on, every agent run is a trace in Logfire</pre></div>
+        <div class="prose measure">
+          <p>Each run then becomes a trace you can open in Logfire. For every request it shows the page the model got: the instructions, the tool definitions and the message history. Below that come each tool call with its arguments and result, any retries, and the tokens and cost of each request. That is the page from Part 1, for every run, without adding print statements.</p>
+          <p>With <code>send_to_logfire='if-token-present'</code>, nothing is sent until there is a write token for your Logfire project: <code>LOGFIRE_TOKEN</code>, or the <code>.logfire</code> folder that <code>uvx logfire-cli wizard --task pydantic-ai</code> sets up. Without one, the course examples run offline as before. The later chapters each say what to look for in their run.</p>
+        </div>
+      </section>
+
       <section id="migrate">
         <h2>Moving an existing LLM call over</h2>
         <div class="prose measure">
@@ -185,7 +200,7 @@ tool result: &#x27;From: dana@example.com\n\nHi, INV-2041 will be paid this Frid
       <section id="now">
         <div class="rule">
           <p class="eyebrow">What you can do now</p>
-          <p>Print what your agent's model receives on one request, and read it top to bottom. Every rule your team relies on should be on that page, or enforced in code.</p>
+          <p>Print what your agent's model receives on one request, and read it top to bottom. Every rule your team relies on should be on that page, or enforced in code. Then turn on Logfire, so you can read that page for every run.</p>
         </div>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>
@@ -194,6 +209,7 @@ tool result: &#x27;From: dana@example.com\n\nHi, INV-2041 will be paid this Frid
             <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/tools/">Function tools</a></li>
             <li><a href="https://pydantic.dev/docs/ai/core-concepts/output/">Output</a></li>
             <li><a href="https://pydantic.dev/docs/ai/comparisons/migrate-from-other-frameworks/">Migrating to Pydantic AI</a></li>
+            <li><a href="https://pydantic.dev/docs/ai/integrations/logfire/">Observability with Logfire</a></li>
           </ul>
         </div>
         <p class="small muted measure">About API keys: <code>Agent('anthropic:...')</code> asks for an Anthropic API key when it is created, even if it never calls Anthropic. The course code sets a fake placeholder key, so the offline examples run without a real one. A real request to Anthropic needs your own key.</p>

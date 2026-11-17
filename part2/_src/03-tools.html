@@ -83,6 +83,7 @@ runtime: 8
         <div class="rule">
           <p class="eyebrow">What you can do now</p>
           <p>Gate every writing tool with <code>requires_approval</code> or <code>prepare</code>, key every write on <code>ctx.tool_call_id</code>, and say on the page why a tool is gone. Sort your tools' failures into <code>ModelRetry</code>, <code>ToolFailed</code> and normal answers.</p>
+          <p class="see-lf"><b>See it in Logfire.</b> Each request lists the tool definitions the model was offered, so you can see the request where <code>mark_paid</code> was gone. A call waiting for approval ends the run with no tool result; a <code>ModelRetry</code> shows as an extra request carrying your error text.</p>
         </div>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>

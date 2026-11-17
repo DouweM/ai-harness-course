@@ -7,6 +7,13 @@ Run: uv run code/part2/ch1_from_idea_to_code.py
 
 import _offline  # noqa: F401  (placeholder API keys; nothing is sent)
 
+# --8<-- [start:xray]
+import logfire
+
+logfire.configure(send_to_logfire='if-token-present', console=False)  # no token: nothing sent, nothing printed
+logfire.instrument_pydantic_ai()  # from here on, every agent run is a trace in Logfire
+# --8<-- [end:xray]
+
 # --8<-- [start:agent]
 from dataclasses import dataclass
 from datetime import date
