@@ -167,17 +167,20 @@
   var pageKey = (function () {
     var m = here.match(/((?:part\d|workshop|templates|reference)\/[^\/]+\.html)$/);
     if (m) return m[1];
+    // the deployed site serves clean URLs (no .html)
+    m = here.match(/((?:part\d|workshop|templates|reference)\/[^\/.]+)$/);
+    if (m && !body.getAttribute('data-path')) return m[1] + '.html';
     return body.getAttribute('data-path') || 'index.html';
   })();
   var chapterIndex = -1;
   CHAPTERS.forEach(function (c, i) { if (c.path === pageKey) chapterIndex = i; });
   var chapter = chapterIndex >= 0 ? CHAPTERS[chapterIndex] : null;
-  // what 'Ask your agent' is about: this chapter, or this reference page
-  var askTarget = chapter || REFERENCE.filter(function (r) { return r.path === pageKey; })[0] || null;
   if (!chapter && PAGE === 'chapter') {
     // a page not in the manifest yet: describe it from its own attributes
     chapter = { path: pageKey, part: +(body.getAttribute('data-part') || 0), n: +(body.getAttribute('data-n') || 0), title: body.getAttribute('data-title') || document.title, min: +(body.getAttribute('data-runtime') || 0), evolve: 0, ask: [] };
   }
+  // what 'Ask your agent' is about: this chapter, or this reference page
+  var askTarget = chapter || REFERENCE.filter(function (r) { return r.path === pageKey; })[0] || null;
   var depth = (pageKey.match(/\//g) || []).length;
   var ROOT = depth ? new Array(depth + 1).join('../') : './';
   function href(path) { return ROOT + path; }
