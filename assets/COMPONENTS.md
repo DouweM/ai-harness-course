@@ -12,7 +12,7 @@ match v3's, so moving a v3 component over mostly means deleting the page-specifi
 - `<body data-page="chapter">` (`home` for `index.html`, `workshop` for workshop pages). `data-title`,
   `data-part`, `data-n`, `data-runtime` on `<body>` are only a fallback for pages not in the manifest.
 - `<header class="topbar" data-auto></header>`: course.js fills it in (brand, Tok, part crumb, score,
-  ask-your-agent, chapters, talk mode, theme). Don't hand-build the top bar.
+  chapters, talk mode, theme). Don't hand-build the top bar.
 
 ## Layout
 
@@ -134,9 +134,32 @@ in `code/`.
 
 ## Ask your agent
 
-Automatic: a top-bar button and an end-of-chapter card copy a prompt naming the chapter and its path in the repo
-and pointing the agent at `AGENTS.md`. Follow-ups come from the manifest; override per page with
+Automatic on chapter and reference pages. Two entry points, one dialog:
+
+- **The fixed button** (`#askFab`, bottom-right): icon plus "Ask your agent" from 640px up, icon only (with an
+  `aria-label`) on phones. It steps aside while the end-of-chapter card, the previous/next links, the footer or
+  the telemetry note is on screen, hides in talk mode and in print, and, where the page column runs under it,
+  tucks away while you scroll down and comes back on any scroll up. It is the only top-of-mind entry; there is no
+  top-bar button.
+- **The end-of-chapter card** (`.ask-card`), appended to `[data-chapter-end]`.
+
+The dialog has an optional free-text box ("What's confusing, or what do you want to do?") and starting-point
+chips; both go into the copied prompt, which names the page, links it and the course repo, and points the agent
+at `AGENTS.md`. Chips come from the manifest; override per page with
 `<ul class="ask-followups" hidden><li>...</li></ul>`.
+
+## The end of a chapter: three things, three looks
+
+The bottom of a chapter carries three different things, and each has its own look so none passes for another:
+
+| Component | Job | Look |
+|---|---|---|
+| `.evolve` (from `data-evolve`) | Tok's evolution: what this chapter turns Tok into | Tok drawing, accent tint (`--surface-tint`), accent-tinted border. The only end component with Tok and the accent. |
+| `.ask-card` | Reach for help: copy a prompt for your coding agent | Neutral: dashed border, `--bg-alt` fill, a plain speech-bubble icon, no Tok, no accent. |
+| `.chapter-nav` | Go to the previous or next chapter | Plain bordered link cards: no fill, muted direction label, title underlines on hover. |
+
+Mid-chapter, `.tok-says` (Tok speaking, `--model-tint`) also uses the Tok drawing; that is Tok's voice, the same
+character as `.evolve`. Don't put Tok or the accent tint on anything that isn't Tok.
 
 ## Talk mode
 

@@ -172,6 +172,8 @@
   var chapterIndex = -1;
   CHAPTERS.forEach(function (c, i) { if (c.path === pageKey) chapterIndex = i; });
   var chapter = chapterIndex >= 0 ? CHAPTERS[chapterIndex] : null;
+  // what 'Ask your agent' is about: this chapter, or this reference page
+  var askTarget = chapter || REFERENCE.filter(function (r) { return r.path === pageKey; })[0] || null;
   if (!chapter && PAGE === 'chapter') {
     // a page not in the manifest yet: describe it from its own attributes
     chapter = { path: pageKey, part: +(body.getAttribute('data-part') || 0), n: +(body.getAttribute('data-n') || 0), title: body.getAttribute('data-title') || document.title, min: +(body.getAttribute('data-runtime') || 0), evolve: 0, ask: [] };
@@ -342,8 +344,7 @@
         '<button class="mini-tok" id="miniTok" type="button" aria-label="Tok, as you see it now. Tap to hear from it."><span data-tok="current" data-crop="wide"></span></button>' +
         crumb + '<span class="spacer"></span>' +
         '<span class="score" id="score" aria-live="polite" hidden></span>' +
-        (PAGE === 'chapter' ? '<button class="iconbtn ask" id="askBtn" type="button" title="Copy a prompt for your coding agent about this chapter">' + ICON.ask + '<span class="btn-label">Ask your agent</span></button>' : '') +
-        '<button class="iconbtn" id="contentsBtn" type="button" aria-haspopup="dialog" title="All chapters">' + ICON.list + '<span class="sr-only">All chapters</span></button>' +
+                '<button class="iconbtn" id="contentsBtn" type="button" aria-haspopup="dialog" title="All chapters">' + ICON.list + '<span class="sr-only">All chapters</span></button>' +
         '<button class="iconbtn" id="talkBtn" type="button" aria-pressed="false" title="Talk mode (P)">' + ICON.talk + '<span class="sr-only">Talk mode</span></button>' +
         '<button class="iconbtn" id="themeBtn" type="button" aria-label="Switch theme">' + ICON.theme + '<span class="sr-only" id="themeLabel">Auto</span></button>' +
         '</div>';
@@ -405,7 +406,7 @@
     if (!end) return;
     if (!$('.ask-card')) {
       var ask = document.createElement('aside'); ask.className = 'ask-card';
-      ask.innerHTML = '<div class="tk" data-tok="current" data-crop="face" data-mood="curious" aria-hidden="true"></div><div><p class="eyebrow"><span class="dia"></span>Ask your agent</p><p>Open your coding agent in this repo and paste a prompt about this chapter: go deeper, map it onto your own agent, or run its code.</p><button class="btn ghost" type="button" data-ask>Copy a prompt for your agent</button></div>';
+      ask.innerHTML = '<div class="ask-ico" aria-hidden="true">' + ICON.ask + '</div><div><p class="ask-h">Stuck, or want to go further?</p><p>Copy a prompt about this chapter for your coding agent: ask what confused you, go deeper, map it onto your own agent, or run its code.</p><button class="btn ghost" type="button" data-ask>Copy a prompt for your agent</button></div>';
       end.appendChild(ask);
     }
     if (!$('.chapter-nav')) {
@@ -853,40 +854,58 @@
   /* ======================================================================
      Ask your agent
      ====================================================================== */
-  function askPrompt(followup) {
-    var online = SITE_URL ? ' (' + SITE_URL.replace(/\/$/, '') + '/' + chapter.path.replace(/\.html$/, '') + ')' : '';
-    var repo = REPO_URL ? ' The course repo is ' + REPO_URL + ': if you are not already in a clone of it, clone it first (or read its files on GitHub), since the chapter\'s code and notes live there.' : '';
-    var head = 'I\'m reading the chapter "' + chapter.title + '"' + online + ' of the course "Harness engineering with Pydantic AI".' + repo + ' Read AGENTS.md first, then ' + chapter.path + ', then ';
-    if (followup) return head + 'help me with this: ' + followup;
-    return head + 'help me go deeper on it. Start by asking me whether I want to (1) go deeper on a concept, (2) map the chapter onto my own agent\'s code, or (3) run the chapter\'s code from code/. Don\'t change my code unless I ask.';
+  function askPrompt(followup, note) {
+    var t = askTarget, kind = chapter ? 'chapter' : 'reference page';
+    var online = SITE_URL ? ' (' + SITE_URL.replace(/\/$/, '') + '/' + t.path.replace(/\.html$/, '') + ')' : '';
+    var repo = REPO_URL ? ' The course repo is ' + REPO_URL + ': if you are not already in a clone of it, clone it first (or read its files on GitHub), since the code and notes live there.' : '';
+    var head = 'I\'m reading the ' + kind + ' "' + t.title + '"' + online + ' of the course "Harness engineering with Pydantic AI".' + repo + ' Read AGENTS.md first, then ' + t.path + ', then ';
+    note = (note || '').trim();
+    var mine = note ? '\n\nIn my own words: ' + note : '';
+    if (followup) return head + 'help me with this: ' + followup + mine;
+    if (note) return head + 'help me with what I describe below. Don\'t change my code unless I ask.' + mine;
+    return head + 'help me go deeper on it. Start by asking me whether I want to (1) go deeper on a concept, (2) map it onto my own agent\'s code, or (3) run its code from code/. Don\'t change my code unless I ask.';
   }
-  function openAsk() {
-    if (!chapter) return;
+  function lenBucket(n) { return n === 0 ? '0' : n < 40 ? '1-39' : n < 120 ? '40-119' : n < 400 ? '120-399' : '400+'; }
+  function openAsk(e) {
+    if (!askTarget) return;
     var dlg = $('#askDialog');
     if (!dlg) {
       dlg = document.createElement('dialog'); dlg.id = 'askDialog'; dlg.className = 'ask-dialog'; dlg.setAttribute('aria-labelledby', 'askTitle');
       var extra = $$('.ask-followups li').map(function (li) { return li.textContent.trim(); });
-      var ups = extra.length ? extra : (chapter.ask || []);
-      dlg.innerHTML = '<div class="dlg"><h2 id="askTitle">Ask your agent about this chapter</h2>' +
-        '<p class="hint">Copy this and paste it into Claude Code, Codex, Cursor or any coding agent. The prompt links this chapter and the course repo, so it works even if you haven\'t cloned anything; the agent reads <code>AGENTS.md</code>, which tells it how to help and not to rewrite your code unasked.</p>' +
-        '<div class="chips" role="group" aria-label="Pick a follow-up"><button class="chip" type="button" data-up="" aria-pressed="true">Let it ask me what I want: go deeper, map it to my agent, or run the code</button>' +
-        ups.map(function (u) { return '<button class="chip" type="button" data-up="' + esc(u) + '" aria-pressed="false">' + esc(u) + '</button>'; }).join('') + '</div>' +
-        '<label class="sr-only" for="askText">Prompt</label><textarea id="askText" readonly></textarea>' +
+      var ups = extra.length ? extra : ((chapter && chapter.ask) || []);
+      dlg.innerHTML = '<div class="dlg"><h2 id="askTitle">Ask your agent about this ' + (chapter ? 'chapter' : 'page') + '</h2>' +
+        '<p class="hint">Paste the prompt into Claude Code, Codex, Cursor or any coding agent. It links this page and the course repo, so it works without a clone; the agent reads <code>AGENTS.md</code>, which tells it how to help and not to rewrite your code unasked.</p>' +
+        '<label class="ask-note-label" for="askNote">What\'s confusing, or what do you want to do? <span class="muted">Optional</span></label><textarea id="askNote" rows="2" placeholder="In your own words; it goes into the prompt"></textarea>' +
+        '<p class="ask-note-label">Pick a starting point</p>' +
+        '<div class="chips" role="group" aria-label="Pick a starting point"><button class="chip" type="button" data-up="" data-up-i="0" aria-pressed="true">Let it ask me what I want: go deeper, map it to my agent, or run the code</button>' +
+        ups.map(function (u, i) { return '<button class="chip" type="button" data-up="' + esc(u) + '" data-up-i="' + (i + 1) + '" aria-pressed="false">' + esc(u) + '</button>'; }).join('') + '</div>' +
+        '<label class="ask-note-label" for="askText">The prompt</label><textarea id="askText" readonly></textarea>' +
         '<div class="dlg-actions"><span class="hint" id="askStatus" aria-live="polite"></span><button class="btn ghost" type="button" data-close>Close</button><button class="btn" type="button" id="askCopy">Copy prompt</button></div></div>';
       body.appendChild(dlg);
       var cur = '';
-      function setUp(u) { cur = u; $('#askText', dlg).value = askPrompt(u); $$('.chip', dlg).forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-up') === u ? 'true' : 'false'); }); }
+      function render() { $('#askText', dlg).value = askPrompt(cur, $('#askNote', dlg).value); }
+      $('#askNote', dlg).addEventListener('input', render);
+      function setUp(u) { cur = u; render(); $$('.chip', dlg).forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-up') === u ? 'true' : 'false'); }); }
       $$('.chip', dlg).forEach(function (c) { c.addEventListener('click', function () { setUp(c.getAttribute('data-up')); doCopy(); }); });
-      function doCopy() { copyText($('#askText', dlg).value, function (ok) { $('#askStatus', dlg).textContent = ok ? 'Copied. Paste it into your agent.' : 'Select the text and copy it.'; if (!ok) $('#askText', dlg).select(); }); }
+      function doCopy() {
+        var pressed = $('.chip[aria-pressed="true"]', dlg), n = $('#askNote', dlg).value.trim().length;
+        dlg.dataset.copied = '1';
+        // for telemetry: which starting point and whether the box was used, never the text
+        document.dispatchEvent(new CustomEvent('course:ask', { detail: { action: 'copy', followup: pressed ? +pressed.getAttribute('data-up-i') : 0, has_text: n > 0, text_len: lenBucket(n) } }));
+        copyText($('#askText', dlg).value, function (ok) { $('#askStatus', dlg).textContent = ok ? 'Copied. Paste it into your agent.' : 'Select the text and copy it.'; if (!ok) $('#askText', dlg).select(); }); }
       $('#askCopy', dlg).addEventListener('click', doCopy);
       $('[data-close]', dlg).addEventListener('click', function () { dlg.close ? dlg.close() : dlg.removeAttribute('open'); });
       dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+      dlg.addEventListener('close', function () {
+        if (!dlg.dataset.copied) { var n = $('#askNote', dlg).value.trim().length; document.dispatchEvent(new CustomEvent('course:ask', { detail: { action: 'close_without_copy', has_text: n > 0, text_len: lenBucket(n) } })); }
+      });
       dlg._set = setUp;
     }
     dlg._set('');
+    dlg.dataset.copied = '';
     $('#askStatus', dlg).textContent = '';
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
-    copyText($('#askText', dlg).value, function (ok) { if (ok) $('#askStatus', dlg).textContent = 'Copied. Paste it into your agent, or pick a sharper question.'; });
+    $('#askNote', dlg).focus();
   }
 
   /* ======================================================================
@@ -1059,7 +1078,47 @@
   on('#nextBtn', 'click', function () { step(1); });
   on('#stepBtn', 'click', function () { if (!revealStep()) step(1); });
   on('#notesBtn', 'click', function () { setNotes(!state.notes); });
-  on('#askBtn', 'click', openAsk);
+  if (askTarget && !$('#askFab')) {
+    // 'Ask your agent', always reachable: fixed bottom-right; steps aside where it would cover the page's end matter
+    var fab = document.createElement('button'); fab.type = 'button'; fab.id = 'askFab'; fab.className = 'ask-fab'; fab.setAttribute('data-ask-sticky', '');
+    fab.setAttribute('aria-label', 'Ask your coding agent about this page');
+    fab.innerHTML = ICON.ask + '<span class="fab-label">Ask your agent</span>';
+    fab.addEventListener('click', openAsk);
+    body.appendChild(fab);
+    if ('IntersectionObserver' in window) {
+      var near = new Set();
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) near.add(e.target); else near.delete(e.target); });
+        fab.classList.toggle('away', near.size > 0);
+      });
+      var watch = function () { $$('.ask-card, .chapter-nav, body > footer, footer.site, .lf-note, [data-lf-note]').forEach(function (el) { if (!el._fabWatched) { el._fabWatched = 1; io.observe(el); } }); };
+      watch(); setTimeout(watch, 1500); setTimeout(watch, 4000);
+    }
+    // where the page column runs under the button (phones, narrow windows), tuck it away while scrolling down and bring it back on any scroll up
+    var lastY = window.scrollY;
+    window.addEventListener('scroll', function () {
+      var y = window.scrollY, col = $('main .wrap') || $('main'), fr = fab.getBoundingClientRect();
+      var overlaps = col && col.getBoundingClientRect().right > fr.left - 8;
+      if (!overlaps || y < 120) fab.classList.remove('tucked');
+      else if (y > lastY + 6) fab.classList.add('tucked');
+      else if (y < lastY - 6) fab.classList.remove('tucked');
+      if (Math.abs(y - lastY) > 6) lastY = y;
+      clearTimeout(fab._rest); fab._rest = setTimeout(checkUnder, 120);
+    }, { passive: true });
+    // never sit on top of a control: when the scroll comes to rest with a button, link or field under it, step aside
+    var CTRL = 'button, a[href], input, textarea, select, summary, [role="button"], [tabindex]:not([tabindex="-1"])';
+    function checkUnder() {
+      var r = fab.getBoundingClientRect(), m = 6, hit = false;
+      $$(CTRL).some(function (el) {
+        if (el === fab || fab.contains(el) || el.closest('dialog:not([open]), [hidden]')) return false;
+        var q = el.getBoundingClientRect();
+        if (!q.width || !q.height || q.bottom < r.top - m || q.top > r.bottom + m || q.right < r.left - m || q.left > r.right + m) return false;
+        return (hit = !el.checkVisibility || el.checkVisibility({ visibilityProperty: true, opacityProperty: true }));
+      });
+      fab.classList.toggle('blocked', hit);
+    }
+    window.addEventListener('resize', checkUnder); setTimeout(checkUnder, 300);
+  }
   $$('[data-ask]').forEach(function (b) { b.addEventListener('click', openAsk); });
   $$('[data-talk-start]').forEach(function (b) { b.addEventListener('click', function () { setTalk(true); }); });
   var contents = $('#contents');
