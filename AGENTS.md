@@ -34,7 +34,7 @@ If the prompt doesn't say which, ask. Keep answers short and concrete; these rea
 | --- | --- |
 | `index.html` | Home: what a harness is, the loop (design, build, measure), the parts and chapters, runtimes. |
 | `part1/` | How the model sees the world. No framework code; transcripts, predictions, simulators. |
-| `part2/` | Building it with Pydantic AI. One collections agent grows through Dana's week (Tue 17 to Sat 21 Nov), in the order its request is built; Part 3 imports it. |
+| `part2/` | Building it with Pydantic AI. One billing agent grows through Dana's week (Tue 17 to Sat 21 Nov), in the order its request is built; Part 3 imports it. |
 | `part3/` | Production, and measuring what works: durability, models, evals, probes. |
 | `code/part2/`, `code/part3/`, `code/reference/` | Every snippet shown on the pages, runnable. `verify.py` in each runs them all offline. |
 | `knowledge/` | One short note per key concept, with links into the docs. Read the ones the chapter maps to. |

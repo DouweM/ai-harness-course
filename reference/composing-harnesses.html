@@ -231,7 +231,7 @@ Coder(sub_agents=False, repo_context=False):
     <section id="your-own">
       <h2>Your own harness, as a composition</h2>
       <div class="prose measure">
-        <p>Part 2's collections agent, packaged the way <code>Coder</code> is: a <code>CombinedCapability</code> whose parts are the billing world from <a href="../part2/06-capabilities.html">chapter 6</a>, a model setting, a history policy and an audit hook. Each part is one kind of contribution, and each flag is a swap.</p>
+        <p>Part 2's billing agent, packaged the way <code>Coder</code> is: a <code>CombinedCapability</code> whose parts are the billing world from <a href="../part2/06-capabilities.html">chapter 6</a>, a model setting, a history policy and an audit hook. Each part is one kind of contribution, and each flag is a swap.</p>
       </div>
 <div class="code" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, the collections harness</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import AbstractCapability, CombinedCapability
 from pydantic_ai_harness.compaction import ClearToolResults
@@ -316,7 +316,7 @@ reminders:
 </table>
       </div>
       <div class="prose measure">
-        <p>A dispute classifier as a sub-agent of the collections agent. It wears the same billing world, so it reads Dana's email through the parent's deps:</p>
+        <p>A dispute classifier as a sub-agent of the billing agent. It wears the same billing world, so it reads Dana's email through the parent's deps:</p>
       </div>
 <div class="code" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, a sub-agent in the same world</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai_harness.subagents import SubAgent, SubAgents
 

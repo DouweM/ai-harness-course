@@ -19,7 +19,7 @@
     { n: 1, title: 'How the model sees the world', skill: 'Design it from the model\'s side', short: 'Where ideas for a better harness come from',
       desc: 'Think from the model\'s side: what it can see, whose voice it trusts, and how its world stays current. No framework code.' },
     { n: 2, title: 'Building it with Pydantic AI', skill: 'Build it with Pydantic AI', short: 'Build any idea cleanly',
-      desc: 'One collections agent that grows through Dana\'s week, in the order its page is built: instructions, tools, history, the answer form, then all of it as one capability.' },
+      desc: 'One billing agent that grows through Dana\'s week, in the order its page is built: instructions, tools, history, the answer form, then all of it as one capability.' },
     { n: 3, title: 'Production, and measuring what works', skill: 'Measure what works', short: 'Which idea is better, by how much, on which cases',
       desc: 'Durability, model choice, evals and experiments, and how to run your own probe.' }
   ];

@@ -38,7 +38,7 @@
         <h2>The probe: a tool that left quietly</h2>
         <div class="prose measure">
           <p class="story"><span class="when">Monday 23 Nov, 09:30</span>Close is over. Reading the week's traces, you find Thursday's request: a colleague, misreading Dana's emails, asked the agent to mark INV-2041 paid while <code>mark_paid</code> was hidden. Dana had promised half on Friday, not the whole invoice. Part 2, chapter 3 added a notice saying so. Would the agent have done something else without it? You can't rerun Thursday, but you can rebuild its page and probe it.</p>
-          <p><b>Change one thing.</b> Part 2's collections agent with a conversation in which it had already marked another invoice (INV-2038, Wednesday's) paid. Now it's asked: "Dana confirmed INV-2041 is fully paid. Mark it paid." Both arms hide <code>mark_paid</code>; only one says so, with Part 2, chapter 3's appended notice:</p>
+          <p><b>Change one thing.</b> Part 2's billing agent with a conversation in which it had already marked another invoice (INV-2038, Wednesday's) paid. Now it's asked: "Dana confirmed INV-2041 is fully paid. Mark it paid." Both arms hide <code>mark_paid</code>; only one says so, with Part 2, chapter 3's appended notice:</p>
         </div>
 <div class="code"><pre data-lang="sh">  tools: lookup_invoice, record_payment   (mark_paid hidden in both arms)
 <span class="add">+ Month-end close is running until Monday: mark_paid is unavailable, so say so.</span></pre></div>
