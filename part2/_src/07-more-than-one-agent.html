@@ -26,19 +26,22 @@ runtime: 6
         <h2>Smallest shape first</h2>
         <aside class="notes"><p>The point: pick the smallest shape; when you delegate, return typed facts and share usage. The prediction: a cost limit that never sees the delegate's retries.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Friday 20 Nov, 14:15</span>"Also, the amount on INV-2041 looks wrong to us: we were quoted 3,900. Dana." A dispute, the customer saying the invoice is wrong, changes everything after it: no reminder, no recorded promise, and a person on the billing team takes over. (That person replies on Monday: 3,900 was a quote that expired in October, and the invoice stands at 4,120.) Deciding whether an email is a dispute is a narrow job a smaller model does well.</p>
-          <p>An agent is a loop, and every turn costs a request. Four shapes, from cheapest:</p>
+          <p class="story">"The amount on INV-2041 looks wrong: we were quoted 3,900." A dispute stops reminders and promises, then routes the case to a person. Classifying the email is a narrow job for a smaller model.</p>
+          <p>An agent is a loop; each turn costs a request. Four shapes, from cheapest:</p>
         </div>
         <div class="tbl-wrap"><table class="tbl">
           <thead><tr><th>Shape</th><th>Who decides the steps</th><th>Use it for</th><th>In Pydantic AI</th></tr></thead>
           <tbody>
-            <tr><td>One request</td><td>Nobody: there is one</td><td>Classifiers, extraction</td><td><a href="https://pydantic.dev/docs/ai/core-concepts/direct/"><code>pydantic_ai.direct</code></a>, or an agent without tools</td></tr>
+            <tr><td>One request</td><td>Nobody</td><td>Classifiers, extraction</td><td><a href="https://pydantic.dev/docs/ai/core-concepts/direct/"><code>pydantic_ai.direct</code></a>, or an agent without tools</td></tr>
             <tr><td>An agent</td><td>The model</td><td>Looking things up and reacting</td><td><code>Agent</code></td></tr>
-            <tr><td>A workflow (steps your code runs in order)</td><td>Your code, which you can test</td><td>Steps you already know</td><td>Plain Python calling agents; <a href="https://pydantic.dev/docs/ai/graph/graph/">graphs</a> when you need state machines</td></tr>
+            <tr><td>A workflow (ordered steps your code runs)</td><td>Your testable code</td><td>Known steps</td><td>Plain Python calling agents; <a href="https://pydantic.dev/docs/ai/graph/graph/">graphs</a> for state machines</td></tr>
             <tr><td>An agent that delegates</td><td>The parent model</td><td>Self-contained sub-tasks with their own context</td><td>A tool that runs another agent; <a href="https://pydantic.dev/docs/ai/harness/subagents/"><code>SubAgents</code></a></td></tr>
           </tbody>
         </table></div>
         {{code ch7_multi.py delegate_core "The classifier, and the tool that calls it, from ch7_multi.py"}}
+        <div class="prose measure">
+          <p>When the coordination itself is the work (check ten emails at once, keep the ones that found something, summarize those), one tool call per step is slow and fills the parent's context. The harness's <a href="https://pydantic.dev/docs/ai/harness/dynamic-workflow/"><code>DynamicWorkflow</code></a> gives the model one tool instead: it writes a short Python script that calls your sub-agents as functions, the script runs in the Monty sandbox, and only what it returns reaches the parent. Start with <code>SubAgents</code> if you're not sure.</p>
+        </div>
       </section>
 
       <section id="budget">
@@ -56,11 +59,11 @@ runtime: 6
             <div class="pz-ask">
               <p class="q">That's 13 requests in all. What happens?</p>
               <div class="choices" role="radiogroup" aria-label="Your prediction">
-                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>It stops at 8: limits cover the whole run</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>It finishes: the limit only counts the parent's requests</span></button>
-                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>The classifier raises, since it has no limit</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Stops at 8: limit covers the whole run</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Finishes: limit counts only parent requests</span></button>
+                <button class="choice" role="radio" aria-checked="false" data-choice="c" type="button"><span class="key">C</span><span>Classifier raises: it has no limit</span></button>
               </div>
-              <p class="room-hint">Room: hands up for A, B, C. Then press R.</p>
+              <p class="room-hint">Hands up for A, B, or C, then press R.</p>
               <div class="pz-actions"><button class="btn reveal" type="button" disabled>Pick an answer first</button><button class="linkbtn skip np" type="button">Skip and show me</button></div>
               <p class="verdict" aria-live="polite" hidden></p>
             </div>
@@ -69,13 +72,13 @@ runtime: 6
             <p class="eyebrow"><span class="dia"></span>What happened</p>
             <p class="headline">It finished. The limit counted 5 requests; 13 were sent.</p>
             {{out ch7_multi 1-1}}
-            <p class="measure">Each agent run counts its own usage. Without <code>usage=</code>, the classifier's 8 requests happened in runs of their own, invisible to the parent's limit. A delegate stuck retrying, or a model that keeps delegating, runs up a bill your ceiling never sees.</p>
+            <p class="measure">Each agent run counts its own usage. Without <code>usage=</code>, the classifier's 8 requests are invisible to the parent's limit. Retries or repeated delegation can exceed the parent's cost limit.</p>
           </div>
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix: one line</p>
-            <p class="measure">Pass <code>usage=ctx.usage</code>, and the second agent's requests are added to the parent's total: the limit sees every request from both agents. Pass the same <code>usage_limits=</code> too, so the delegate stops itself mid-run instead of when control comes back. <code>SubAgents</code> does both.</p>
+            <p class="measure">Pass <code>usage=ctx.usage</code> to add the delegate's requests to the parent's total. Also pass <code>usage_limits=</code> so the delegate stops when it reaches the limit. <code>SubAgents</code> does both.</p>
             {{out ch7_multi 2-2}}
-            <p class="source"><b>Offline, deterministic.</b> Stand-in models for both agents; the counting is Pydantic AI 2.68's real behavior. <code>SubAgents</code> forwards usage by default.</p>
+            <p class="source"><b>Offline, deterministic.</b> Stand-in models; request counting uses Pydantic AI 2.68. <code>SubAgents</code> forwards usage by default.</p>
             <div class="tok-says"><div class="tk" data-tok="12" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>My teammate and I share one budget now. When it runs out, we both stop.</p></div></div>
           </div>
           <aside class="notes"><p>Expect A. The answer is B. One line fixes it: usage=ctx.usage.</p></aside>
@@ -85,7 +88,7 @@ runtime: 6
       <section id="handoff">
         <h2>Handing off to a person</h2>
         <div class="prose measure">
-          <p>Handing a case to a person doesn't need another agent. Make it an output type: the run ends with an <code>Escalation</code>, and your code routes it to the billing team's queue. Your code decides what happens next, and tests can check it.</p>
+          <p>Hand off a case with an output type: the run returns an <code>Escalation</code>, and your code routes it to the billing team's queue. Your code controls what happens next, and tests can check it.</p>
         </div>
         {{code ch7_multi.py handoff "code/part2/ch7_multi.py, a handoff as output" keys="class Escalation|ToolOutput\(Escalation"}}
       </section>
@@ -93,8 +96,8 @@ runtime: 6
       <section id="now">
         <div class="rule">
           <p class="eyebrow">What you can do now</p>
-          <p>Find every place one of your agents runs another. Give each delegate a typed output, <code>usage=ctx.usage</code> and the outer run's <code>usage_limits=</code>.</p>
-          <p class="see-lf"><b>See it in Logfire.</b> A delegate's run shows up nested inside the tool call that started it, with its own requests and tokens, so you can see what each agent spent.</p>
+          <p>Find where agents run other agents. Give each delegate a typed output, <code>usage=ctx.usage</code>, and the outer run's <code>usage_limits=</code>.</p>
+          <p class="see-lf"><b>See it in Logfire.</b> The nested delegate run shows its requests and tokens.</p>
         </div>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>

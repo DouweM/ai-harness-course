@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Production architectures · Harness engineering</title>
-<meta name="description" content="A production agent run dies with its process; the stored conversation outlives it. Decide what a crash costs, let waiting end the run, make every write safe to repeat, and put every run on a trace.">
+<meta name="description" content="Production agent runs, stored conversations, safe retries, approvals, durable execution, and traces.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
@@ -20,7 +20,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 3 &middot; Production, and measuring what works</p>
         <h1>Production architectures</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">An agent run lives in your server's memory, so when the server stops or restarts, the run stops too; the saved conversation is what survives. <b>So a run that waits for a person ends and starts again later, every write is safe to repeat, and every run leaves a trace (a record of its model requests and tool calls).</b></p>
+        <p class="point">An agent run lives in server memory and stops when the server stops. The saved conversation survives. <b>A run waiting for a person ends and starts again later, every write is safe to repeat, and every run leaves a trace (a record of its model requests and tool calls).</b></p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -35,10 +35,10 @@
     <div class="wrap" data-chapter-end>
 
       <section id="week">
-        <h2>One payment request, Friday to Monday</h2>
+        <h2>One payment request</h2>
         <div class="prose measure">
-          <p class="story"><span class="when">Friday 20 Nov, 17:40</span>The bank confirms the first half of Dana's wire, sent that morning. Part 2's billing agent asks to record 2,060.00 against INV-2041, and <code>record_payment</code> needs a person (Part 2, chapter 6). Nobody approves until Monday. Over the weekend the ledger has an outage and you deploy.</p>
-          <p>Two questions decide how it runs. <b>How does the run begin, and who is waiting?</b> The bank's confirmation, and nobody: it is a job on the task queue you already run. <b>What does a crash cost?</b> Two model requests and one payment written with an idempotency key (an id sent with the write, so the ledger ignores a repeat of the same request). Starting again is fine, so this agent needs no durable engine: a system that saves each finished step and resumes from there after a crash. An engine pays off when runs are long or a side effect can't be safely repeated (the DBOS version below). Step through the week:</p>
+          <p class="story">The bank confirms the first half of Dana's wire. Part 2's billing agent asks to record 2,060.00 against INV-2041, and <code>record_payment</code> needs a person (Part 2, chapter 6). Meanwhile, the ledger has an outage and you deploy.</p>
+          <p><b>How does the run begin, and who is waiting?</b> The bank's confirmation starts a job on your task queue; nobody waits on the run. <b>What does a crash cost?</b> Two model requests and one payment written with an idempotency key (an id sent with the write, so the ledger ignores a repeat of the same request). Starting again is fine, so this agent needs no durable engine: a system that saves each finished step and resumes from there after a crash. An engine helps when runs are long or a side effect cannot be safely repeated (see the DBOS version below). Step through:</p>
         </div>
         <div class="arch" data-arch data-stop>
           <div class="arch-lanes">
@@ -60,7 +60,7 @@
               <div class="anode" data-s="7">same key again: recorded once</div></div>
             <div class="lane"><p class="lane-h">Person</p>
               <div class="anode" data-s="4">sees the pending call in your app</div>
-              <div class="anode" data-s="5">approves on Monday</div></div>
+              <div class="anode" data-s="5">approves</div></div>
             <div class="lane"><p class="lane-h">Logfire</p>
               <div class="anode span" data-s="2 6 8">chat: tokens, cost</div>
               <div class="anode span" data-s="6 8">execute_tool record_payment: args, result</div>
@@ -69,49 +69,49 @@
           <p class="arch-cap" aria-live="polite"></p>
           <div class="arch-ctl"><button class="arch-prev" type="button" aria-label="Previous step">&larr;</button><button class="arch-next" type="button">Next step &rarr;</button><span class="arch-count"></span></div>
           <script type="application/json">[
-            {"t": "Friday 17:40.", "c": "The bank's confirmation arrives and your app queues a job. Nobody is waiting on it, so no request holds the run."},
+            {"t": "The bank confirms the wire.", "c": "Your app queues a job. Nobody is waiting on it, so no request holds the run."},
             {"t": "The model asks to record the payment.", "c": "One model request. If the process died here, the job would start again: one cheap request repeated, nothing written yet."},
             {"t": "Waiting ends the run.", "c": "The tool needs approval, so the run ends with <code>DeferredToolRequests</code> and you store its <code>Conversation</code>. The trace already shows the run with your metadata."},
-            {"t": "Saturday and Sunday.", "c": "Nothing is running. The ledger is down for an hour, you deploy, the cluster scales to zero: there is no process to lose."},
-            {"t": "Monday 09:15.", "c": "A person approves in your app. Authenticate that request: an approval guards against the model, not against your caller."},
+            {"t": "Nothing is running.", "c": "The ledger is down, you deploy, and the cluster scales to zero: there is no process to lose."},
+            {"t": "A person approves.", "c": "Authenticate the request: an approval guards against the model, not against your caller."},
             {"t": "The run continues.", "c": "A new run takes the stored conversation and the decision, executes <code>record_payment</code> with the tool call ID as its idempotency key, and the model writes its reply."},
-            {"t": "The process dies mid-write.", "c": "Monday's run starts again from the stored conversation and the same approval, so the call comes back with the same tool call ID. The ledger sees the key and records once."},
-            {"t": "Afterwards.", "c": "Every model request, tool call and approval is on a trace, filterable by your tenant and agent version. That trace is where chapter 3's eval cases come from."}
+            {"t": "The process dies mid-write.", "c": "The run starts again from the stored conversation and approval, so the call has the same tool call ID. The ledger sees the key and records once."},
+            {"t": "Every run leaves a trace.", "c": "Model requests, tool calls and approvals are filterable by tenant and agent version. Use the trace to build chapter 3's eval cases."}
           ]</script>
         </div>
-        <p class="fine">This design needs only a stored <code>Conversation</code>. On a durable engine such as DBOS, the steps in dashed boxes are also saved as they finish, so a crash inside a run picks up from the last finished step instead of starting again.</p>
+        <p class="fine">This design needs only a stored <code>Conversation</code>. A durable engine such as DBOS also saves each dashed step, so a crash resumes from the last finished step.</p>
         <aside class="notes"><p>Click through the eight steps. Land three things: waiting ends the run, the write is keyed on something a retry cannot change, everything is on a trace.</p></aside>
       </section>
 
       <section id="outage">
-        <h2>If the ledger were still down on Monday</h2>
+        <h2>If the ledger is still down</h2>
         <div class="prose measure">
-          <p>Part 2 chapter 3 sorted tool errors into the model's mistake (<code>ModelRetry</code>), your outage (<code>ToolFailed</code>) and a normal answer. Production is where the middle one earns its keep: an approval that lands during an outage must not turn into "recorded" in the reply drafted for Dana.</p>
+          <p>Part 2 chapter 3 sorted tool errors into the model's mistake (<code>ModelRetry</code>), your outage (<code>ToolFailed</code>) and a normal answer. In production, an approval during an outage must not turn into "recorded" in Dana's reply.</p>
         </div>
         <div class="code"><div class="code-head"><span class="file">uv run code/part3/ch1_weekend.py, the outage</span></div><pre data-lang="sh">Monday, ledger still down (what would happen): Tool said: {&quot;error&quot;:&quot;Nothing was recorded: the ledger is unavailable. Tell the customer it will be recorded later.&quot;}
   payments recorded: []</pre></div>
-        <p class="fine"><code>ToolFailed</code> records the call as failed in history and on the trace without using the retry budget; a returned string would count as a success on every dashboard.</p>
+        <p class="fine"><code>ToolFailed</code> marks the call failed in history and on the trace without using the retry budget. A returned string looks successful on dashboards.</p>
       </section>
 
       <section id="twice">
         <h2>Every write safe to repeat</h2>
         <div class="transcript" aria-label="What happened">
-          <div class="tr-title">// the run, then a crash</div>
-          <div class="msg call"><span class="who">model, Friday</span><div class="body mono">record_payment(INV-2041, 2060.00) &middot; id call_fri_1740</div></div>
-          <div class="msg note"><span class="who">person, Monday</span><div class="body">Approved.</div></div>
+        <div class="tr-title">// the run, then a crash</div>
+          <div class="msg call"><span class="who">model</span><div class="body mono">record_payment(INV-2041, 2060.00) &middot; id call_fri_1740</div></div>
+          <div class="msg note"><span class="who">person</span><div class="body">Approved.</div></div>
           <div class="msg tool"><span class="who">ledger</span><div class="body">Recorded 2060.00 on INV-2041.</div></div>
-          <div class="msg note"><span class="who">process</span><div class="body">Killed before the result was saved. Monday's run starts again from the stored conversation and the same approval, so <code>call_fri_1740</code> runs again with the same arguments.</div></div>
+          <div class="msg note"><span class="who">process</span><div class="body">Killed before the result was saved. The run restarts from the stored conversation and approval, so <code>call_fri_1740</code> runs again with the same arguments.</div></div>
         </div>
         <div class="prose measure">
-          <p><b>The tool runs twice; the ledger holds one payment.</b> The replayed call has the same tool call ID, so the ledger returns its first answer. Nothing can roll back a call to someone else's API, and without a key the ledger can't tell a replay from a new payment. The ID comes back unchanged because it is part of what you resume from (the stored conversation here, the journal on DBOS), so <code>ctx.tool_call_id</code> is the natural key for a write the run resumes into.</p>
-          <p><b>A retry that starts the run over is different:</b> the model is asked again and picks a new tool call ID, so the key can't catch the repeat. For writes made inside the first run, like the small-payments policy below, key on something a retry can't change, such as the bank's wire reference.</p>
+          <p><b>The tool runs twice; the ledger holds one payment.</b> The replayed call has the same tool call ID, so the ledger returns its first answer. A call to another API cannot be rolled back, and without a key the ledger cannot distinguish a replay from a new payment. The ID stays the same because it is part of the resumed state (the stored conversation here, the DBOS journal), making <code>ctx.tool_call_id</code> a natural key for resumed writes.</p>
+          <p><b>A retry that starts the run over is different:</b> the model is asked again and picks a new tool call ID, so the key cannot catch the repeat. For writes inside the first run, such as the small-payments policy below, use a key that a retry cannot change, such as the bank's wire reference.</p>
         </div>
         <div class="code"><pre data-lang="sh">Monday 09:15, approved: Tool said: Recorded 2060.00 on INV-2041.
   crash, same call again: tool ran twice, payments recorded: [(&#x27;INV-2041&#x27;, Decimal(&#x27;2060.00&#x27;))]</pre></div>
         <p class="source"><b>Run it:</b> <code>uv run code/part3/ch1_weekend.py</code>. Deterministic, no model calls. The idempotency key is Part 2's <code>ctx.tool_call_id</code> in <code>billing_world.py</code>.</p>
         <div class="deeper measure">
           <p class="eyebrow">Go deeper: where the steps are, and a ledger that takes no key</p>
-          <p>With <code>DBOSDurability</code>, each model request and each MCP call is a journaled step: a crash replays finished steps from the journal and re-runs only what was in flight, which is why the model's tool call, and its ID, come back unchanged. Your own function tools are not steps unless you mark the I/O they do: a <code>@DBOS.step</code> function your tool calls with plain arguments (the invoice number, the amount, the key), rather than the tool itself, so a finished call isn't repeated on recovery; and keep deps serializable. The step that was in flight when the process died can still run twice, so every write needs the key. If your system of record takes no idempotency key, keep one on your side: a table keyed on <code>tool_call_id</code>, written in the same transaction as your own record of the payment, and checked before calling out. A call that reached the other system but never got recorded on yours still needs a reconciliation job; no key fixes a write you can't see.</p>
+          <p>With <code>DBOSDurability</code>, each model request and MCP call is a journaled step. After a crash, finished steps replay from the journal and only the in-flight step runs again; the model's tool call and ID stay unchanged. Your function tools are not steps unless you mark their I/O: call a <code>@DBOS.step</code> function with plain arguments (invoice number, amount, key), rather than wrapping the tool, so finished work is not repeated on recovery. Keep deps serializable. The in-flight step can still run twice, so every write needs a key. If your system of record accepts no idempotency key, keep one in your own table keyed on <code>tool_call_id</code>, write it in the same transaction as your payment record, and check it before calling out. If the other system receives a call that your table misses, a reconciliation job is still needed; no key fixes an unseen write.</p>
           <p>Between starting again and an engine, <a href="https://pydantic.dev/docs/ai/harness/step-persistence/"><code>StepPersistence</code></a> (Harness) snapshots the history at each tool-call boundary and records which tool calls may have run, so you can continue a crashed run without an engine.</p>
         </div>
         <div class="tok-says"><div class="tk" data-tok="current" data-crop="face" data-mood="unsure" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>I asked once. If your ledger heard me twice, that's between you and your ledger.</p></div></div>
@@ -121,7 +121,7 @@
       <section id="approvals">
         <h2>Waiting ends the run</h2>
         <div class="prose measure">
-          <p>Part 2 built the waiting: the run ends with <code>DeferredToolRequests</code>, you store the <code>Conversation</code>, and a new run continues it with the person's decision. Production adds two things. When only some calls need a person, the cleanest gate is conditional: register an <code>args_validator=</code> that raises <code>ApprovalRequired()</code> only for amounts over 1,000, so small payments never become a question and bad arguments never reach anyone. When something else answers approvals in process (a policy, a bot, a second model), <code>HandleDeferredToolCalls</code> runs it inside the run, so a person only sees the ones that need a person:</p>
+          <p>Part 2 established the waiting pattern: the run ends with <code>DeferredToolRequests</code>, you store the <code>Conversation</code>, and a new run continues with the person's decision. Production adds two options. To require approval only for some calls, register an <code>args_validator=</code> that raises <code>ApprovalRequired()</code> for amounts over 1,000; small payments proceed, and invalid arguments stop before approval. To handle other approvals in process (with a policy, bot, or second model), use <code>HandleDeferredToolCalls</code>; a person sees only the calls that need them:</p>
         </div>
         <div class="code" data-src="code/part3/ch1_weekend.py" data-run="uv run code/part3/ch1_weekend.py">
           <div class="code-head"><span class="file">code/part3/ch1_weekend.py, a policy</span></div>
@@ -134,9 +134,9 @@ collections.run(..., capabilities=[HandleDeferredToolCalls(small_amounts)])</pre
         </div>
         <div class="code"><pre data-lang="sh">  INV-2057 980.00: approved by the policy  payments: [(&#x27;INV-2057&#x27;, Decimal(&#x27;980.00&#x27;))]
   INV-2041 2060.00: waits for a person  payments: []</pre></div>
-        <div class="prose measure"><p>When a crash would cost more than a rerun, or the workflow itself should hold the wait, put the run on a durable engine. It journals each model request and tool call, so a crash anywhere replays what finished:</p></div>
+        <div class="prose measure"><p>Use a durable engine when a crash costs more than a rerun or the workflow must hold the wait. It journals model requests and tool calls, then replays finished steps after a crash:</p></div>
         <details class="deeper" open><summary>The durable version (DBOS)</summary>
-          <p>The docs' end-to-end service, without the HTTP routes and runnable offline. The workflow itself waits up to a week for the decision; on restart DBOS replays what finished. Temporal, Prefect and Pydantic AI Harness's Postgres engines (Absurd, pgtask) attach the same way, as a capability; Restate wraps the agent in its own class. A policy handler without a resume token isn't journaled, so it reruns on replay. A deploy changes what in-flight runs replay against: let them drain, or follow the engine's versioning guidance.</p>
+          <p>This is the docs' end-to-end service without HTTP routes, runnable offline. The workflow waits up to a week for a decision; after restart, DBOS replays finished steps. Temporal, Prefect and Pydantic AI Harness's Postgres engines (Absurd, pgtask) attach as capabilities; Restate wraps the agent in its own class. A policy handler without a resume token is not journaled and reruns on replay. Deploys change the code used by in-flight runs: let them drain or follow the engine's versioning guidance.</p>
           <div class="code" data-src="code/part3/ch1_durable.py" data-run="uv run code/part3/ch1_durable.py"><pre data-lang="py">@DBOS.workflow()
 async def collections_run(prompt: str) -&gt; str:
     result = await agent.run(prompt)
@@ -158,7 +158,7 @@ async def collections_run(prompt: str) -&gt; str:
 
       <section id="bounds">
         <h2>Bounded, and on a trace</h2>
-        <div class="prose measure"><p>Two lines of setup, and the weekend is one trace (a record of each model request and tool call) per run: Friday's with your metadata, Monday's continuing the same conversation, and the replayed write with its key.</p></div>
+        <div class="prose measure"><p>Two setup lines give each run a trace (a record of each model request and tool call), with your metadata, continued conversation and replayed write key.</p></div>
         <div class="code"><div class="code-head"><span class="file">uv run code/part3/ch1_observability.py, the span tree</span></div><pre data-lang="sh">Friday 17:40: the bank confirms the first half
   invoke_agent collections  metadata={&#x27;tenant&#x27;: &#x27;t_042&#x27;, &#x27;agent_version&#x27;: &#x27;collections-2026-11-20&#x27;}
     chat stand-in
@@ -168,7 +168,7 @@ Monday 09:15: approved
   invoke_agent collections  continues the stored conversation
     execute_tool record_payment  {&quot;invoice_number&quot;:&quot;INV-2041&quot;,&quot;amount&quot;:&quot;2060.00&quot;}  id=call_fri_1740
     chat stand-in</pre></div>
-        <p class="source"><b>Offline, deterministic.</b> Real spans from <code>logfire.instrument_pydantic_ai()</code>, sent to an in-memory exporter; with <code>logfire.configure()</code> the same tree is in Logfire, with tokens and cost on each <code>chat</code> span.</p>
+        <p class="source"><b>Offline, deterministic.</b> Real spans from <code>logfire.instrument_pydantic_ai()</code> go to an in-memory exporter. With <code>logfire.configure()</code>, Logfire shows the same tree, with tokens and cost on each <code>chat</code> span.</p>
         <div class="p3-scroll">
           <table class="p3-table">
             <thead><tr><th>Concern</th><th>What to use</th></tr></thead>

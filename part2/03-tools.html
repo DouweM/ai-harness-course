@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tools · Harness engineering</title>
-<meta name="description" content="The model decides whether to call a tool; your code decides which tools a request offers, which need a person, and what the model hears back. Hiding a tool is a real gate, but on its own the model can&#x27;t say why. One appended line can.">
+<meta name="description" content="The model decides whether to call a tool; your code decides which tools a request offers, which need approval, and what the model hears back.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
@@ -23,7 +23,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
         <h1>Tools</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">The model decides whether to call a tool. <b>Your code decides which tools a request offers, which ones wait for a person, and what the model hears back.</b> If your code takes a tool away without saying why, the model is left guessing.</p>
+        <p class="point">The model decides whether to call a tool. <b>Your code decides which tools a request offers, which wait for approval, and what the model hears back.</b> Explain when a tool is unavailable.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -40,8 +40,8 @@
         <h2>Three rules for tools: when they're offered, who approves, what errors say</h2>
         <aside class="notes"><p>The point: three decisions in code, one line each. Then the gate that holds but says nothing, and the one line that fixes it on the same page.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Thursday 19 Nov, 09:00</span><a href="../reference/the-example.html">Month-end close</a> starts: the finance team freezes the books until Monday. Looking invoices up is always fine. Marking one paid needs a person's approval, and during close it isn't allowed at all. (Recording money that arrived, <code>record_payment</code>, gets its own approval in chapter 6.)</p>
-          <p>Each rule is about one line of code: <code>prepare=</code> decides per request whether a tool is offered, <code>requires_approval=True</code> turns a call into a question for a person, <code>ModelRetry</code> turns a bad argument into feedback, and <code>ctx.tool_call_id</code> makes the write safe to retry.</p>
+          <p class="story"><a href="../reference/the-example.html">Month-end close</a> freezes the books. Invoice lookups are always allowed; marking an invoice paid needs approval and is unavailable during close. Recording received money with <code>record_payment</code> gets its own approval in chapter 6.</p>
+          <p>Four one-line rules: <code>prepare=</code> decides whether to offer a tool, <code>requires_approval=True</code> requests human approval, <code>ModelRetry</code> returns bad arguments as feedback, and <code>ctx.tool_call_id</code> makes writes safe to retry.</p>
         </div>
         <p class="talk-only headline">Offered or not: <code>prepare</code>. Runs or waits: <code>requires_approval</code>. Talks back: <code>ModelRetry</code>.</p>
         <div class="code" data-lines="30" data-src="code/part2/ch3_tools.py" data-run="uv run code/part2/ch3_tools.py"><div class="code-head"><span class="file">The agent and its three rules, from ch3_tools.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">agent = Agent(
@@ -74,20 +74,20 @@ async def mark_paid(ctx: RunContext[Deps], invoice_number: str) -&gt; str:
 
       <section id="hidden">
         <h2>The tool that left</h2>
-        <div class="prose measure"><p>Thursday, during close, a colleague who misread Dana's Tuesday email asks the agent to mark INV-2041 paid. The model used <code>mark_paid</code> on Wednesday, for another invoice, so it tries again. Step through what happens.</p></div>
-        <div class="viz seq" data-stop data-intro="Thursday, month-end close is running, so mark_paid is hidden from the model. The model remembers using it on Wednesday and tries again. Step through what happens, first without a word about close, then with one line added.">
+        <div class="prose measure"><p>During close, a colleague asks the agent to mark INV-2041 paid. The model has used <code>mark_paid</code> before, so it tries again. Step through what happens.</p></div>
+        <div class="viz seq" data-stop data-intro="Month-end close is running, so mark_paid is hidden from the model. It tries the tool again. Step through what happens, first without an explanation, then with one line added.">
           <ol class="seq-steps">
-            <li data-caption="The model calls mark_paid, as it did on Wednesday." data-mood="curious" data-say="I used mark_paid on Wednesday. Let me do that again."><span class="ico">1</span><div><span class="who">model &rarr; tool call</span><pre>mark_paid({"invoice_number": "INV-2041"})</pre></div></li>
-            <li class="bad" data-caption="Your code didn't offer mark_paid on this request, so Pydantic AI sends back an unknown-tool error. Nothing is written." data-mood="unsure" data-say="Unknown? It worked on Wednesday. Did I misspell it?"><span class="ico">&times;</span><div><span class="who">back to the model: your code didn't offer it</span><pre>model reads: {&quot;error&quot;:&quot;Unknown tool name: &#x27;mark_paid&#x27;. Available tools: &#x27;lookup_invoice&#x27;&quot;}</pre></div></li>
-            <li class="bad" data-caption="The model doesn't know why the tool is gone, so its reply, which the app will send Dana, says to try again later: wrong all of Thursday and Friday." data-mood="worried" data-say="I'll say it failed. I don't know why, or when it's back."><span class="ico">2</span><div><span class="who">the reply drafted for Dana</span><pre>model says:  I wasn&#x27;t able to mark INV-2041 as paid. Please try again later.</pre></div></li>
-            <li data-caption="Now add one line to the instructions, appended when close starts, that says close is running and mark_paid is unavailable." data-mood="curious" data-say="Oh, there's a line on my page now."><span class="ico">+</span><div><span class="who">add one line, appended when close starts</span><pre>Month-end close is running until Monday: mark_paid is unavailable, so say so.</pre></div></li>
-            <li class="good" data-caption="With that line on its page, the model tells Dana the truth: close is running until Monday." data-mood="happy" data-say="Close is running. I can say exactly that."><span class="ico">&check;</span><div><span class="who">the reply drafted for Dana now</span><pre>model says:  Month-end close is running, so I can mark INV-2041 paid on Monday.</pre></div></li>
+            <li data-caption="The model calls mark_paid again." data-mood="curious" data-say="I used mark_paid before. Let me do that again."><span class="ico">1</span><div><span class="who">model &rarr; tool call</span><pre>mark_paid({"invoice_number": "INV-2041"})</pre></div></li>
+            <li class="bad" data-caption="Your code didn't offer mark_paid on this request, so Pydantic AI sends back an unknown-tool error. Nothing is written." data-mood="unsure" data-say="Unknown? It worked before. Did I misspell it?"><span class="ico">&times;</span><div><span class="who">back to the model: your code didn't offer it</span><pre>model reads: {&quot;error&quot;:&quot;Unknown tool name: &#x27;mark_paid&#x27;. Available tools: &#x27;lookup_invoice&#x27;&quot;}</pre></div></li>
+            <li class="bad" data-caption="The model does not know why the tool is gone, so its reply tells Dana to try again later." data-mood="worried" data-say="I'll say it failed. I don't know why, or when it's back."><span class="ico">2</span><div><span class="who">the reply drafted for Dana</span><pre>model says:  I wasn&#x27;t able to mark INV-2041 as paid. Please try again later.</pre></div></li>
+            <li data-caption="Append one line to the instructions explaining that close is running and mark_paid is unavailable." data-mood="curious" data-say="Oh, there's a line on my page now."><span class="ico">+</span><div><span class="who">add one line when close starts</span><pre>Month-end close is running: mark_paid is unavailable, so say so.</pre></div></li>
+            <li class="good" data-caption="With that line, the model tells Dana that close is running." data-mood="happy" data-say="Close is running. I can say exactly that."><span class="ico">&check;</span><div><span class="who">the reply drafted for Dana now</span><pre>model says:  Month-end close is running, so I can mark INV-2041 paid on Monday.</pre></div></li>
           </ol>
           <div class="btn-row"></div>
           <div class="viz-tok seq-tok"><span data-tok="8" data-crop="face"></span><p class="seq-say" aria-live="polite"></p></div>
         </div>
         <div class="prose measure">
-          <p>Nothing was written either time, because the tool wasn't offered (ledger writes: []). What changed is what the model could tell the customer. "Please try again later" is wrong on Thursday and Friday, so Dana is told to try again. This is Part 1 chapter 2's tool that was removed without a word: none of 80 conversations noticed on their own, and one line saying so fixed it on most models. When the tool is hidden and nobody says so, models may also reach for a different tool to get the same result: <a href="../part3/04-run-your-own-probe.html">Part 3, chapter 4</a> probes it.</p>
+          <p>Nothing was written either time because the tool was not offered (ledger writes: []). The difference is what the model tells Dana: without an explanation, it says to try again. In Part 1 chapter 2, none of 80 conversations noticed a silently removed tool; one explanatory line fixed this for most models. Models may also use another tool to get the same result when one is hidden without explanation: <a href="../part3/04-run-your-own-probe.html">Part 3, chapter 4</a> probes this.</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch3_tools.py" data-run="uv run code/part2/ch3_tools.py"><div class="code-head"><span class="file">code/part2/ch3_tools.py, the line · pydantic-ai 2.59+</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">@agent.instructions(name=&#x27;close&#x27;, on_change=&#x27;append&#x27;)  # say why, on the page, when it changes
 def close_notice(ctx: RunContext[Deps]) -&gt; str | None:
@@ -100,7 +100,7 @@ def close_notice(ctx: RunContext[Deps]) -&gt; str | None:
       <section id="approval">
         <h2>A person approves the call first</h2>
         <div class="prose measure">
-          <p>With <code>requires_approval=True</code> the tool never runs on the model's say-so. The run ends with <code>DeferredToolRequests</code> as its output, listing the calls that wait. Nothing keeps running while it waits: your app stores the conversation (chapter 4), shows the request to a person, and when they answer, minutes or days later, starts a new run with the stored conversation and <code>deferred_tool_results=</code>. Chapter 8 shows how a frontend renders it, and Part 3 how it survives a weekend.</p>
+          <p>With <code>requires_approval=True</code>, the tool cannot run without approval. The run ends with <code>DeferredToolRequests</code>, listing pending calls. Your app stores the conversation (chapter 4), shows the request to a person, then starts a new run with the stored conversation and <code>deferred_tool_results=</code>. Chapter 8 covers frontend rendering; Part 3 covers durability.</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch3_tools.py" data-run="uv run code/part2/ch3_tools.py"><div class="code-head"><span class="file">code/part2/ch3_tools.py, a call that waits</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">def asks_to_mark_paid(messages: list[ModelMessage], info: AgentInfo) -&gt; ModelResponse:
     return ModelResponse(parts=[ToolCallPart(&#x27;mark_paid&#x27;, {&#x27;invoice_number&#x27;: &#x27;INV-2041&#x27;}, tool_call_id=&#x27;call_1&#x27;)])
@@ -119,7 +119,7 @@ ledger writes: []</pre></div>
 
       <section id="errors">
         <h2>Errors that say who has to fix it</h2>
-        <div class="prose measure"><p>Friday, Dana wires the first half. Recording it can fail three ways, and the model needs to know which, because it decides what to tell her:</p></div>
+        <div class="prose measure"><p>Recording Dana's payment can fail in three ways. The model needs to know which one to decide what to tell her:</p></div>
         <div class="tbl-wrap"><table class="tbl">
           <thead><tr><th>What went wrong</th><th>Raise</th><th>What the model does</th></tr></thead>
           <tbody>
@@ -146,14 +146,21 @@ async def record_payment(ctx: RunContext[Deps], invoice_number: str, amount: Dec
         raise ToolFailed(&#x27;Nothing was recorded: the ledger is unavailable. Tell the customer it will be recorded later.&#x27;)</pre></div>
         <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>ledger up  : success Recorded 2060.00 on INV-2041.
 ledger down: failed  {&quot;error&quot;:&quot;Nothing was recorded: the ledger is unavailable. Tell the cu</pre></div>
-        <p class="measure">Returning <code>"error: ledger down"</code> as a string is the old way: the model may still say it worked, and your monitoring counts the call as a success, because the function returned normally.</p>
+        <p class="measure">If you return <code>"error: ledger down"</code> as a string, the model may say the payment succeeded and monitoring counts the call as successful because the function returned normally.</p>
+      </section>
+
+      <section id="native">
+        <h2>Use the provider's own tool when there is one</h2>
+        <div class="prose measure">
+          <p>For web search, fetching a page or running code, providers run <b>native tools</b> on their side, and their models are trained to use them. Prefer those to writing your own. In Pydantic AI they are native tools such as <code>WebSearchTool</code> and <code>CodeExecutionTool</code>; the <code>WebSearch</code> and <code>WebFetch</code> capabilities use the native tool where the provider has one and a local version elsewhere. <a href="https://pydantic.dev/docs/ai/tools-toolsets/native-tools/">Native tools</a>.</p>
+        </div>
       </section>
 
       <section id="now">
         <div class="rule">
           <p class="eyebrow">What you can do now</p>
-          <p>Gate every writing tool with <code>requires_approval</code> or <code>prepare</code>, key every write on <code>ctx.tool_call_id</code>, and say on the page why a tool is gone. Sort your tools' failures into <code>ModelRetry</code>, <code>ToolFailed</code> and normal answers.</p>
-          <p class="see-lf"><b>See it in Logfire.</b> Each request lists the tool definitions the model was offered, so you can see the request where <code>mark_paid</code> was gone. A call waiting for approval ends the run with no tool result; a <code>ModelRetry</code> shows as an extra request carrying your error text.</p>
+          <p>Gate writing tools with <code>requires_approval</code> or <code>prepare</code>, key writes on <code>ctx.tool_call_id</code>, explain unavailable tools, and classify failures as <code>ModelRetry</code>, <code>ToolFailed</code>, or normal answers.</p>
+          <p class="see-lf"><b>See it in Logfire.</b> Each request lists offered tool definitions, including when <code>mark_paid</code> is missing. Approval ends the run without a tool result; <code>ModelRetry</code> adds a request with your error text.</p>
         </div>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>
@@ -164,7 +171,7 @@ ledger down: failed  {&quot;error&quot;:&quot;Nothing was recorded: the ledger i
             <li><a href="https://pydantic.dev/docs/ai/tools-toolsets/toolsets/">Toolsets</a> and <a href="https://pydantic.dev/docs/ai/capabilities/mcp/">MCP</a></li>
           </ul>
         </div>
-        <p class="small muted measure">Small print: a <code>ModelRetry</code> counts against the tool's retry budget (1 by default); <code>ToolFailed</code> doesn't, so bound repeats with usage limits. Toolsets group tools you reuse, filter or swap as one unit; an MCP server's tools reach the model exactly like yours.</p>
+        <p class="small muted measure">A <code>ModelRetry</code> uses the tool's retry budget (1 by default); <code>ToolFailed</code> does not, so bound repeats with usage limits. Toolsets group tools to reuse, filter, or swap together. MCP server tools reach the model like yours.</p>
       </section>
 
       <div data-evolve="Tok gets a tool belt. One tool has a padlock, and now Tok is told when it's locked."></div>

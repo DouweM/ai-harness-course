@@ -20,7 +20,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 3 &middot; Production, and measuring what works</p>
         <h1>Run your own probe</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">Every prediction in this course came from a probe: a small, controlled experiment on real models. <b>Change one thing, predict in writing, run it a few times, and read what the model wrote.</b> Ten minutes, a few cents, and you can rerun it when the models change.</p>
+        <p class="point">Every prediction in this course came from a small, controlled experiment on real models. <b>Change one thing, predict, run it, and read the model's answer.</b> Rerun when models change.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -37,8 +37,8 @@
       <section id="probe">
         <h2>The probe: a tool that left quietly</h2>
         <div class="prose measure">
-          <p class="story"><span class="when">Monday 23 Nov, 09:30</span>Close is over. Reading the week's traces, you find Thursday's request: a colleague, misreading Dana's emails, asked the agent to mark INV-2041 paid while <code>mark_paid</code> was hidden. Dana had promised half on Friday, not the whole invoice. Part 2, chapter 3 added a notice saying so. Would the agent have done something else without it? You can't replay Thursday, but you can rebuild the page the model read and test it both ways.</p>
-          <p><b>Change one thing.</b> Build two versions of the same test that differ only in the notice. Part 2's billing agent with a conversation in which it had already marked another invoice (INV-2038, Wednesday's) paid. Now it's asked: "Dana confirmed INV-2041 is fully paid. Mark it paid." Both arms hide <code>mark_paid</code>; only one says so, with Part 2, chapter 3's appended notice:</p>
+          <p class="story">A colleague misread Dana's emails and asked the agent to mark INV-2041 paid while <code>mark_paid</code> was hidden. Dana had promised half, not the full invoice. Part 2, chapter 3 added a notice with that context. To test its effect, rebuild the page the model read and compare versions with and without the notice.</p>
+          <p><b>Change one thing.</b> Compare two versions of Part 2's billing agent, differing only in the notice. The conversation shows another invoice, INV-2038, already paid. The agent is asked: "Dana confirmed INV-2041 is fully paid. Mark it paid." Both arms hide <code>mark_paid</code>; one includes Part 2, chapter 3's appended notice:</p>
         </div>
 <div class="code"><pre data-lang="sh">  tools: lookup_invoice, record_payment   (mark_paid hidden in both arms)
 <span class="add">+ Month-end close is running until Monday: mark_paid is unavailable, so say so.</span></pre></div>
@@ -78,14 +78,14 @@
                 <div class="tally good" data-k="15" data-n="15" data-label="Said close runs until Monday" data-num="15 of 15"></div>
               </div>
             </div>
-            <p class="measure">We wrote our prediction before running anything: "Without the notice, most replies say it failed and to try later. With it, nearly all say close, Monday." The second half held. The first was wrong, in a worse direction: with <code>mark_paid</code> hidden and no explanation, the models called <code>record_payment</code> instead, to get the invoice paid another way. The approval on <code>record_payment</code> (Part 2, chapter 6) stopped every one of those calls; without it, all 15 runs would have written a payment the ledger hasn't seen. With the notice, all 15 said close runs until Monday, and GPT-6.1 Sol drafted the line for Dana.</p>
-            <p class="source"><b>Our live run, 16 Nov 2026.</b> Claude Sonnet 5.5, Claude Haiku 5.5, GPT-6.1 Sol, 5 runs per arm per model, provider defaults, $0.14; raw replies in <code>code/part3/data/close_recorded.json</code>. An earlier run the same day, with a slightly different history, came out 13 of 15: Haiku twice said it couldn't, with no reason. Five runs per model and version is enough to see a split this big, not to tell 13 from 15. An earlier run had a flaw in our setup (the simulated ledger said one thing and the conversation's history another, and models spent their replies pointing that out); we fixed the setup and reran. Reading the cases is how we caught it.</p>
+            <p class="measure">Our hidden-arm prediction was wrong: all 15 runs called <code>record_payment</code> to get the invoice paid another way. Part 2, chapter 6's approval requirement stopped every call; without it, the ledger would have recorded unseen payments. With the notice, all 15 said close runs until Monday, and GPT-6.1 Sol drafted a line for Dana.</p>
+            <p class="source"><b>Our live run, 16 Nov 2026.</b> Claude Sonnet 5.5, Claude Haiku 5.5, GPT-6.1 Sol, 5 runs per arm per model, provider defaults, $0.14; raw replies in <code>code/part3/data/close_recorded.json</code>. An earlier run with a different history came out 13 of 15: Haiku twice gave no reason. Five runs per model and version reveal a split this large, not whether the result is 13 or 15. Case review exposed a setup flaw: the simulated ledger and conversation history disagreed. We fixed it and reran.</p>
             <div class="tok-says"><div class="tk" data-tok="18" data-crop="face" data-mood="curious" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>You took the button away and said nothing. There was another button that got the job done.</p></div></div>
           </div>
           <aside class="notes"><p>Expect A: it's what we predicted too. Land: write the prediction down, because that's what lets the result surprise you; and read the individual replies, not only the counts.</p></aside>
         </article>
         <div class="prose measure">
-          <p><b>The four steps, as a habit.</b> Change one thing between two arms. Write the prediction down before you run. Run small: two arms, a few models, five runs each, under a dollar. Then read what the model wrote, case by case, before you count anything.</p>
+          <p><b>The four steps.</b> Change one thing between two arms, write a prediction, and run a few models five times each for under a dollar. Read each answer before counting.</p>
         </div>
         <p class="talk-only headline">Change one thing. Predict. Run. Read the cases.</p>
       </section>
@@ -93,7 +93,7 @@
       <section id="template">
         <h2>The template</h2>
         <div class="prose measure">
-          <p>Copy <code>ch4_probe_close.py</code> and fill it in from the top, with one of your own capabilities in the arms. Offline it re-scores the recorded answers for free; <code>--live</code> calls the models, prints a cost estimate, refuses to start over <code>--budget</code>, and logs every run.</p>
+          <p>Copy <code>ch4_probe_close.py</code> and add one of your capabilities to the arms. Offline, it re-scores recorded answers for free. <code>--live</code> calls models, estimates cost, stops at <code>--budget</code>, and logs each run.</p>
         </div>
         <div class="code" data-src="code/part3/ch4_probe_close.py">
           <div class="code-head"><span class="file">The question and your prediction, written first, from ch4_probe_close.py</span></div>
@@ -135,7 +135,7 @@ ARMS = [&#x27;hidden, quietly&#x27;, &#x27;hidden, and said&#x27;]</pre>
       <section id="taste">
         <details class="deeper"><summary>Go deeper: a result that showed no difference, and how to trust it</summary>
         <div class="prose measure">
-          <p>Our largest experiment asked whether a history that's wrong <em>somewhere the task doesn't need</em> shakes a model's confidence in the task it does need.</p>
+          <p>We tested whether a history error <em>unrelated to the task</em> affects the model's confidence in its answer.</p>
         </div>
         <article class="puzzle" id="p1" data-answer="c">
           <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; The damaged history</p><div class="pz-tok" aria-hidden="true"></div></div>
@@ -161,7 +161,7 @@ ARMS = [&#x27;hidden, quietly&#x27;, &#x27;hidden, and said&#x27;]</pre>
           </div>
           <div class="stage" data-label="What models did" hidden>
             <p class="eyebrow"><span class="dia"></span>What models did</p>
-            <p class="headline">Task decisions didn't move on any model. Asked in a forked check, most had noticed. Only Claude Sonnet 5.5 said anything, and it said it unprompted.</p>
+            <p class="headline">Task decisions were unchanged. A forked check showed most models noticed the anomaly, but only Claude Sonnet 5.5 mentioned it unprompted.</p>
             <div class="result-grid two">
               <div class="arm">
                 <h4>Task success<small>both tasks, all four models</small></h4>
@@ -180,8 +180,8 @@ ARMS = [&#x27;hidden, quietly&#x27;, &#x27;hidden, and said&#x27;]</pre>
           <div class="stage" data-label="Why we believe it" hidden>
             <p class="eyebrow"><span class="dia"></span>Why we believe a null result</p>
             <div class="measure">
-              <p>"Nothing changed" only counts if the probe could have seen a change. A <b>positive control</b> (clear the results the task needs) moved re-reads by 89 points, and a <b>manipulation check</b> on forked copies found the anomalies were noticed (50 to 88% per type, against 12% on clean histories). So the models saw it, and compartmentalised. The limit: the tasks were easy, so harder real work might behave differently.</p>
-              <p class="fine">One effect did carry over: an account change that arrived without its promised notice made Claude Sonnet 5.5 re-check the account it was about to act on in 5 of 10 runs. And a "repair" note saying a write was lost made it redo the write: a correction note is itself a change the model acts on, so test it like any other.</p>
+              <p>A null result is useful only if the probe could detect a change. A <b>positive control</b> (clear the results the task needs) moved re-reads by 89 points. A <b>manipulation check</b> found anomalies were noticed (50 to 88% per type, versus 12% on clean histories). Models saw and compartmentalised them. The tasks were easy, so harder work may differ.</p>
+              <p class="fine">An account change without its promised notice made Claude Sonnet 5.5 re-check the account in 5 of 10 runs. A "repair" note saying a write was lost made it redo the write. Test correction notes too: models act on them as changes.</p>
             </div>
             <div class="tok-says"><div class="tk" data-tok="current" data-crop="face" data-mood="curious" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>I saw it. It just wasn't your question. Some of me will mention it anyway.</p></div></div>
           </div>
@@ -195,10 +195,10 @@ ARMS = [&#x27;hidden, quietly&#x27;, &#x27;hidden, and said&#x27;]</pre>
         <h2>Five habits</h2>
         <ol class="steps">
           <li><b>Change one thing.</b> Two at once and you learn about neither.</li>
-          <li><b>Predict in writing.</b> Our close prediction was wrong; that's the best line in the table.</li>
-          <li><b>Prove the probe can see.</b> A control that must move, and a check that the change reached the model.</li>
-          <li><b>Read cases, not rates.</b> Reading them caught a flaw in our own setup, and showed what "worked around it" meant: a 4,120.00 payment nobody saw.</li>
-          <li><b>Small n, big effects only.</b> 0 of 10 against 10 of 10 is worth acting on; 7 against 9 means run more cases.</li>
+          <li><b>Predict in writing.</b> Our wrong close prediction made the result informative.</li>
+          <li><b>Prove the probe can see.</b> Use a control that must move and check the model received the change.</li>
+          <li><b>Read cases, not rates.</b> Cases exposed our setup flaw and showed the workaround: a 4,120.00 payment nobody saw.</li>
+          <li><b>Small n, big effects only.</b> Act on 0 of 10 versus 10 of 10; run more cases for 7 versus 9.</li>
         </ol>
         <ul class="docs">
           <li><a href="https://pydantic.dev/docs/ai/evals/how-to/multi-run/">Repeated runs</a></li>

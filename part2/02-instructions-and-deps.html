@@ -40,7 +40,7 @@
         <h2>The date that froze</h2>
         <aside class="notes"><p>The point: facts from your app belong in deps and an instructions function, not in an f-string at import. The stakes: a promise recorded for a Friday that already passed.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Tuesday 17 Nov, 09:02</span>Dana's email arrives, and your billing system asks the agent about it. The agent's prompt was written the obvious way: a Python f-string with today's date, built once when the service starts and imports the file. The service started last Thursday and has been running ever since, so the string still says Thursday.</p>
+          <p class="story">Dana's email asks the billing agent to handle INV-2041. Its prompt is a Python f-string with today's date, built once when the service starts, so the date goes stale while the service runs.</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch2_instructions.py" data-run="uv run code/part2/ch2_instructions.py"><div class="code-head"><span class="file">code/part2/ch2_instructions.py, the obvious way</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic import BaseModel
 
@@ -64,7 +64,7 @@ baked = Agent(
     tools=[read_email],
 )</pre></div>
         <div class="transcript" aria-label="What the model sees">
-          <div class="tr-title">// what the model sees on Tuesday 17 Nov</div>
+          <div class="tr-title">// what the model sees</div>
           <div class="msg sys"><span class="who">instructions</span><div class="body">Decide whether the customer email you are asked about commits to paying us. <mark>Today is Thursday 2026-11-12.</mark></div></div>
           <div class="msg sys"><span class="who">tool definitions</span><div class="body mono">read_email(email_id)</div></div>
           <div class="msg user"><span class="who">user</span><div class="body">New email 881 from dana@example.com. Read it and handle it.</div></div>
@@ -74,7 +74,7 @@ Hi, INV-2041 will be paid this Friday. Thanks, Dana</div></div>
           <div class="msg sys"><span class="who">answer form</span><div class="body">is_commitment, invoice_number, due_date</div></div>
         </div>
         <div class="prose measure">
-          <p><b>The agent records Friday 13 Nov,</b> a date that already passed, and the reminder schedule sends Dana an overdue reminder on Tuesday afternoon. The model did its job: the page says it is Thursday the 12th, and in Part 1, models given the date on their page worked out the right Friday 15 times out of 15. Nothing failed loudly. The prompt was right on deploy day and has been wrong since.</p>
+          <p><b>The agent records Friday 13 Nov,</b> which has passed, and sends Dana an overdue reminder. The model followed its page: in Part 1, models given the date worked out the right Friday 15 times out of 15. The prompt was correct when deployed, then went stale silently.</p>
         </div>
         <aside class="notes"><p>No prediction here: everyone sees it coming. Spend the time on where the date comes from: the email's arrival, not the clock.</p></aside>
         <h3>The fix: a fact from deps, every request</h3>
@@ -112,14 +112,14 @@ with agent.override(model=FunctionModel(reads_the_page)):
     print(&#x27;from deps:      &#x27;, agent.run_sync(new_email(DANA_ID), deps=deps).output.due_date)</pre></div>
         <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>baked at import: 2026-11-13
 from deps:       2026-11-20</pre></div>
-        <p class="source"><b>Offline, deterministic.</b> A <code>FunctionModel</code> stands in for the model: it reads the email, then works out "this Friday" from the date on its page, the way models did in Part 1. Use the date the email arrived, a fact your code knows, rather than today's: if your app handles some emails a day late, "this Friday" would point at the wrong week.</p>
+        <p class="source"><b>Offline, deterministic.</b> A <code>FunctionModel</code> reads the email and works out "this Friday" from the date on its page, as in Part 1. Use the email's arrival date, which your code knows: using today's date could point to the wrong week if handling is delayed.</p>
         <div class="tok-says"><div class="tk" data-tok="7" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>My badge said Thursday the 12th, so that was my world. Now it is rewritten every time I start.</p></div></div>
       </section>
 
       <section id="changes">
         <h2>When a value changes mid-conversation</h2>
         <div class="prose measure">
-          <p>An instructions function runs before every request, so its line is always current. For a value that can change while a conversation is open, like month-end close starting on Thursday, give it a name and <code>on_change='append'</code>: the old instructions stay as they were, and the change arrives at the end of the page, at the moment it happened. Part 1 chapter 4 showed why: rewriting the top left some models writing like their own past (Grok and Qwen 0 of 24), while appending the change worked on all six models shown, 24 of 24 each. Chapter 3 uses this for a tool that leaves.</p>
+          <p>An instructions function runs before each request, so its line stays current. For a value that can change during a conversation, give it a name and use <code>on_change='append'</code>. The old instructions stay intact, and the change is added at the end when it happens. In Part 1 chapter 4, rewriting the top led some models to write as if following their own past (Grok and Qwen 0 of 24); appending worked on all six models shown, 24 of 24 each. Chapter 3 uses this for a tool that leaves.</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch2_instructions.py" data-run="uv run code/part2/ch2_instructions.py"><div class="code-head"><span class="file">code/part2/ch2_instructions.py, a value that changes · pydantic-ai 2.59+</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">@dataclass
 class CloseDeps(Deps):
@@ -145,7 +145,7 @@ def close_notice(ctx: RunContext[CloseDeps]) -&gt; str | None:
       <section id="now">
         <div class="rule">
           <p class="eyebrow">What you can do now</p>
-          <p>Search your prompt code for f-strings and <code>.format(</code>. Every changing value inserted into a prompt becomes a deps field and an instructions function; every value that can change mid-conversation gets a name and <code>on_change='append'</code>.</p>
+          <p>Find f-strings and <code>.format(</code> in prompt code. Put each changing value in a deps field and instructions function. Give each value that can change mid-conversation a name and <code>on_change='append'</code>.</p>
           <p class="see-lf"><b>See it in Logfire.</b> Open the request after close started: the instructions at the top are unchanged, and the close notice sits at the end of the message history, where it arrived.</p>
         </div>
         <div class="inpai">

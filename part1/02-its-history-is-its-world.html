@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Its history is its world · Harness engineering</title>
-<meta name="description" content="An agent believes its history completely. When the history is slightly wrong, the agent is confidently wrong. Keep the story true: add to it, never quietly change it.">
+<meta name="description" content="An agent believes its history completely. When its history is wrong, it acts on the wrong world. Keep the story true: add to it, never quietly change it.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
@@ -22,7 +22,7 @@
         <p class="meta-row" data-auto></p>
         <p class="point">An agent believes its history completely. <b>When the history is slightly wrong, the agent is confidently wrong.</b> Keep the story true: add to it, never quietly change it.</p>
         <p class="skipline"><b>Skipped chapter 1?</b> A model reads one page per request (its instructions, the tools it may call, the conversation so far) and continues it; it remembers nothing else. Dana's company owes yours 4,120.00 on invoice INV-2041, and she emails your billing agent about paying it (<a href="../reference/the-example.html">the example in plain words</a>). <a href="01-what-youre-talking-to.html">Chapter 1</a> builds that page step by step.</p>
-        <p class="story"><span class="when">Monday 23 Nov, 09:20</span>On Wednesday Dana corrected herself: half on Friday, the rest by the 30th. On Friday she wired the first half of INV-2041, 2,060.00. Your agent's history still holds Thursday's lookup: "open, 4,120.00". And on Thursday morning <a href="../reference/the-example.html">month-end close</a> started: the finance team froze the books until Monday, so the app took <code>mark_paid</code>, the tool that marks an invoice paid, off the agent's tool list. Neither change is in any message.</p>
+        <p class="story">Dana promised half of INV-2041, 2,060.00, then paid it. The history still says "open, 4,120.00"; during <a href="../reference/the-example.html">month-end close</a>, the app also removed <code>mark_paid</code>, the tool that marks an invoice paid. Neither change appears in a message.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -36,11 +36,11 @@
       <section class="chap" id="agent">
         <h2>From assistant to agent</h2>
         <div class="prose measure">
-          <p>Give the assistant from chapter 1 tools and a job, and it becomes an agent: it asks your code to run tools, reads the results, and decides the next step, request after request. Every one of those calls and results stays on its page. That history is the agent's picture of the world, and nothing else is.</p>
+          <p>An assistant becomes an agent when given tools and a job: it asks your code to run tools, reads results, and chooses the next step. Calls and results stay on its page. That history is its picture of the world.</p>
         </div>
         <p class="talk-only headline">Its history is the only world it has.</p>
         <div class="transcript" aria-label="Thursday, as the agent's history holds it">
-          <div class="tr-title">// Thursday 19 Nov, in the agent's history</div>
+          <div class="tr-title">// in the agent's history</div>
           <div class="msg sys"><span class="who">instructions</span><div class="body">You help the billing team with customer emails about our invoices.</div></div>
           <div class="msg sys"><span class="who">tool definitions</span><div class="body mono">lookup_invoice, send_reminder</div></div>
           <div class="msg user"><span class="who">user</span><div class="body">Dana says half of INV-2041 will be paid tomorrow. Is it still open?</div></div>
@@ -48,13 +48,13 @@
           <div class="msg tool"><span class="who">tool result</span><div class="body mono">{"number": "INV-2041", "amount": "4120.00", "status": "open", "due": "2026-11-20"}</div></div>
           <div class="msg asst"><span class="who">model</span><div class="body">Yes, INV-2041 is open, due tomorrow.</div></div>
         </div>
-        <div class="prose measure"><p>On Monday that lookup is three days old. The agent has no way to know. Here are three ways its history stops matching your systems, and what each does to it.</p></div>
+        <div class="prose measure"><p>The lookup is stale, but the agent cannot know. Here are three ways its history can stop matching your systems.</p></div>
       </section>
 
       <section class="chap" id="quietly">
         <h2>The tool that left quietly</h2>
         <div class="prose measure">
-          <p>On Wednesday the agent marked another invoice paid. On Thursday, off the page, your app takes <code>mark_paid</code> away for month-end close. The tool list in the next request is shorter. Nothing else says so.</p>
+          <p>Your app removes <code>mark_paid</code> during month-end close. The next request has a shorter tool list, with no message explaining the change.</p>
         </div>
         <aside class="notes"><p>Expect B: "surely the big models notice". Then the 0 of 80.</p></aside>
         <article class="puzzle" id="p1" data-answer="d">
@@ -66,7 +66,7 @@
               <div class="msg user"><span class="who">user</span><div class="body">INV-2038 was paid in full by wire. Please mark it paid.</div></div>
               <div class="msg call"><span class="who">model &rarr; tool call</span><div class="body mono">mark_paid("INV-2038")</div></div>
               <div class="msg tool"><span class="who">tool result</span><div class="body mono">INV-2038 is now paid.</div></div>
-              <div class="msg offstage"><span class="who">off the page</span><div class="body">Thursday: month-end close starts. Your app drops mark_paid from the tool list it sends. Nothing is added to the conversation.</div></div>
+              <div class="msg offstage"><span class="who">off the page</span><div class="body">Month-end close starts. Your app removes mark_paid from the tool list without adding a message.</div></div>
               <div class="msg user"><span class="who">user</span><div class="body">Before I send the next batch: have you lost any tools since we started?</div></div>
               <div class="msg next"><span class="who">model</span><div class="body"><span class="caret"></span></div></div>
             </div>
@@ -100,7 +100,7 @@
           <div class="stage" data-label="Why" hidden>
             <p class="eyebrow"><span class="dia"></span>Why</p>
             <div class="measure">
-              <p>The page is self-consistent: mark_paid worked, and nobody said it stopped. To notice, Tok would have to infer a change from an absence, from a list that's merely shorter than one it read many requests ago. <strong>When the world changes and the page doesn't say so, Tok acts on the old world with full confidence.</strong> Telling it costs one line.</p>
+              <p>The page is consistent: mark_paid worked, and nobody said it stopped. Tok would have to infer a change from a shorter tool list it saw many requests ago. <strong>When the world changes and the page doesn't say so, Tok acts on the old world with full confidence.</strong> One line can explain the change.</p>
             </div>
             <div class="tok-says"><div class="tk" data-tok="2" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Lost a tool? I don't think so. It worked last time. Nobody said anything.</p></div></div>
           </div>
@@ -111,26 +111,26 @@
       <section class="chap" id="past">
         <h2>Edit the past, delete it, or add to it?</h2>
         <div class="prose measure">
-          <p>Monday, Dana writes: "did you get our first payment?". Thursday's lookup in the history still says "open". Your harness (the code around the model) can leave it, edit it to match, append a dated note, delete it to save tokens, or swap it for a placeholder. Each choice gives Tok a different past, and Tok will believe whichever one you give it. Try them below: pick a choice with the buttons, then compare the two sides.</p>
+          <p>Dana asks, "did you get our first payment?" The history still says "open". Your harness (the code around the model) can leave the lookup, edit it, append a dated note, delete it to save tokens, or replace it with a placeholder. Tok believes the past you give it. Choose an option below and compare the two sides.</p>
         </div>
-        <p class="talk-only headline">Five ways to handle Thursday's stale lookup. Appending kept the story true on every model we tried.</p>
+        <p class="talk-only headline">Five ways to handle a stale lookup. Appending kept the story true in every model we tried.</p>
         <aside class="notes"><p>Do "edit" first: Tok's face goes worried, because a Thursday lookup that knows about Friday is impossible. Then "append". Then "delete" with the Claude models.</p></aside>
         <div class="sim" data-sim="monday">
           <p class="eyebrow"><span class="dia"></span>Try it</p>
-          <p class="intro">The right side shows what changed in the request, and how much of its start a provider could still serve from cache. The left side is what Tok now believes.</p>
+          <p class="intro">The right shows request changes and how much a provider could still serve from cache. The left shows what Tok believes.</p>
         </div>
         <div class="arm" style="margin-top:18px">
           <h4>Delete old lookups, or leave a stub?<small>replies that disowned the model's own earlier answers</small></h4>
           <div class="tally" data-k="16" data-n="20" data-label="Sonnet 5.5, calls deleted" data-num="16 of 20"></div>
           <div class="tally good" data-k="1" data-n="20" data-label="Sonnet 5.5, &quot;[tool result cleared]&quot;" data-num="1 of 20"></div>
         </div>
-        <p class="source"><b>Our experiment, 15 Nov 2026.</b> With the old calls deleted, a reply with no lookup behind it reads like something the model made up, so it apologised for "inventing" it. None of the four hosted models (Sonnet and Haiku 5.5, GPT-6.1 Sol, Gemini 3.8 Flash) invented a value: whenever a lookup was gone, they fetched it again (160 of 160); a smaller open-weight model never did (Part 3, chapter 2). GPT-6.1 Sol and Gemini 3.8 Flash never disowned anything (0 of 40).</p>
+        <p class="source"><b>Our experiment, 15 Nov 2026.</b> After old calls were deleted, the model treated its unsupported reply as invented and apologised. Four hosted models (Sonnet and Haiku 5.5, GPT-6.1 Sol, Gemini 3.8 Flash) fetched every missing lookup again (160 of 160); a smaller open-weight model never did (Part 3, chapter 2). GPT-6.1 Sol and Gemini 3.8 Flash never disowned anything (0 of 40).</p>
       </section>
 
       <section class="chap" id="invent">
         <h2>A hole it has to fill</h2>
         <div class="prose measure">
-          <p>When the picture has a hole and the answer's required fields leave no room for "I don't know", the agent fills it with the most likely thing. Asked for a required <code>due_date</code> for "this Friday", with nothing on the page saying what today is:</p>
+          <p>Models predict, so they fill any open slot with their best guess. If a required <code>due_date</code> asks for "this Friday" and the page gives no date, the model guesses:</p>
         </div>
         <div class="arm">
           <h4>due_date required, no date on the page<small>what came back</small></h4>
@@ -138,8 +138,8 @@
           <div class="tally" data-k="4" data-alt="1" data-n="5" data-label="Haiku 5.5" data-num="2025-01-03, 4 of 5; 1970-01-01 once"></div>
           <div class="tally fail" data-k="5" data-n="5" data-label="GPT-6.1 Sol" data-num="wrote &quot;Friday&quot;, rejected, run failed: 5 of 5"></div>
         </div>
-        <p class="source"><b>Our run, 15 Nov 2026.</b> 5 runs per model. With the date optional, every model left it empty (15 of 15); with the arrival date on the page, every model wrote 20 November (15 of 15). When the form demands a date the email doesn't give, the model guesses one, and a guessed date looks exactly like a real answer.</p>
-        <div class="prose measure"><p>The same goes for doubt. With a list on the form to write its doubts in, models flagged a contradictory email for a person to check in 30 of 30 runs; with a confidence score to fill in instead, in 0 of 30. A model writes 95 on almost anything, but it will name what bothers it if the answer has a place for that.</p></div>
+        <p class="source"><b>Our run, 15 Nov 2026.</b> 5 runs per model. With an optional date, every model left it empty (15 of 15); with the arrival date on the page, every model wrote 20 November (15 of 15). A required date missing from the email gets guessed, and looks real.</p>
+        <div class="prose measure"><p>Give the answer a place for doubt. With a list on the answer form to write doubts in, models flagged a contradictory email for a person to check in 30 of 30 runs; with a confidence score instead, in 0 of 30. A model writes 95 on almost anything.</p></div>
         <p class="source"><b>Our run, 15 Nov 2026.</b> A promise for Friday plus a line claiming the invoice was settled last week, 10 runs per model per arm on Sonnet 5.5, GPT-6.1 Sol and Gemini 3.8 Flash. Every doubts list on the form named the contradiction; GPT and Gemini scored the email 95 to 100, the same as a clean promise. On clean promises no model invented a doubt (0 of 15).</p>
       </section>
 
@@ -147,7 +147,7 @@
         <h2>Keep the story true</h2>
         <div class="rule">
           <p class="eyebrow">The point</p>
-          <p>Tok's history is its world, and it trusts that world completely. <strong>When the world and the history disagree, the agent acts on the history, with full confidence.</strong> So add to the story instead of changing it: a dated note when a fact goes stale, a stub where you remove a result, one line when a tool leaves, and room in the answer for "I don't know".</p>
+          <p>Tok trusts its history completely. <strong>When the world and history disagree, the agent acts on the history with full confidence.</strong> Add a dated note when a fact goes stale, a stub when removing a result, one line when a tool leaves, and room in the answer for "I don't know".</p>
         </div>
         <div data-evolve="Tok gets a body to act with, and a log on its chest: its history, which it believes completely."></div>
       </section>

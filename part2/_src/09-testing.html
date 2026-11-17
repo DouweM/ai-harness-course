@@ -1,5 +1,5 @@
 title: Testing
-description: Everything around the model's judgment is deterministic: which tools exist, what the gate holds, what a validator sends back, what history reaches the model. Every idea from Part 2 gets a test, and none of them calls a model.
+description: Test the deterministic parts of your agent offline, without calling a model.
 n: 9
 runtime: 5
 ---
@@ -26,8 +26,8 @@ runtime: 5
         <h2>A quick test that tries every tool</h2>
         <aside class="notes"><p>The point: harness ideas are deterministic and testable without a model. TestModel calls every tool; the approval gate either holds or it doesn't.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Friday 20 Nov, 17:00</span>Before the agent runs unattended over the weekend, the team wants proof that nothing writes to the ledger without a person, whatever the model does.</p>
-          <p><code>TestModel</code> is a stand-in model that calls every tool it's offered, with made-up arguments that fit each tool's parameters, then answers. It doesn't judge anything; it just tries every tool. Your tool code really runs, so tests give it fake services, never your real ledger.</p>
+          <p class="story">The team needs proof that no tool can write to the ledger without a person's approval, whatever the model does.</p>
+          <p><code>TestModel</code> is a stand-in that calls every offered tool with made-up arguments matching its parameters, then answers. It doesn't judge; it tries every tool. Tool code really runs, so tests must use fake services, never your real ledger.</p>
         </div>
         <div class="transcript" aria-label="The test">
           <div class="tr-title">// the reminders agent, TestModel in place of the model</div>
@@ -38,7 +38,7 @@ runtime: 5
         {{code ch9_testing.py testmodel "code/part2/ch9_testing.py" keys="override\(model=TestModel|assert isinstance"}}
         {{out ch9_testing}}
         <div class="prose measure">
-          <p><b>The approval rule held.</b> Nothing reached the (fake) ledger. TestModel's made-up email id and invoice number got a <code>ModelRetry</code>, and it moved on: a bad argument becomes feedback, not a crash. <code>record_payment</code>'s made-up invoice was rejected by its <code>args_validator</code> before anyone was asked (chapter 6), so only <code>mark_paid</code> waits for a person; it has no validator, so a person would be asked about invoice "a". If someone removes <code>requires_approval</code> from a tool next month, this test fails before the change reaches production.</p>
+          <p><b>The approval rule held.</b> Nothing reached the fake ledger. TestModel's made-up email id and invoice number got a <code>ModelRetry</code>: bad arguments become feedback, not a crash. <code>record_payment</code>'s made-up invoice failed its <code>args_validator</code> before anyone was asked (chapter 6). Only <code>mark_paid</code> waits for a person; with no validator, it would ask about invoice "a". If someone removes <code>requires_approval</code>, this test fails before production.</p>
         </div>
         <div class="tok-says"><div class="tk" data-tok="14" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>I pressed every button, and the padlocks held. That's the whole test.</p></div></div>
         <aside class="notes"><p>No prediction: the point is the habit. One test, every writing tool, no model call.</p></aside>
@@ -47,7 +47,7 @@ runtime: 5
       <section id="suite">
         <h2>One test per idea</h2>
         <div class="prose measure">
-          <p>Every chapter's idea is a property of your code, so each gets a test. <code>FunctionModel</code> lets a test play the model: look at what the request offered, answer badly on purpose, check what comes back. Set <code>models.ALLOW_MODEL_REQUESTS = False</code> once in your test setup, and any test that would reach a real model fails instead.</p>
+          <p>Each chapter's idea is a property of your code, so give it a test. <code>FunctionModel</code> lets a test play the model: inspect the request, answer badly on purpose, and check the result. Set <code>models.ALLOW_MODEL_REQUESTS = False</code> in test setup so any test reaching a real model fails.</p>
         </div>
         <div class="tbl-wrap"><table class="tbl">
           <thead><tr><th>Chapter</th><th>The idea</th><th>The test</th></tr></thead>
@@ -60,7 +60,7 @@ runtime: 5
           </tbody>
         </table></div>
         {{code test_billing_agent.py tests_core "The safety switch and the first two tests, from test_billing_agent.py"}}
-        <p class="measure">These offline tests check your code and its rules. What they can't tell you is whether the model's judgment is good: whether it reads Dana's email right. That needs real models and real cases, and it's Part 3.</p>
+        <p class="measure">These offline tests check code and rules, not the model's judgment when reading Dana's email. That needs real models and cases, covered in Part 3.</p>
       </section>
 
       <section id="now">

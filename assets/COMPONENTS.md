@@ -41,6 +41,9 @@ match v3's, so moving a v3 component over mostly means deleting the page-specifi
 - Tap-to-talk: `<button class="tok-btn" data-tok-lines='["line 1","line 2"]' data-tok-moods="happy,curious">`
   containing a `[data-tok]`; lines go to the next `.tok-line` in the same parent (or `data-tok-out="#id"`).
 - `.tok-says > .tk[data-tok] + div > p.eyebrow + p`: a static "From where Tok sits" callout.
+- **Tok and diagrams sit still.** Nothing near the text loops (no blinking, glowing, waving or flowing on a timer).
+  An animation may play once on a state change (a stage reveal, a part appearing, a single wave). The override block
+  at the end of `theme.css` enforces this; `prefers-reduced-motion` turns off the one-shot animations too.
 
 ## Message and request cards (the one shared component)
 

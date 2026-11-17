@@ -1,10 +1,10 @@
 title: The running example, in plain words
-description: The billing words the course uses (invoice, overdue, promise to pay, wire, ledger, recording a payment versus marking an invoice paid, month-end close, dispute, approval) and Dana's week, explained for readers who have never worked in accounts receivable.
+description: Billing terms used in the course, plus its running example of Dana, invoices, and payments.
 ---
   <section class="wrap">
     <p class="eyebrow" style="margin-top:28px"><span class="dia"></span>Reference</p>
     <h1>The running example, in plain words</h1>
-    <p class="lede measure">The whole course follows one agent at one company. The company sends its customers invoices, and some customers pay late. The agent helps the billing team: it reads customers' emails, notes when someone promises to pay, and records payments when the money arrives. You don't need to know accounting to follow it; these are all the words it uses.</p>
+    <p class="lede measure">The course follows a billing agent that reads customer emails, records promises to pay, and records payments when money arrives. These terms explain the example.</p>
 
     <section id="words">
       <h2>The words</h2>
@@ -12,18 +12,18 @@ description: The billing words the course uses (invoice, overdue, promise to pay
 <table class="tbl">
   <thead><tr><th>Word</th><th>What it means here</th></tr></thead>
   <tbody>
-    <tr><td>Invoice</td><td>A bill the company sends a customer. Each has a number, like INV-2041, an amount and a due date.</td></tr>
+    <tr><td>Invoice</td><td>A bill sent to a customer, with a number like INV-2041, an amount, and a due date.</td></tr>
     <tr><td>Overdue</td><td>The due date has passed and the invoice isn't paid yet.</td></tr>
-    <tr><td>Promise to pay</td><td>A customer saying when they will pay, for example "this Friday". The agent writes the amount and the date down so the team can follow up if the money doesn't arrive.</td></tr>
-    <tr><td>Wire</td><td>A bank transfer. "Dana wires 2,060.00" means she sends that amount from her bank to the company's bank.</td></tr>
-    <tr><td>Bank feed</td><td>The list of incoming payments the company's bank reports. A wire shows up there first as pending, then as confirmed.</td></tr>
-    <tr><td>Ledger</td><td>The company's own record of invoices and payments: what each customer owes and what has arrived.</td></tr>
-    <tr><td>Recording a payment (<code>record_payment</code>)</td><td>Writing down that money arrived, for a given amount, against an invoice. Half a payment can be recorded; the invoice stays open for the rest.</td></tr>
-    <tr><td>Marking an invoice paid (<code>mark_paid</code>)</td><td>Closing an invoice as fully paid. It changes what the company thinks it is owed, so a person has to approve it.</td></tr>
-    <tr><td>Month-end close</td><td>A few days at the end of each month when the finance team checks the books and freezes them. Nobody may change an invoice's status during the close, so the app takes <code>mark_paid</code> away from the agent until it ends.</td></tr>
-    <tr><td>Dispute</td><td>The customer says an invoice is wrong, for example the amount. A dispute goes to a person; the agent doesn't settle it.</td></tr>
-    <tr><td>Approval</td><td>A person checks a write before it happens. The agent asks, the run stops, and it continues when the person says yes or no.</td></tr>
-    <tr><td>The billing app, the billing team</td><td>The company's software and the people who use it. In this course they are the agent's user: they ask it to do things. Dana is the customer; her emails reach the agent as data, read by a tool.</td></tr>
+    <tr><td>Promise to pay</td><td>A customer saying when they will pay, for example "this Friday". The agent records the amount and date so the team can follow up if payment doesn't arrive.</td></tr>
+    <tr><td>Wire</td><td>A bank transfer. "Dana wires 2,060.00" means she sends that amount to the company's bank.</td></tr>
+    <tr><td>Bank feed</td><td>The bank's list of incoming payments. A wire appears first as pending, then confirmed.</td></tr>
+    <tr><td>Ledger</td><td>The company's record of invoices and payments: what each customer owes and what has arrived.</td></tr>
+    <tr><td>Recording a payment (<code>record_payment</code>)</td><td>Recording money received against an invoice. A partial payment leaves the invoice open for the rest.</td></tr>
+    <tr><td>Marking an invoice paid (<code>mark_paid</code>)</td><td>Closing an invoice as fully paid. Because this changes what the company thinks it is owed, a person must approve it.</td></tr>
+    <tr><td>Month-end close</td><td>A few days at month end when finance checks and freezes the books. Invoice statuses cannot change during close, so the app removes <code>mark_paid</code> from the agent until it ends.</td></tr>
+    <tr><td>Dispute</td><td>A customer says an invoice is wrong, such as its amount. A person handles it; the agent doesn't settle it.</td></tr>
+    <tr><td>Approval</td><td>A person checks a write before it happens. The run stops while the person decides.</td></tr>
+    <tr><td>The billing app, the billing team</td><td>The company's software and its users, who ask the agent to do things. Dana is the customer; a tool reads her emails as data.</td></tr>
   </tbody>
 </table>
       </div>
@@ -32,22 +32,20 @@ description: The billing words the course uses (invoice, overdue, promise to pay
     <section id="week">
       <h2>Dana's week</h2>
       <div class="prose measure">
-        <p>Every chapter moves forward through the same week. Dana's company owes 4,120.00 on invoice INV-2041.</p>
+        <p>Dana is a customer whose company owes 4,120.00 on invoice INV-2041.</p>
         <ul>
-          <li><b>Tuesday 09:02.</b> Dana emails: "INV-2041 will be paid this Friday."</li>
-          <li><b>Wednesday.</b> The agent marks a different invoice, INV-2038, paid. At 16:40 Dana corrects herself: half (2,060.00) on Friday, the rest by the 30th.</li>
-          <li><b>Thursday 09:00.</b> Month-end close starts, so <code>mark_paid</code> is taken away until Monday morning. A colleague, who misread Dana's emails, asks the agent to mark INV-2041 paid.</li>
-          <li><b>Friday.</b> Dana wires the first half at 10:30. The bank confirms it at 17:40. At 14:15 she questions the amount, which becomes a dispute for a person.</li>
-          <li><b>The weekend and Monday.</b> A request to record her payment waits for a person's approval until Monday. The ledger records the wire on Monday at 09:15. The second half is due by the 30th.</li>
+          <li>Dana promises to pay INV-2041, then clarifies that she will pay half (2,060.00) first and the rest by the 30th.</li>
+          <li>She wires the first half; the bank confirms it, and the ledger records it after approval. INV-2041 remains open for the balance.</li>
+          <li>A question about the invoice amount becomes a dispute for a person. The agent also marks a different invoice, INV-2038, paid.</li>
         </ul>
-        <p>Nobody marks INV-2041 paid this week: only half of it is paid.</p>
+        <p>INV-2041 is not marked paid because only half has been paid.</p>
       </div>
     </section>
 
     <section id="simulated">
       <h2>What actually happens in the examples</h2>
       <div class="prose measure">
-        <p>Nothing in this course touches a real bank or a real ledger. When a result says the agent "marked an invoice paid" or "sent an email", it means the model asked for that tool call in an experiment or an offline example, and our code recorded the request. In your own system, the same tool call would be a real write, which is why the course spends so much time on which calls a person must approve.</p>
+        <p>The examples never touch a real bank or ledger. When a result says the agent "marked an invoice paid" or "sent an email", the model requested that tool call and the offline code recorded it. In your system, the same call would make a real change, so some calls require approval.</p>
       </div>
     </section>
   </section>

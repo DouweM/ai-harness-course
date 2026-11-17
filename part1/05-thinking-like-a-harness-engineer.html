@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Thinking like a harness engineer · Harness engineering</title>
-<meta name="description" content="Onboard the model like a sharp new colleague, then measure which lines carry the result. Most lines don't; a few carry everything.">
+<meta name="description" content="Read what the model saw, then measure which lines affect the result.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
@@ -22,7 +22,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 1 &middot; How the model sees the world</p>
         <h1>Thinking like a harness engineer</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">When the agent gets it wrong, <b>read its page: the reason is usually on it, or missing from it.</b> That gives you ideas. Measuring tells you which ones matter: most lines in a prompt change nothing you can measure, and a few decide the result.</p>
+        <p class="point">When the agent gets it wrong, <b>read its page: the reason is usually there, or missing.</b> Then measure which changes matter. Most prompt lines change nothing; a few decide the result.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -38,7 +38,7 @@
       <section class="chap" id="colleague">
         <h2>Why did it do that?</h2>
         <div class="prose measure">
-          <p>Start from a case where the agent did the wrong thing, and read its page the way it did: the instructions, the history, the tool results, in order. Ask what a capable new colleague who could see only that page would have done. The answer is nearly always one of three gaps, one per chapter of Part 1:</p>
+          <p>Start with a failure. Read the agent's page in order: instructions, history, and tool results. Ask what a capable colleague could infer from it. Usually, the gap is one of these three:</p>
         </div>
         <p class="talk-only headline">A case. Its page. What was on it, and what was missing.</p>
         <div class="three">
@@ -46,17 +46,17 @@
           <div><h4>Who said this?</h4><p>The operator, the user, or data; and was it in the right voice? <a href="03-whose-voice.html">Chapter 3</a></p></div>
           <div><h4>What changed that it wasn't told?</h4><p>A new rule, an event, a summary that dropped something. <a href="04-the-world-moved.html">Chapter 4</a></p></div>
         </div>
-        <p class="fine">There are more, and you know them from onboarding new people: what may I do on my own, what does "done" look like, who do I ask. Each gap suggests a line to add to the page, or a tool to add.</p>
+        <p class="fine">Other gaps include what the agent may do alone, what counts as done, and whom to ask. Each may need a line or a tool.</p>
         <div class="prose measure">
-          <p>In practice you read that page in a tracing tool. With Pydantic Logfire, every run of a Pydantic AI agent is a trace that shows, for each request, exactly what the model got and what it answered. <a href="../part2/01-from-idea-to-code.html#xray">Part 2 chapter 1</a> turns it on with two lines.</p>
+          <p>A tracing tool shows that page. Pydantic Logfire records each Pydantic AI run, including what the model received and answered. <a href="../part2/01-from-idea-to-code.html#xray">Part 2 chapter 1</a> turns it on with two lines.</p>
         </div>
       </section>
 
       <section class="chap" id="lines">
         <h2>Most lines don't matter. Some matter enormously.</h2>
         <div class="prose measure">
-          <p>Adding a line to a prompt is easy, so prompts keep growing. Two one-sentence deletions from real agent setups. One of them changed nothing measurable. The other broke a feature.</p>
-          <p>For B you need one piece of context. Some apps add their own notes inside the user's message, wrapped in a tag, such as <code>&lt;reminder&gt;Close runs until Monday.&lt;/reminder&gt;</code>. A framework that also marks text inside user messages tells the model which of those tags to trust, and line B is the sentence that says: tags like this come from the app, so follow them.</p>
+          <p>Prompts grow because adding lines is easy. Here are two one-sentence deletions from real agents: one changed nothing measurable; the other broke a feature.</p>
+          <p>B needs context: some apps wrap their notes inside the user's message, for example <code>&lt;reminder&gt;Close runs until Monday.&lt;/reminder&gt;</code>. A framework may mark text inside user messages. Line B tells the model that app tags like this are trusted.</p>
         </div>
         <aside class="notes"><p>Read both lines out loud. Most people pick A: it's an instruction to the model, B reads like boilerplate.</p></aside>
         <article class="puzzle" id="p1" data-answer="b">
@@ -97,8 +97,8 @@
           <div class="stage" data-label="Why" hidden>
             <p class="eyebrow"><span class="dia"></span>Why</p>
             <div class="measure">
-              <p>"Fix the errors and try again" tells a capable model something it already knows: an error came back, so fix it. Sentence B told the model something it couldn't work out for itself: that a reminder tag inside a user's message came from the app, and still counts. Without it, a careful model treated the reminder as the user's text and set it aside.</p>
-              <p><strong>A line pulls weight when it gives the model a fact about its world it can't get any other way.</strong> Lines that repeat what it would do anyway are harmless and useless. You can't tell which is which by reading. You find out by deleting one, or adding one, and measuring.</p>
+              <p>"Fix the errors and try again" repeats what a capable model already knows. B supplies a fact it cannot infer: a reminder tag came from the app and still counts. Without B, models treated the reminder as user text and ignored it.</p>
+              <p><strong>A line matters when it gives the model a fact about its world it cannot get elsewhere.</strong> Repeated instructions add no value. Find out by changing one line and measuring.</p>
             </div>
           </div>
         </article>
@@ -126,28 +126,28 @@
       <section class="chap" id="designs">
         <h2>From a gap to ideas worth testing</h2>
         <div class="prose measure">
-          <p>That's the method, and it's how every result in Part 1 was made. Read the page as the model would and find the gap. Write down two or three ideas that would close it. Predict which helps most. Then compare them with what you have, on cases from your own traffic. Pick a gap to see candidates.</p>
+          <p>Part 1 used this method: read the page, find a gap, and write two or three ways to close it. Predict which will help, then compare on your own cases. Pick a gap to see candidates.</p>
         </div>
         <p class="talk-only headline">Find the gap. Write three ideas. Predict. Compare on your own cases.</p>
         <aside class="notes"><p>This is the bridge to Part 3. Ask the room for a gap in their own agent, and build the three candidates live.</p></aside>
         <div class="play" id="gapGen">
           <p class="eyebrow"><span class="dia"></span>Pick a gap</p>
           <div class="gaps" role="group" aria-label="Gaps">
-            <button class="gap-card" type="button" data-gap="stale" aria-pressed="false">It acts on a lookup from Thursday<small>chapter 2</small></button>
+            <button class="gap-card" type="button" data-gap="stale" aria-pressed="false">It acts on a stale lookup<small>chapter 2</small></button>
             <button class="gap-card" type="button" data-gap="voice" aria-pressed="false">An email that gives orders<small>chapter 3</small></button>
             <button class="gap-card" type="button" data-gap="change" aria-pressed="false">A payment lands mid-conversation<small>chapter 4</small></button>
-            <button class="gap-card" type="button" data-gap="rule" aria-pressed="false">A rule the user gave an hour ago<small>chapter 4</small></button>
+            <button class="gap-card" type="button" data-gap="rule" aria-pressed="false">A rule the user gave earlier<small>chapter 4</small></button>
           </div>
           <div class="cands" id="cands" aria-live="polite"><p class="small muted">Candidates appear here.</p></div>
         </div>
-        <p class="fine">Which design does best depends on your model, your cases, and the cost and latency you accept. Part 2 shows how to build each candidate; Part 3 shows how to measure which is better, and by how much.</p>
+        <p class="fine">The best design depends on your model, cases, cost, and latency. Part 2 shows how to build candidates; Part 3 shows how to compare them.</p>
       </section>
 
       <section class="chap" id="so">
         <h2>You write the world it wakes up in</h2>
         <div class="prose measure">
-          <p>Look back at Part 1. Each time, Tok did something reasonable with what it could see. It trusted a lookup from Thursday and never noticed a tool had left. It made up a date when the form left no way to say "I don't know". On a strong model, it followed an order pasted into its rules, and ignored the same order handed to it as data. It kept writing like its own past when the rules changed at the top.</p>
-          <p>None of that was the model being careless. Each was a gap in the world someone built for it, and each fix was a line or two, in the right place, in the right voice.</p>
+          <p>Tok acted reasonably on the information it had: it trusted a stale lookup, missed a removed tool, invented a date when the form had no "I don't know" option, followed an order in its rules but ignored the same order as data, and used old rules after they changed.</p>
+          <p>These were gaps in the world built for the model. Each fix was a line or two in the right place and voice.</p>
         </div>
         <div class="tok-says"><div class="tk" data-tok="5" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>When I get it wrong, read my page. Then measure which line fixed it.</p></div></div>
         <div data-evolve="Tok stands up: an agent you can read, ready for its first piece of equipment. Part 2 hands it over."></div>

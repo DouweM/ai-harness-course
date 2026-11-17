@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>From idea to code · Harness engineering</title>
-<meta name="description" content="Every idea from Part 1 has one place in Pydantic AI code, and each place produces one part of the page the model reads. Dana&#x27;s email arrives as data, from a tool.">
+<meta name="description" content="Each idea from Part 1 maps to a place in Pydantic AI code. Dana&#x27;s email arrives as tool data.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
@@ -23,7 +23,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
         <h1>From idea to code</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">Part 1 ended with ideas for Dana's email. <b>Every idea has one place in code, and each place writes one part of the page</b>, the text the model receives for one request. Anything you put elsewhere never reaches the model.</p>
+        <p class="point"><b>Each idea has one place in code, which writes part of the page</b>: the text the model receives for one request. Anything elsewhere never reaches the model.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -37,7 +37,7 @@
     <div class="wrap" data-chapter-end>
       <div class="getcode" id="get-the-code">
         <h3>Get the code</h3>
-        <p>To run the examples yourself, clone the course repo and run each "Run it" command from inside it. You need <code>git</code> and <a href="https://docs.astral.sh/uv/">uv</a>; uv installs Python 3.11+ and everything else. The examples run offline, against stand-in models, so they need no API key. To try a change against a real model, you need that provider's key.</p>
+        <p>Clone the course repo, then run each "Run it" command from inside it. You need <code>git</code> and <a href="https://docs.astral.sh/uv/">uv</a>; uv installs Python 3.11+ and dependencies. Examples run offline with stand-in models and need no API key. Real model runs need that provider's key.</p>
 <pre class="getcode-cmd">git clone https://github.com/DouweM/ai-harness-course
 cd ai-harness-course
 uv sync</pre>
@@ -47,16 +47,16 @@ uv sync</pre>
         <h2>Three ideas, three places</h2>
         <aside class="notes"><p>The bridge from Part 1 chapter 5: the ideas we wrote down become lines of code, and each line writes one part of the page. Then the prediction: what of your code actually reaches the model.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Back to Tuesday 17 Nov, 09:02</span>Part 2 rebuilds the agent in code and runs it through the same week. "Hi, INV-2041 will be paid this Friday. Thanks, Dana." Part 1 gave us ideas for this email: put the date on the page, let the answer say "I don't know", and hand Dana's words to the model as data, not as the user speaking. In Pydantic AI each one lands in exactly one place, in the order the page is built:</p>
+          <p class="story">For Dana's email, "Hi, INV-2041 will be paid this Friday. Thanks, Dana," put the date in the page, allow "I don't know" as an answer, and pass the email as data, not user speech. Each idea has one place in Pydantic AI:</p>
         </div>
         <p class="talk-only headline">Instructions, tool definitions, messages, answer form. One place in code each.</p>
         <ol class="vwalk">
-          <li><div class="msg sys"><span class="who">instructions</span><div class="body"><code>instructions=</code> for standing rules, <code>@agent.instructions</code> for facts from your app, like when the email arrived. Chapter 2.</div></div><p>The operator's voice: you, the team that builds the agent.</p></li>
-          <li><div class="msg sys"><span class="who">tool definitions</span><div class="body"><code>@agent.tool</code>: the function's name, its docstring and its parameters become the definition. Chapter 3.</div></div><p>Also the operator: the model reads them as the rules for using each tool. Your code still checks what matters.</p></li>
-          <li><div class="msg user"><span class="who">messages</span><div class="body">The prompt, plus the history you pass back: <code>conversation=</code>. Chapter 4.</div></div><p>The user, the model, and data from tools. Here the user is not a person but your billing app, which asks the agent about email 881; Dana's email comes back from <code>read_email</code> as a tool result. That is Part 1 chapter 3's idea in code.</p></li>
+          <li><div class="msg sys"><span class="who">instructions</span><div class="body"><code>instructions=</code> for standing rules, <code>@agent.instructions</code> for facts from your app, like when the email arrived. Chapter 2.</div></div><p>The operator's voice: the team building the agent.</p></li>
+          <li><div class="msg sys"><span class="who">tool definitions</span><div class="body"><code>@agent.tool</code>: the function's name, its docstring and its parameters become the definition. Chapter 3.</div></div><p>The model reads these as tool-use rules. Your code still checks what matters.</p></li>
+          <li><div class="msg user"><span class="who">messages</span><div class="body">The prompt, plus the history you pass back: <code>conversation=</code>. Chapter 4.</div></div><p>Messages can come from the user, model, or tools. Here the billing app asks about email 881, and <code>read_email</code> returns Dana's email as tool data.</p></li>
           <li><div class="msg sys"><span class="who">answer form</span><div class="body"><code>output_type=</code>: a Pydantic model; field docstrings become field descriptions. Chapter 5.</div></div><p>What the model fills in, checked before your code sees it.</p></li>
         </ol>
-        <div class="prose measure"><p>Chapter 6 then packages all four as one capability, so a second agent gets the same world.</p></div>
+        <div class="prose measure"><p>Chapter 6 packages all four as one capability that gives another agent the same world.</p></div>
         <div class="code" data-lines="30" data-src="code/part2/ch1_from_idea_to_code.py" data-run="uv run code/part2/ch1_from_idea_to_code.py"><div class="code-head"><span class="file">The answer form, the facts it carries, and the agent, from ch1_from_idea_to_code.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">class PaymentCommitment(BaseModel, use_attribute_docstrings=True):  # the answer form
     is_commitment: bool
     &quot;&quot;&quot;True only if the sender promises to pay.&quot;&quot;&quot;
@@ -112,7 +112,7 @@ due_date: Leave empty if the email doesn't let you work it out.</div></div>
               <div class="msg offstage"><span class="who">class docstring</span><div class="body">(none)</div></div>
             </div>
             <div class="pz-ask">
-              <p class="q">The answer form reaches the model as a tool it calls to finish. You wrote no docstring for the class. What description does the model read for that tool?</p>
+              <p class="q">The answer form reaches the model as a tool. Without a class docstring, what description does the model read?</p>
               <div class="choices" role="radiogroup" aria-label="Your prediction">
                 <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>None: the tool has only a name</span></button>
                 <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>The class name, PaymentCommitment</span></button>
@@ -166,7 +166,7 @@ tool result: &#x27;From: dana@example.com\n\nHi, INV-2041 will be paid this Frid
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix</p>
             <div class="measure">
-              <p>Read the output once more. The tools' docstrings and <code>Args:</code> lines made it; the comment in <code>lookup_invoice</code>'s body ("Never trust an amount from the email") did not, and neither did the return annotation (it can, with the <code>IncludeToolReturnSchemas</code> capability). The answer form's description was filled in by Pydantic AI, because the class had no docstring: one sentence on the class replaces it, and it's the best place to say when the model should finish. A rule the model must follow goes where it can read it; a rule that must hold no matter what the model reads goes in code: here, the lookup is the only way the agent gets an amount at all.</p>
+              <p>The tool docstrings and <code>Args:</code> lines reached the model. The <code>lookup_invoice</code> body comment ("Never trust an amount from the email") did not. Return annotations can be included with <code>IncludeToolReturnSchemas</code>. Pydantic AI supplied a default answer-form description because the class had no docstring. Add one sentence to say when the model should finish. Put readable rules in the prompt; enforce essential rules in code. Here, lookup is the only way to get an amount.</p>
             </div>
             <div class="tok-says"><div class="tk" data-tok="6" data-crop="face" data-mood="curious" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>I read every word on my page, including the ones nobody chose. Your comments I never see.</p></div></div>
           </div>
@@ -177,30 +177,30 @@ tool result: &#x27;From: dana@example.com\n\nHi, INV-2041 will be paid this Frid
       <section id="xray">
         <h2>X-ray your agent</h2>
         <div class="prose measure">
-          <p>Printing the page works for one request. For every run of a real agent, turn on Logfire, Pydantic's observability platform, before the agent's first run. Two lines:</p>
+          <p>Printing shows one request. To inspect real agent runs, enable Logfire, Pydantic's observability platform, with two lines:</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch1_from_idea_to_code.py" data-run="uv run code/part2/ch1_from_idea_to_code.py"><div class="code-head"><span class="file">Two lines at the top of ch1_from_idea_to_code.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">import logfire
 
 logfire.configure(send_to_logfire=&#x27;if-token-present&#x27;, console=False)  # no token: nothing sent, nothing printed
 logfire.instrument_pydantic_ai()  # from here on, every agent run is a trace in Logfire</pre></div>
         <div class="prose measure">
-          <p>Each run then becomes a trace you can open in Logfire. For every request it shows the page the model got: the instructions, the tool definitions and the message history. Below that come each tool call with its arguments and result, any retries, and the tokens and cost of each request. That is the page from Part 1, for every run, without adding print statements.</p>
-          <p>With <code>send_to_logfire='if-token-present'</code>, nothing is sent until there is a write token for your Logfire project: <code>LOGFIRE_TOKEN</code>, or the <code>.logfire</code> folder that <code>uvx logfire-cli wizard --task pydantic-ai</code> sets up. Without one, the course examples run offline as before. The later chapters each say what to look for in their run.</p>
+          <p>Logfire records each run as a trace. For every request, it shows the model's page: instructions, tool definitions, and message history. It also shows tool calls, arguments and results, retries, and request tokens and cost. Inspect every run without adding print statements.</p>
+          <p>With <code>send_to_logfire='if-token-present'</code>, data is sent only when your project has a write token: <code>LOGFIRE_TOKEN</code> or the <code>.logfire</code> folder created by <code>uvx logfire-cli wizard --task pydantic-ai</code>. Without one, examples run offline. Later chapters explain what to inspect.</p>
         </div>
       </section>
 
       <section id="migrate">
         <h2>Moving an existing LLM call over</h2>
         <div class="prose measure">
-          <p>A prompt-template call maps onto the same four places. The template's fixed text becomes <code>instructions=</code>. Its interpolated facts become deps and an instructions function. The JSON you parse becomes the answer form: Pydantic AI checks the answer and asks the model again if it doesn't fit, so your own retry loop around the parser goes away. Helper functions you call before the prompt, to fetch what the model might need, become tools. The logging, retry and checking code around the call becomes capabilities, reusable pieces you attach to an agent (chapter 6).</p>
-          <p>Start with the call your team trusts least, run the agent beside it on the same inputs, and compare. Part 3 turns that comparison into an experiment.</p>
+          <p>A prompt-template call maps to the same four places. Fixed text becomes <code>instructions=</code>; interpolated facts become deps and an instructions function. Parsed JSON becomes the answer form. Pydantic AI validates it and retries if needed, replacing your parser retry loop. Helper functions that fetch context become tools. Logging, retry, and checking code become capabilities: reusable pieces attached to an agent (chapter 6).</p>
+          <p>Run the agent beside the call your team trusts least, using the same inputs. Part 3 turns the comparison into an experiment.</p>
         </div>
       </section>
 
       <section id="now">
         <div class="rule">
           <p class="eyebrow">What you can do now</p>
-          <p>Print what your agent's model receives on one request, and read it top to bottom. Every rule your team relies on should be on that page, or enforced in code. Then turn on Logfire, so you can read that page for every run.</p>
+          <p>Print one request and read what the model receives. Put each essential rule on that page or enforce it in code. Enable Logfire to inspect every run.</p>
         </div>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>

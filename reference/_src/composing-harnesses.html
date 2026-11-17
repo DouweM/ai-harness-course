@@ -4,8 +4,8 @@ description: A harness is the list of capabilities on an agent. What each capabi
   <section class="wrap">
     <p class="eyebrow" style="margin-top:28px"><span class="dia"></span>Reference</p>
     <h1>How harnesses are composed in Pydantic AI</h1>
-    <p class="lede measure">The harness is everything around the model: instructions, tools, the history you keep, and the code that decides what happens next. In Pydantic AI you build it as a list: <code>Agent(capabilities=[...])</code>. This page is the reference for how that list turns into one request: what each capability can add, in what order, and how Pydantic AI combines them when several capabilities add the same kind of thing.</p>
-    <p class="measure">Part 2, <a href="../part2/06-capabilities.html">chapter 6</a> tells the story of why you package a harness into capabilities; the <a href="capabilities.html">Capability gallery</a> is where you find one. Every snippet here runs offline: <code>uv run code/reference/composing_harnesses.py</code>.</p>
+    <p class="lede measure">A harness surrounds the model with instructions, tools, history, and control flow. In Pydantic AI, build it as a list: <code>Agent(capabilities=[...])</code>. This page explains what capabilities add, in what order, and how contributions combine.</p>
+    <p class="measure">See <a href="../part2/06-capabilities.html">Part 2, chapter 6</a> for why to package a harness as capabilities, and the <a href="capabilities.html">Capability gallery</a> to find one. Run every snippet offline with <code>uv run code/reference/composing_harnesses.py</code>.</p>
     <ol class="toc-mini">
       <li><a href="#contributions">What one capability contributes</a></li>
       <li><a href="#several">Several capabilities on one agent</a></li>
@@ -18,7 +18,7 @@ description: A harness is the list of capabilities on an agent. What each capabi
     <section id="contributions">
       <h2>What one capability contributes</h2>
       <div class="prose measure">
-        <p>A capability is a class with optional methods. Each method it overrides adds one kind of thing to the agent. <code>Capability(...)</code> with decorators covers instructions and tools; <code>Hooks()</code> covers lifecycle hooks; a subclass of <code>AbstractCapability</code> covers everything. The right-hand column says how Pydantic AI combines what several capabilities add.</p>
+        <p>A capability is a class whose optional methods add contributions to an agent. Use decorated <code>Capability(...)</code> for instructions and tools, <code>Hooks()</code> for lifecycle hooks, or subclass <code>AbstractCapability</code> for any contribution. The right-hand column shows how contributions combine.</p>
       </div>
       <div class="tbl-wrap">
 <table class="tbl">
@@ -38,19 +38,19 @@ description: A harness is the list of capabilities on an agent. What each capabi
 </table>
       </div>
       <div class="prose measure">
-        <p>Instructions, tools and model settings are assembled before any model-request hook runs, so <code>before_model_request</code> sees the request about to be sent, tools and settings included. The <a href="#your-own">collections harness below</a> shows a real one: the agent's instructions, then the billing world's static rule, then its appended close notice, then the received date that changes on every email.</p>
+        <p>Instructions, tools, and model settings are assembled before model-request hooks run. So <code>before_model_request</code> sees the complete outgoing request. The <a href="#your-own">collections harness below</a> shows the order: agent instructions, billing rules, an appended close notice, and the received date for each email.</p>
       </div>
     </section>
 
     <section id="several">
       <h2>Several capabilities on one agent</h2>
       <div class="prose measure">
-        <p>The list order is the composition order. All the capabilities on an agent become one <code>CombinedCapability</code> that nests the hooks like layers, the way web framework middleware does: every <code>wrap_*</code> is entered before any <code>before_*</code> runs, <code>before_*</code> hooks fire first to last, <code>after_*</code> hooks fire last to first. Two traced capabilities, <code>A</code> then <code>B</code>:</p>
+        <p>List order is composition order. An agent's capabilities form one <code>CombinedCapability</code> with nested hooks, like web middleware: all <code>wrap_*</code> hooks enter before <code>before_*</code>; before hooks run first to last, after hooks last to first. Here, traced capabilities <code>A</code> and <code>B</code>:</p>
       </div>
 {{code order_core "Two capabilities that record when their hooks run, from composing_harnesses.py"}}
 {{out 25-26}}
       <div class="prose measure">
-        <p>So the first capability's hooks run before the others' on the way in, and after them on the way out. Put a check or an audit log (a record of every request) first when it must see everything the others do, including what they change. A capability that has to sit at one position wherever it's listed declares it with <code>get_ordering()</code>: <code>position='outermost'</code> or <code>'innermost'</code>, <code>wraps=[...]</code>, <code>wrapped_by=[...]</code>, and <code>requires=[...]</code> for a capability that must be present. <code>Hooks(ordering=...)</code> takes the same constraints.</p>
+        <p>The first capability enters first and exits last. Put checks or audit logs (records of every request) first when they must see other capabilities' changes. Use <code>get_ordering()</code> to constrain position with <code>position='outermost'</code> or <code>'innermost'</code>, <code>wraps=[...]</code>, <code>wrapped_by=[...]</code>, or <code>requires=[...]</code> for a required capability. <code>Hooks(ordering=...)</code> accepts the same constraints.</p>
         <h3>What collides, and what merges</h3>
       </div>
 {{code conflicts "code/reference/composing_harnesses.py, two capabilities with a lookup_invoice tool"}}
@@ -68,28 +68,28 @@ description: A harness is the list of capabilities on an agent. What each capabi
 </table>
       </div>
       <div class="prose measure">
-        <p>Capabilities don't call each other directly. To share state, put it in your deps, or have one capability <a href="https://pydantic.dev/docs/ai/capabilities/overview/#capability-events">emit an event</a> another listens for.</p>
+        <p>Capabilities share state through deps or <a href="https://pydantic.dev/docs/ai/capabilities/overview/#capability-events">events</a> that another capability listens for.</p>
       </div>
     </section>
 
     <section id="bundles">
       <h2>Bundles: a capability made of capabilities</h2>
       <div class="prose measure">
-        <p>A bundle is a <code>CombinedCapability</code>: one capability that groups several others. Put one in an agent's list and its parts take its place, in order, so every rule above applies to the parts as if you'd listed them yourself. A capability listed after the bundle can override one of its settings, as <code>Temperature</code> does in <a href="#your-own">your own harness</a> below.</p>
-        <p>Three more ways to package:</p>
+        <p>A bundle is a <code>CombinedCapability</code> that groups capabilities. In an agent's list, its ordered parts act as if listed directly, so the same composition rules apply. A later capability can override a bundle's setting, as <code>Temperature</code> does in <a href="#your-own">your own harness</a>.</p>
+        <p>Other packaging options:</p>
         <ul>
           <li><b>A plain <code>Capability</code></b> is a bundle of instructions and tools, closest to a skill. With <code>defer_loading=True</code> it becomes an <a href="https://pydantic.dev/docs/ai/capabilities/on-demand/">on-demand capability</a>: a one-line catalog entry until the model loads it.</li>
           <li><b>A <code>WrapperCapability</code></b> wraps one capability and changes some of what it does; <code>PrefixTools</code> is one.</li>
           <li><b>A package</b>: a capability published as a Python package, usually named <code>pydantic-ai-&lt;name&gt;</code>, so other projects can install it, usable from Python or an <a href="https://pydantic.dev/docs/ai/core-concepts/agent-spec/">agent spec</a> file. See <a href="https://pydantic.dev/docs/ai/capabilities/custom/#publishing-capabilities">publishing capabilities</a>.</li>
         </ul>
-        <p>The Harness's prebuilt harnesses, <a href="https://pydantic.dev/docs/ai/harness/coder/">Coder</a> and <a href="https://pydantic.dev/docs/ai/harness/researcher/">Researcher</a>, are bundles: subclasses of <code>CombinedCapability</code> whose constructor picks the parts.</p>
+        <p>The Harness provides <a href="https://pydantic.dev/docs/ai/harness/coder/">Coder</a> and <a href="https://pydantic.dev/docs/ai/harness/researcher/">Researcher</a> as bundles: <code>CombinedCapability</code> subclasses whose constructors select the parts.</p>
       </div>
     </section>
 
     <section id="coder">
       <h2>Coder, taken apart</h2>
       <div class="prose measure">
-        <p><code>Coder</code> is a list you can print. Its constructor builds the parts from its arguments and hands them to <code>CombinedCapability</code>:</p>
+        <p><code>Coder</code>'s constructor builds its parts from the arguments and passes them to <code>CombinedCapability</code>:</p>
       </div>
 {{code coder "code/reference/composing_harnesses.py, Coder's parts · pydantic-ai-harness 0.68"}}
 {{out 36-47}}
@@ -113,31 +113,31 @@ description: A harness is the list of capabilities on an agent. What each capabi
 </table>
       </div>
       <div class="prose measure">
-        <p>Two ways to change it. Flags turn parts off or swap one in; the request shows the difference, here in a project whose <code>AGENTS.md</code> says to run pytest:</p>
+        <p>Flags disable or swap parts. Here is the resulting request for a project whose <code>AGENTS.md</code> says to run pytest:</p>
       </div>
 {{out 48-55}}
       <div class="prose measure">
-        <p>For anything <code>Coder</code>'s options don't cover (a command allowlist, a different compaction, read-only files), list the pieces yourself. The gallery's <a href="capabilities.html#coder">reviewer</a> is <code>Coder</code>'s pieces, chosen differently: it reads and runs tests but has no file-writing tools. What you add next to <code>Coder</code>, like <a href="https://pydantic.dev/docs/ai/harness/permissions/"><code>Permissions</code></a> for approvals, composes like any other capability, and when <code>Coder</code> starts a fresh run of itself as a sub-agent, that run gets it too.</p>
+        <p>For options <code>Coder</code> lacks, such as command allowlists, different compaction, or read-only files, list the pieces yourself. The gallery's <a href="capabilities.html#coder">reviewer</a> uses <code>Coder</code> parts for reading and tests, without file-writing tools. Other capabilities, such as <a href="https://pydantic.dev/docs/ai/harness/permissions/"><code>Permissions</code></a>, compose alongside <code>Coder</code> and are included when it starts itself as a sub-agent.</p>
       </div>
     </section>
 
     <section id="your-own">
       <h2>Your own harness, as a composition</h2>
       <div class="prose measure">
-        <p>Part 2's billing agent, packaged the way <code>Coder</code> is: a <code>CombinedCapability</code> whose parts are the billing world from <a href="../part2/06-capabilities.html">chapter 6</a>, a model setting, a history policy and an audit hook. Each part is one kind of contribution, and each flag is a swap.</p>
+        <p>This packages Part 2's billing agent like <code>Coder</code>: a <code>CombinedCapability</code> containing the billing world from <a href="../part2/06-capabilities.html">chapter 6</a>, a model setting, history policy, and audit hook. Each part contributes one kind of behavior; flags swap parts.</p>
       </div>
 {{code harness_core "The harness, and two agents that wear it, from composing_harnesses.py"}}
       <div class="prose measure">
-        <p>Thursday during close, each agent's first request. The instructions follow the order from the <a href="#contributions">table above</a>; <code>mark_paid</code> is gone because the billing world's <code>prepare</code> hid it; and the reminders agent's <code>Temperature</code>, listed after the bundle, merged with the one inside it and won:</p>
+        <p>Each agent's first request follows the order in the <a href="#contributions">table above</a>. The billing world's <code>prepare</code> hides <code>mark_paid</code>. The reminders agent's later <code>Temperature</code> merges with and overrides the bundle's setting:</p>
       </div>
 {{out 3-22}}
-      <div class="deeper measure"><p class="eyebrow">Go deeper: bundle or list?</p><p>A list in each agent's constructor is fine for two agents. Reach for a bundle when a third agent needs the same harness, when you want flags rather than copied lists, or when you'll publish it. Either way, the request is the same: a bundle adds nothing a list doesn't.</p></div>
+      <div class="deeper measure"><p class="eyebrow">Go deeper: bundle or list?</p><p>A list in each constructor works for two agents. Use a bundle to share a harness with more agents, add flags instead of copying lists, or publish it. A bundle produces the same request as a list.</p></div>
     </section>
 
     <section id="delegation">
       <h2>Agents, sub-agents and delegation</h2>
       <div class="prose measure">
-        <p>An agent is a harness around a model; more than one agent is a composition of harnesses. Three shapes, from the least machinery to the most:</p>
+        <p>Agents can be composed in three ways, from simplest to most structured:</p>
       </div>
       <div class="tbl-wrap">
 <table class="tbl">
@@ -150,12 +150,12 @@ description: A harness is the list of capabilities on an agent. What each capabi
 </table>
       </div>
       <div class="prose measure">
-        <p>A dispute classifier as a sub-agent of the billing agent. It wears the same billing world, so it reads Dana's email through the parent's deps:</p>
+        <p>A dispute classifier can be a billing sub-agent. It uses the same billing world and reads Dana's email through the parent's deps:</p>
       </div>
 {{code delegate "code/reference/composing_harnesses.py, a sub-agent in the same world"}}
 {{out 58-60}}
       <div class="prose measure">
-        <p>Four requests: two from the parent agent, two from the sub-agent it delegated to, counted on one usage, so a <code>UsageLimits</code> on the lead bounds the whole tree. A handoff, where the run ends and your code routes the case, is an output type rather than a capability; chapter 7 shows it. For a whole graph of agents, see <a href="https://pydantic.dev/docs/ai/guides/multi-agent-applications/">multi-agent applications</a>.</p>
+        <p>The four requests, two each from parent and sub-agent, share one usage count. A <code>UsageLimits</code> on the lead bounds the whole tree. A handoff ends a run so your code can route the case; it is an output type, not a capability. See chapter 7 or <a href="https://pydantic.dev/docs/ai/guides/multi-agent-applications/">multi-agent applications</a> for agent graphs.</p>
       </div>
     </section>
 

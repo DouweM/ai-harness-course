@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Harness engineering with Pydantic AI</title>
-<meta name="description" content="An interactive course: design an agent from the model's side, build it with Pydantic AI, and measure what works.">
+<meta name="description" content="Design, build, and measure agents with Pydantic AI.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
@@ -45,13 +45,13 @@
       <div>
         <p class="eyebrow"><span class="dia"></span>An interactive course</p>
         <h1>Harness engineering with <span class="pink">Pydantic AI</span></h1>
-        <p class="argument">An agent is a model plus its <strong>harness</strong>: the instructions, the tools, the history you keep, and the code that decides what happens next. Harness engineering is improving that harness one idea at a time. You <strong>design</strong> it from the model's side, by reading its page (everything the model receives for one request: its instructions, the tool definitions and the conversation so far) and spotting what is missing; you <strong>build</strong> the idea with Pydantic AI; and you <strong>measure</strong> it against what you have: which is better, by how much, on which cases. Building a first version is only the start: after that, you keep improving it the same way.</p>
+        <p class="argument">An agent is a model plus its <strong>harness</strong>: its instructions, tools, history, and the code that decides what happens next. Harness engineering improves that harness. <strong>Design</strong> from the model's side by reading its page (everything it receives for one request: instructions, tool definitions, and conversation) and spotting what's missing. <strong>Build</strong> with Pydantic AI, then <strong>measure</strong> against your current version: which is better, by how much, and on which cases. Repeat the loop.</p>
         <ol class="skill-list">
-          <li><span class="k">Design it from the model's side</span><a href="#part-1"><b>Part 1: How the model sees the world.</b> What it can see, whose voice it trusts, how its world stays current. Where ideas come from.</a></li>
-          <li><span class="k">Build it with Pydantic AI</span><a href="#part-2"><b>Part 2: Building it with Pydantic AI.</b> One agent that helps a billing team get paid, through one customer's week: instructions, tools, history, the answer form, then all of it as one capability, then more agents, more interfaces (chat, web, phone) and tests.</a></li>
-          <li><span class="k">Measure what works</span><a href="#part-3"><b>Part 3: Production, and measuring what works.</b> Production, model choice, evals, and your own probes.</a></li>
+          <li><span class="k">Design it from the model's side</span><a href="#part-1"><b>Part 1: How the model sees the world.</b> What it sees, whose voice it trusts, and how its world stays current. Find ideas for improvement.</a></li>
+          <li><span class="k">Build it with Pydantic AI</span><a href="#part-2"><b>Part 2: Building it with Pydantic AI.</b> Build a billing agent: instructions, tools, history, answer form, capabilities, more agents, interfaces (chat, web, phone), and tests.</a></li>
+          <li><span class="k">Measure what works</span><a href="#part-3"><b>Part 3: Production, and measuring what works.</b> Production, model choice, evals, and probes.</a></li>
         </ol>
-        <p class="measure"><b>Afterwards, your team can</b> read any agent's page the way its model does and name what's missing, build the fix as a reusable Pydantic AI capability, and show, by running the old and the new version side by side on your own cases, whether the change helped.</p>
+        <p class="measure"><b>Afterwards, your team can</b> read an agent's page from the model's view, find what's missing, build a reusable Pydantic AI capability, and compare versions on your own cases.</p>
         <div class="btn-row">
           <a class="btn" href="part1/01-what-youre-talking-to.html" data-continue>Start with Part 1</a>
         </div>
@@ -83,7 +83,7 @@
   <section class="band" id="chapters">
     <div class="wrap">
       <h2>The chapters</h2>
-      <p class="muted measure">Runtimes are for reading everything; skim what you already know.</p>
+      <p class="muted measure">Runtimes cover every page; skim what you know.</p>
       <div class="parts" data-home-parts></div>
     </div>
   </section>
@@ -92,7 +92,7 @@
     <div class="wrap">
       <div class="getcode" id="get-the-code">
         <h3>Get the code</h3>
-        <p>To run the examples yourself, clone the course repo and run each "Run it" command from inside it. You need <code>git</code> and <a href="https://docs.astral.sh/uv/">uv</a>; uv installs Python 3.11+ and everything else. The examples run offline, against stand-in models, so they need no API key. To try a change against a real model, you need that provider's key.</p>
+        <p>Clone the repo to run each "Run it" command. You need <code>git</code> and <a href="https://docs.astral.sh/uv/">uv</a>; uv installs Python 3.11+ and dependencies. Examples use offline stand-in models, with no API key. Real model runs need that provider's key.</p>
 <pre class="getcode-cmd">git clone https://github.com/DouweM/ai-harness-course
 cd ai-harness-course
 uv sync</pre>
@@ -104,18 +104,18 @@ uv sync</pre>
     <div class="wrap usage">
       <div>
         <h3>Presenting it</h3>
-        <p>Press <kbd>P</kbd> on any page for talk mode, a view for presenting the course to a room. Prose folds away, and transcripts, predictions and results fill the screen. <kbd>&rarr;</kbd> or a clicker moves between stops and on to the next chapter, <kbd>R</kbd> reveals, <kbd>1</kbd> to <kbd>4</kbd> pick an answer for the room, <kbd>N</kbd> shows speaker notes.</p>
+        <p>Press <kbd>P</kbd> for talk mode: prose folds away, and transcripts, predictions, and results fill the screen. Use <kbd>&rarr;</kbd> or a clicker to move between stops and chapters, <kbd>R</kbd> to reveal, <kbd>1</kbd> to <kbd>4</kbd> to choose, and <kbd>N</kbd> for speaker notes.</p>
         <button class="btn ghost" type="button" data-talk-start>Try talk mode</button>
       </div>
       <div>
         <h3>With your coding agent</h3>
-        <p>Open your coding agent in this repo<span data-repo-link hidden> (<a data-repo-href href="#">clone it here</a>)</span>. Every chapter has an <b>Ask your agent</b> button that copies a prompt naming the chapter. Your agent reads <code>AGENTS.md</code>, which maps each chapter to notes, docs and runnable code. Ask it to go deeper, to map the chapter onto your own agent, or to run the code with you.</p>
+        <p>Open your coding agent in this repo<span data-repo-link hidden> (<a data-repo-href href="#">clone it here</a>)</span>. Each chapter's <b>Ask your agent</b> button copies a prompt naming the chapter. The agent reads <code>AGENTS.md</code>, which links chapters to notes, docs, and runnable code. Ask it to explain a concept, apply it to your agent, or run the code with you.</p>
       </div>
     </div>
   </section>
 </main>
 
-<footer><div class="wrap"><p>Pydantic AI is open source (MIT). Results in this course come from our own small, dated runs on the models named; read them as big effects only, and re-run before you build on a number. This site uses Pydantic Logfire too: we see which pages people read and where they stop, so we can fix what is unclear.</p></div></footer>
+<footer><div class="wrap"><p>Pydantic AI is open source (MIT). Results come from small, dated runs on the named models; treat them as large effects and re-run before relying on a number. This site uses Pydantic Logfire to track which pages people read and where they stop, so we can clarify confusing parts.</p></div></footer>
 
 <script src="assets/course.js"></script>
 </body>

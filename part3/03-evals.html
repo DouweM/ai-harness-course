@@ -37,7 +37,7 @@
       <section id="dataset">
         <h2>The dataset you already have</h2>
         <div class="prose measure">
-          <p>Every time someone fixes what your agent or an older LLM call decided, they create a labeled case: a real input and the answer they stand behind. Export 20 and you have a dataset. Dana's week alone gave you three: Tuesday's promise, Wednesday's correction and Friday's dispute. Ours has emails like those and more. Then pick evaluators, the checks that score each answer, for two questions: did it decide like the team, and did it make the expensive mistake? Here that is recording a promise to pay that the customer never made.</p>
+          <p>Each correction creates a labeled case: a real input and the answer the team stands behind. Export 20 cases for a dataset. For Dana's billing agent, an email about INV-2041 is one such case. Pick evaluators, the checks that score each answer, to ask whether it matches the team and avoids the expensive mistake: recording a promise the customer never made.</p>
         </div>
         <div class="code" data-src="code/part3/ch3_evals.py" data-run="uv run code/part3/ch3_evals.py">
           <div class="code-head"><span class="file">code/part3/ch3_evals.py &middot; pydantic-evals 2.x</span></div>
@@ -72,8 +72,8 @@ class NoPromiseNobodyMade(Evaluator[Email, Decision]):
       <section id="arms">
         <h2>Two arms: the agent before Part 2, and after</h2>
         <div class="prose measure">
-          <p>An experiment compares versions, called arms, on the same cases. Arm A is the simplest version of Part 1 chapter 1's agent: one call returning JSON with a confidence, written to the ledger at 70 or more. Arm B is the kind of agent Part 2 builds: a typed answer form, a lookup tool, and code that writes only a promise made to us, for an invoice we know. Its form has two fields Part 2's doesn't: <code>addressed_to_us</code>, whether the promise is made to us rather than to someone else, and <code>evidence</code>, the email's own words that back the answer (<code>code/part3/eval_world.py</code>). This is <code>promise_router</code>, the classifier chapter 2 froze specs for.</p>
-          <p>Arm B changes many things at once, so this chapter answers "did the move pay off, and on which cases?". Measuring one idea at a time is chapter 4.</p>
+          <p>An experiment compares versions, called arms, on the same cases. Arm A follows Part 1 chapter 1: one call returns JSON with a confidence, and scores of 70 or more go to the ledger. Arm B follows Part 2: a typed answer form, lookup tool, and code that writes only promises made to us for known invoices. Its form adds <code>addressed_to_us</code> (who the promise is for) and <code>evidence</code> (the email words that support the answer; <code>code/part3/eval_world.py</code>). This is <code>promise_router</code>, the classifier specified in chapter 2.</p>
+          <p>Arm B changes several things, so this chapter asks whether the change helped and on which cases. Chapter 4 measures one idea at a time.</p>
         </div>
         <div class="code" data-src="code/part3/ch3_evals.py" data-run="uv run code/part3/ch3_evals.py">
           <div class="code-head"><span class="file">code/part3/ch3_evals.py &middot; the two tasks</span></div>
@@ -129,7 +129,7 @@ report.print(baseline=baseline, include_input=True)</pre>
           </div>
           <div class="stage" data-label="What the report showed" hidden>
             <p class="eyebrow"><span class="dia"></span>What the report showed</p>
-            <p class="headline">Arm A wrote four promises nobody made, each at confidence 90 or more. Arm B wrote none. Its four misses were the other way round: real promises it didn't write.</p>
+            <p class="headline">Arm A wrote four unmade promises, each at confidence 90 or more; Arm B wrote none. Arm B instead missed four real promises.</p>
             <div class="result-grid two">
               <div class="arm">
                 <h4>A: single-shot call<small>GPT-6.1 Sol</small></h4>
@@ -146,7 +146,7 @@ report.print(baseline=baseline, include_input=True)</pre>
           </div>
           <div class="stage" data-label="And on another model" hidden>
             <p class="eyebrow"><span class="dia"></span>And on another model</p>
-            <div class="measure"><p>On Claude Sonnet 5.5 the same experiment comes out differently: the old call agreed with the team on 19 of 20 and the agent on 16, with one wrong write each. Two of the agent's misses are real promises without an invoice number, which its code sends to a person by design. So the honest answer to "is the agent better?" is: on which model, and for which mistake. You can only answer that on your own cases.</p></div>
+            <div class="measure"><p>On Claude Sonnet 5.5, the old call agreed with the team on 19 of 20 and the agent on 16; each made one wrong write. The agent also sent two real promises without invoice numbers to a person, as designed. Which arm is better depends on the model and the mistake. Test your own cases.</p></div>
             <div class="tok-says"><div class="tk" data-tok="current" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Sixteen out of twenty, both times. Ask me which four.</p></div></div>
           </div>
         </article>
@@ -156,7 +156,7 @@ report.print(baseline=baseline, include_input=True)</pre>
       <section id="cases">
         <h2>Every case, both arms</h2>
         <div class="prose measure">
-          <p>This is what the report looks like when you read it. Click any email to see what each arm said; switch models to watch the story change.</p>
+          <p>Click an email to compare the arms. Switch models to see how their results differ.</p>
         </div>
         <div class="cg" data-cases data-stop>
           <div class="cg-models" role="group" aria-label="Model">
@@ -178,7 +178,7 @@ report.print(baseline=baseline, include_input=True)</pre>
       <section id="logfire">
         <h2>In Logfire, and on live traffic</h2>
         <div class="prose measure">
-          <p>With <code>logfire.configure()</code>, each <code>evaluate()</code> call is an experiment in Logfire, and each case links to its full trace. Run from CI (the tests that run on every pull request), Pydantic Evals records the branch and commit, so a pull request compares against its base. Evaluators that need no label also run on production traffic through the <code>OnlineEvaluation</code> capability, sampled, in the background:</p>
+          <p>With <code>logfire.configure()</code>, each <code>evaluate()</code> call is an experiment in Logfire, with a link from each case to its trace. In CI (tests run on every pull request), Pydantic Evals records the branch and commit for comparison with the base. The <code>OnlineEvaluation</code> capability also runs evaluators that need no label on sampled production traffic in the background:</p>
         </div>
         <div class="code" data-src="code/part3/ch3_online_evals.py" data-run="uv run code/part3/ch3_online_evals.py">
           <div class="code-head"><span class="file">code/part3/ch3_online_evals.py</span></div>
@@ -203,7 +203,7 @@ agent = Agent(
 )</pre>
         </div>
         <details class="deeper"><summary>Go deeper: habits that make the comparison trustworthy</summary>
-          <p>Run each case more than once (<code>repeat=3</code>) when outputs vary. Add cases as corrections come in, especially the surprising ones. Give an LLM judge a small <code>sample_rate</code> and a concurrency cap online, and await <code>wait_for_evaluations()</code> on shutdown so pending scores aren't lost. The cases your production checks (online evals) flag are the best ones to add to the dataset next.</p>
+          <p>When outputs vary, run each case more than once (<code>repeat=3</code>). Add surprising corrections as cases. For an online LLM judge, set a small <code>sample_rate</code> and concurrency cap. Await <code>wait_for_evaluations()</code> on shutdown to save pending scores. Add cases flagged by online evals to the dataset.</p>
         </details>
         <ul class="docs">
           <li><a href="https://pydantic.dev/docs/ai/evals/evals/">Pydantic Evals</a></li>

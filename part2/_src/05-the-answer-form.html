@@ -1,5 +1,5 @@
 title: The answer form
-description: The output type is the form the model fills in. When a real answer doesn't fit the form, the model squeezes it in and drops the rest. Give the form a shape that holds what customers actually say, and check it against your data.
+description: The output type is the form the model fills in. When an answer doesn't fit, the model may drop details. Shape the form around what customers say, and check it against your data.
 n: 5
 runtime: 6
 ---
@@ -23,10 +23,10 @@ runtime: 6
     <div class="wrap" data-chapter-end>
 
       <section id="split">
-        <h2>Wednesday: half now, the rest later</h2>
+        <h2>Half now, the rest later</h2>
         <aside class="notes"><p>The point: the form decides what the model can say. Real data: every run on every model dropped half of the promise with Tuesday's form, and every run kept both with installments.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Wednesday 18 Nov, 16:40</span>"Correction on INV-2041: we'll pay half this Friday and the rest by the 30th. Dana." The agent still has Tuesday's form: one amount, one due date.</p>
+          <p class="story">Dana corrects INV-2041: "We'll pay half this Friday and the rest by the 30th." The form has one amount and one due date.</p>
         </div>
         {{code ch5_answer_form.py one "code/part2/ch5_answer_form.py, Tuesday's form"}}
         <article class="puzzle" id="p1" data-answer="c">
@@ -78,28 +78,28 @@ runtime: 6
       <section id="modes">
         <h2>Three ways to ask for structure</h2>
         <div class="prose measure">
-          <p>Pydantic AI can ask the model for the same form in three ways. <b>Tool output</b> offers an output tool to call, works with every tool-calling model and mixes freely with other tools. <b>Native output</b> uses the provider's own structured-output mode. <b>Prompted output</b> puts the schema in the instructions and parses JSON text. Give a list of types and the answer can be any one of them: one output tool per type, and the model picks. Validation, validators and retries work the same in all three.</p>
-          <p>Without a wrapper, the model profile picks: tool output on most models, but native output on Claude models when the request uses extended thinking (reasoning before answering), which Sonnet 5.5 does by default (since 2.52). Pin <code>ToolOutput(...)</code> to keep the tool path on every model, as this course does (on a thinking Claude request the output tool is offered rather than forced, so if the model answers in plain text instead, Pydantic AI spends one retry asking for the form).</p>
+          <p>Pydantic AI can request a form in three ways. <b>Tool output</b> offers an output tool, works with tool-calling models, and mixes with other tools. <b>Native output</b> uses the provider's structured-output mode. <b>Prompted output</b> puts the schema in the instructions and parses JSON text. For a list of types, the model picks one through a separate output tool for each type. Validation and retries work the same in all three.</p>
+          <p>Without a wrapper, the model profile chooses the mode: tool output on most models, native output on Claude models using extended thinking (reasoning before answering), which Sonnet 5.5 uses by default (since 2.52). Pin <code>ToolOutput(...)</code> to use the tool path on every model. On a thinking Claude request, the output tool is offered, not forced; if the model answers in plain text, Pydantic AI retries once and asks for the form.</p>
         </div>
         {{code ch5_answer_form.py modes "code/part2/ch5_answer_form.py, the three modes"}}
         <div class="deeper measure">
           <p class="eyebrow">Go deeper: when prompted output is the right call</p>
-          <p>Reach for <code>PromptedOutput</code> when the other two can't carry your form: a schema too large or too nested for a provider's structured-output mode (some reject deep unions or long enums outright), a model or gateway that stalls or gets worse when the provider forces its output to follow the schema, or a model with no tool calling at all. You trade enforcement for reach: the model can write JSON with missing fields or wrong types, so validation and retries do the enforcing.</p>
+          <p>Use <code>PromptedOutput</code> when the other modes cannot carry your form: the schema is too large or nested for the provider (some reject deep unions or long enums), the model or gateway stalls or performs worse when the provider enforces the schema, or the model has no tool calling. The model can return JSON with missing fields or wrong types, so validation and retries enforce the form.</p>
         </div>
       </section>
 
       <section id="doubts">
         <h2>Room for doubt</h2>
         <div class="prose measure">
-          <p>A form decides what the model can say, and that includes "something here doesn't add up". Chapter 6's agent carries one more field, <code>doubts: list[str]</code>, "anything in the email that doesn't add up, in your own words". It's the field Part 1 chapter 2 measured: contradictory emails reached a person 30 times out of 30 with a doubts list, and 0 of 30 with a confidence score, because a model writes 95 on almost anything but will name what bothers it. Your code acts on it: a non-empty list goes to a person.</p>
+          <p>A form can include a way to say "something here doesn't add up". Chapter 6's agent adds <code>doubts: list[str]</code>: "anything in the email that doesn't add up, in your own words". In Part 1 chapter 2, contradictory emails reached a person 30 times out of 30 with a doubts list, and 0 of 30 with a confidence score. Models often give a high confidence score but can name what bothers them. The code sends a non-empty list to a person.</p>
         </div>
       </section>
 
       <section id="now">
         <div class="rule">
           <p class="eyebrow">What you can do now</p>
-          <p>Take ten real emails your agent got wrong and check each against your output type: could the right answer even be written down? Give it the shape customers actually use, plus a validator that checks it against your data.</p>
-          <p class="see-lf"><b>See it in Logfire.</b> The answer form is one of the tool definitions on every request. When the answer fails validation, the trace shows the retry: one more request, with the validation error the model was sent.</p>
+          <p>Check ten emails your agent got wrong against its output type: can it represent the right answer? Match the form to what customers say, and add a validator that checks it against your data.</p>
+          <p class="see-lf"><b>See it in Logfire.</b> The answer form appears in each request's tool definitions. If validation fails, the trace shows the retry request and the validation error sent to the model.</p>
         </div>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>

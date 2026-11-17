@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Capabilities · Harness engineering</title>
-<meta name="description" content="Design the page first: what the model should read, in whose voice, from what moment. Pydantic AI gives you a fixed set of moments to add to it, and every harness feature, from approvals to background tools to code mode, is a few insertions at those moments. A capability packages them once, for any agent. The built-ins and Coder are made the same way.">
+<meta name="description" content="Design what the model reads, in whose voice, and when. Pydantic AI provides set moments for additions. Capabilities package these features for any agent, including built-ins and Coder.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
@@ -23,7 +23,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
         <h1>Capabilities</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">Start from the page you want the model to read. <b>Every harness feature puts something on that page, at a known moment, in one of the voices from Part 1; a capability packages a set of them so any agent can use it.</b> The built-ins, and whole agents like Coder, are made the same way.</p>
+        <p class="point">Start from the page you want the model to read. <b>Every harness feature adds something to that page at a known moment and in a particular voice; a capability packages additions for any agent.</b> Built-ins and whole agents like Coder use the same approach.</p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -40,34 +40,34 @@
         <h2>Start from the page you want</h2>
         <aside class="notes"><p>The first half of the chapter, about 7 minutes. The point: design the page first (what the model should read, in which voice, from what moment), then pick mechanisms. Every feature in the recipe table is a few insertions at known moments. Then the second half packages them.</p></aside>
         <div class="prose measure">
-          <p class="story"><span class="when">Friday 20 Nov, 10:45</span>A quarter of an hour after chapter 4's email, the billing app's morning job asks the agent for today's note to Dana: the first half is due today. At 10:46, while the agent is looking the invoice up, the bank feed (the incoming payments your bank reports) shows her wire, a bank transfer, coming in. The bank confirms it at 17:40, and Part 3 records it; for now it is on its way.</p>
+          <p class="story">The billing app asks the agent to draft a note to Dana: the first half of INV-2041 is due. While the agent looks up the invoice, the bank feed (incoming payments reported by your bank) shows her wire, a bank transfer, as incoming but not yet confirmed. Part 3 records the confirmation.</p>
           <p>Before any code, write down the page you want the model to read when it writes that note. Here it is, simplified, in the order the model reads it:</p>
         </div>
-        <div class="transcript" aria-label="The page we want at 10:47">
-          <div class="tr-title">// the page we want the model to read at 10:47</div>
+        <div class="transcript" aria-label="The page we want the model to read">
+          <div class="tr-title">// the page we want the model to read</div>
           <div class="msg sys"><span class="who">instructions</span><div class="body">You handle customers' emails about their invoices with us, and record what they promise.
 Amounts and invoice numbers come from our billing system, never from an email alone.
 Month-end close is running until Monday: mark_paid is unavailable, so say so.
 This message was received on Friday 2026-11-20.</div></div>
           <div class="msg sys"><span class="who">tool definitions</span><div class="body mono">read_email, lookup_invoice, record_payment   (mark_paid: off the page during close)</div></div>
-          <div class="msg user"><span class="who">user: the billing app, 10:45</span><div class="body">INV-2041: the first half, 2,060.00, is due today. Draft today's note to Dana.</div></div>
+          <div class="msg user"><span class="who">user: the billing app</span><div class="body">INV-2041: the first half, 2,060.00, is due today. Draft today's note to Dana.</div></div>
           <div class="msg call"><span class="who">model &rarr; tool call</span><div class="body mono">lookup_invoice(invoice_number='INV-2041')</div></div>
           <div class="msg tool"><span class="who">tool result: lookup_invoice</span><div class="body mono">INV-2041: 4120.00 USD, open</div></div>
-          <div class="msg note"><span class="who">notice from your app, 10:46</span><div class="body"><mark>Changes in our ledger since this conversation started:
-Fri 10:46: bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.</mark></div></div>
+          <div class="msg note"><span class="who">notice from your app</span><div class="body"><mark>Changes in our ledger since this conversation started:
+Bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.</mark></div></div>
           <div class="msg next"><span class="who">model</span><div class="body"><span class="caret"></span></div></div>
           <div class="msg sys"><span class="who">answer form</span><div class="body">Promise, or a plain reply</div></div>
         </div>
         <div class="prose measure">
-          <p>Every line has a voice (Part 1, chapter 3) and a moment it went in. The instructions are yours and go in before every request. The tool list is yours too, and changes with close. The billing app's request is in the user's voice: here the app is the user. The lookup result is data. The incoming wire is a fact from your own systems, so your app says it, in the operator's voice, and it has to arrive <b>during</b> the run, at the end of the page, where a change belongs (Part 1, chapter 4).</p>
-          <p>That is the whole method: for each thing the model should know, decide <b>who says it</b> and <b>from what moment</b>. The rest of this chapter shows where Pydantic AI lets you add to the page, and the features built from those places.</p>
+          <p>Each line has a voice (Part 1, chapter 3) and an arrival point. Instructions and tool definitions come from your app; its request uses the user voice. The lookup result is data. The incoming wire is a system fact, so your app adds it in the operator's voice during the run (Part 1, chapter 4).</p>
+          <p>For each fact, decide <b>who says it</b> and <b>when it arrives</b>. The rest of this chapter covers where Pydantic AI lets you add it.</p>
         </div>
       </section>
 
       <section id="points">
         <h2>Where things go in, and when</h2>
         <div class="prose measure">
-          <p>A run is a loop: a request to the model, its tool calls, their results, the next request. These are the moments you can add to the page or change what's on it, in the order they happen:</p>
+          <p>A run loops through model requests, tool calls, and results. You can add to or change the page at these moments:</p>
         </div>
         <div class="tbl-wrap">
 <table class="tbl">
@@ -86,13 +86,13 @@ Fri 10:46: bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.</m
   </tbody>
 </table>
         </div>
-        <p class="measure">Two rules from Part 1 decide which row you use. Keep the start of the page the same, so the provider can reuse its cache and the model's earlier reasoning still holds: changes go at the end. And give each piece the voice it deserves: a ledger change from your own system is yours to state; an email is data, read by a tool.</p>
+        <p class="measure">Keep the page's start unchanged so the provider can reuse its cache and earlier reasoning still applies. Add changes at the end. Use the right voice: your system states ledger changes; a tool reads email as data.</p>
       </section>
 
       <section id="midrun">
         <h2>What can change during a run</h2>
         <div class="prose measure">
-          <p>The wire shows up at 10:46, in the middle of the run. The ledger instruction from <code>billing_world</code> is read before every request, so it can carry the change, but only if it reads the ledger when it runs. Here are two versions of the same agent: one copies the list of changes into its deps (the data passed into the run) when the run starts, the usual way to pass state; the other gives it the live list, which it reads again before each request. In this demo the wire arrives while the agent is looking the invoice up.</p>
+          <p>The ledger instruction from <code>billing_world</code> runs before every request and can include new facts if it reads the ledger then. Compare two agents: one copies the changes into its deps (data passed into the run) at the start; the other reads the live list before each request. In this demo, the wire arrives during the invoice lookup.</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch6_page.py" data-run="uv run code/part2/ch6_page.py"><div class="code-head"><span class="file">code/part2/ch6_page.py · pydantic-ai 2.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">async def draft_note(*, live: bool) -&gt; tuple[str, list[ModelMessage]]:
     ledger_feed: list[str] = []  # your sync job appends here when the bank reports a payment
@@ -104,7 +104,7 @@ Fri 10:46: bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.</m
         <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>Deps took a copy of the ledger changes at 10:45: Hi Dana, a reminder that the first half of INV-2041, 2,060.00, is due today.
 Deps read the live list, appended on change:    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on the 30th.</pre></div>
         <div class="prose measure">
-          <p>The first note asks Dana for money that is already on its way. Nothing failed: the model wrote from its page, and its page was from 10:45. The second read the ledger before the request after the lookup, and because that instruction is set to <code>on_change='append'</code>, Pydantic AI added the change at the end of the page, in your voice. Here is that page as the model read it, piece by piece:</p>
+          <p>The first note asks Dana for money already on its way: the model saw only the page from run start. The second agent reads the ledger before its next request. With <code>on_change='append'</code>, Pydantic AI adds the change at the end in your voice. Here is the page the model read:</p>
         </div>
         <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>operator You handle customers&#x27; emails about their invoices with us, and record what they promise.     instructions, every request
 operator Amounts and invoice numbers come from our billing system, never from an email alone.         instructions, every request
@@ -124,14 +124,14 @@ model    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on t
             <li><b>The messages sent:</b> old results cleared or summarized as the page fills up (chapter 4).</li>
             <li><b>New messages:</b> a tool's follow-up, a background result, a message from another agent or your app.</li>
           </ul>
-          <p>What you shouldn't change is what the model already read. Rewriting the start of the page makes the provider process everything again, and leaves the model's earlier turns answering text that is no longer there, with nothing saying it changed. Say what changed, at the end.</p>
+          <p>Don't rewrite what the model already read. That makes the provider process everything again and leaves earlier turns answering text that is no longer there. State changes at the end.</p>
         </div>
       </section>
 
       <section id="recipes">
         <h2>Every feature is a recipe</h2>
         <div class="prose measure">
-          <p>With the moments in hand, the features stop being magic. Each one puts something on the page at one of those moments, in some voice. The ones you'll meet most:</p>
+          <p>Each feature adds something to the page at a particular moment and in a particular voice. Common examples:</p>
         </div>
         <div class="tbl-wrap">
 <table class="tbl">
@@ -152,13 +152,13 @@ model    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on t
   </tbody>
 </table>
         </div>
-        <p class="measure">Read a new feature the same way: what does it put on the page, in whose voice, from what moment, and what does the model have to do to get the rest? If you can answer those, you can predict how it behaves, and build your own when nothing fits.</p>
+        <p class="measure">For any feature, ask what it puts on the page, in whose voice, when, and how the model gets the rest. These answers help you predict its behavior and build your own when needed.</p>
       </section>
 
       <section id="context">
         <h2>Making room: the context tricks</h2>
         <div class="prose measure">
-          <p>Every request pays for the whole page, and models choose less well once it's long or the tool list passes a few dozen tools. Each trick below keeps something off the page; the question is what the model must do to get it back, and what that costs.</p>
+          <p>Every request includes the whole page. Models choose less well when it grows long or the tool list has a few dozen entries. Each trick below hides content; consider how the model retrieves it and at what cost.</p>
         </div>
         <div class="tbl-wrap">
 <table class="tbl">
@@ -174,20 +174,19 @@ model    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on t
   </tbody>
 </table>
         </div>
-        <p class="measure">Clearing and compaction change earlier parts of the page, so the provider's cache starts over after them: do them in large steps when the page is nearly full, not a little on every request. The other tricks add at the end and keep the cache. Further reading: <a href="https://pydantic.dev/articles/code-mode-vs-sandboxes">Code mode vs sandboxes for AI agents</a>, on when code mode beats tool calls and how it differs from a sandbox, and <a href="https://pydantic.dev/articles/pydantic-ai-capabilities">Skills on steroids</a>, on on-demand capabilities and what they save.</p>
+        <p class="measure">Clearing and compaction change earlier content, restarting the provider's cache. Use them in larger steps when the page is nearly full. Other tricks add content at the end and keep the cache. Further reading: <a href="https://pydantic.dev/articles/code-mode-vs-sandboxes">Code mode vs sandboxes for AI agents</a>, on when code mode beats tool calls and how it differs from a sandbox, and <a href="https://pydantic.dev/articles/pydantic-ai-capabilities">Skills on steroids</a>, on on-demand capabilities and what they save.</p>
       </section>
 
       <section id="second">
-        <h2>Friday: a second agent</h2>
+        <h2>A second agent</h2>
         <aside class="notes"><p>The second half, about 7 minutes. The point: a tool copied without its rules is the failure; a capability carries the rules with it. Walk the four steps slowly; the rest is a quick tour, and the gallery is for later.</p></aside>
         <div class="prose measure">
-          <p>So far every insertion lives on one agent.</p>
-          <p class="story"><span class="when">Friday 20 Nov, 11:00</span>Half an hour after Dana's wire went out, the team adds a reminders agent: it drafts the reminder for each open invoice. It needs <code>mark_paid</code> too, for customers who say they already paid. Close is still running.</p>
-          <p>The quick way is to register the same function on the new agent. Step through what that gives it, and what changes as each rule from chapters 2 to 5 comes along:</p>
+          <p>Now add a reminders agent that drafts notices for open invoices. It also needs <code>mark_paid</code> for customers who say they have paid, while close is running.</p>
+          <p>Registering the same function gives the new agent the tool. Step through what happens as it gains the rules from chapters 2 to 5:</p>
         </div>
         <div class="viz seq" data-stop data-intro="<b>The point:</b> the rules from chapters 2 to 5 (the date, the close notice, the approval, the payment checks) can all live in one capability, and any agent that uses it gets a tool and its rules together. Here a new reminders agent gets <code>mark_paid</code>, the tool that marks an invoice paid in the ledger. A colleague asks it to mark INV-2045 paid while month-end close is running, when nothing may be written to the ledger. Each step adds one more rule to the capability; watch what the agent answers and whether the ledger gets a write.">
           <p class="eyebrow"><span class="dia"></span>Give the new agent the rules, one at a time</p>
-          <h4>The reminders agent during close. A colleague: "INV-2045 was paid in full by wire this morning. Mark it paid."</h4>
+          <h4>The reminders agent during close. A colleague: "INV-2045 was paid in full by wire. Mark it paid."</h4>
           <ol class="seq-steps">
             <li class="bad" data-caption="Only the tool is copied over, without its rules. The agent marks the invoice paid during close: the ledger gets a write it should not. This is the failure." data-mood="happy" data-say="mark_paid is right here. Done!"><span class="ico">1</span><div><span class="who">Only the tool is copied, none of its rules</span><pre>  tools offered: [&#x27;mark_paid&#x27;]
   outcome:       Done: INV-2045 is marked paid.
@@ -206,13 +205,13 @@ model    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on t
           <div class="viz-tok seq-tok"><span data-tok="11" data-crop="face"></span><p class="seq-say" aria-live="polite"></p></div>
           <p class="source"><b>Offline, deterministic.</b> Tool lists, notices and ledger writes are Pydantic AI 2.68's real behavior; the replies come from a stand-in model that answers from its page (Part 3 chapter 4 shows what real models do). <code>code/part2/ch6_capabilities.py</code></p>
         </div>
-        <p class="measure">Step 1 is the unsafe one: the new agent got the tool without its rules, so it could mark an invoice paid during close. Once the rules travel with the tool in one capability, every agent that has the tool has the rules too.</p>
+        <p class="measure">Step 1 is unsafe: the agent got the tool without its rules and could mark an invoice paid during close. A capability packages the rules with the tool for every agent that uses it.</p>
       </section>
 
       <section id="world">
         <h2>The billing world, packaged</h2>
         <div class="prose measure">
-          <p><code>Capability</code> has the decorators an agent has, so moving the code over is a change of prefix. Below are two pieces of it; the full file has one piece per chapter: the received date (chapter 2), the close notice and the hidden, gated <code>mark_paid</code> (chapter 3), and errors that say whose problem it is (chapter 3). And <code>record_payment</code> now waits for a person too, with its argument checks in <code>args_validator=</code>, so a person is never asked to approve a call that was going to be rejected. Chapters 7 to 9 and Part 3 import this file. A capability can also contribute model settings, a fallback model, history processing and hooks around every request and tool call.</p>
+          <p><code>Capability</code> has the same decorators as an agent, so moving code over changes its prefix. The full file packages the received date (chapter 2), the close notice and gated <code>mark_paid</code> (chapter 3), and errors that identify whose problem they are. <code>record_payment</code> also requires approval and checks arguments with <code>args_validator=</code>, so invalid calls are rejected before approval. Chapters 7 to 9 and Part 3 import this file. Capabilities can also add model settings, fallback models, history processing, and hooks around requests and tool calls.</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/billing_world.py" data-run="uv run code/part2/billing_world.py"><div class="code-head"><span class="file">The capability and its first instructions, from billing_world.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">billing_world = Capability[Deps](
     id=&#x27;billing_world&#x27;,  # names its instruction parts, so a change can be appended
@@ -255,14 +254,14 @@ reminders = Agent(  # Friday&#x27;s second job, in the same world
     output_type=[str, DeferredToolRequests],
     capabilities=[billing_world, audit, Caching()],  # the audit hook on this agent only
 )</pre></div>
-        <p class="measure">Two agents, one world: both read the same date, see the same close notice, and can't write during close. If your system today is a set of single model calls, each with its own copy of the prompt and its own idea of what the ledger says, this is the step that makes them agree.</p>
+        <p class="measure">Both agents share the date and close notice, and neither can write during close. A shared capability keeps agents using separate model calls aligned on ledger state.</p>
       </section>
 
 
       <section id="builtins">
         <h2>Built-ins: check the list first</h2>
         <div class="prose measure">
-          <p>Pydantic AI ships the capabilities that need provider or loop support, and the Harness (<code>pydantic-ai-harness</code>) ships the rest. Four this agent would add, each in one line:</p>
+          <p>Pydantic AI ships capabilities needing provider or loop support; the Harness (<code>pydantic-ai-harness</code>) ships the rest. This agent would add four in one line each:</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch6_capabilities.py" data-run="uv run code/part2/ch6_capabilities.py"><div class="code-head"><span class="file">code/part2/ch6_capabilities.py, built-ins</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import Caching, ModelFallback
 from pydantic_ai_harness.compaction import ClearToolResults
@@ -279,7 +278,7 @@ builtins = [
 ]</pre></div>
         <div class="tbl-wrap">
 <table class="tbl">
-  <thead><tr><th>The eight we use most</th><th>What it does</th></tr></thead>
+  <thead><tr><th>The nine we use most</th><th>What it does</th></tr></thead>
   <tbody>
     <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/thinking/">Thinking</a> <span class="pkg">core</span></td><td>One effort setting for every provider.</td></tr>
     <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/caching/">Caching</a> <span class="pkg">core</span></td><td>Caches the unchanged start of the conversation. On by default in every agent you build: Anthropic caches nothing without it.</td></tr>
@@ -289,6 +288,7 @@ builtins = [
     <tr><td><a href="https://pydantic.dev/docs/ai/harness/system-reminders/">SystemReminders</a> <span class="pkg">harness</span></td><td>Re-states standing rules mid-run, at the end of the page.</td></tr>
     <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/handle-deferred-tool-calls/">HandleDeferredToolCalls</a> <span class="pkg">core</span></td><td>Approves gated calls inside the run, by your policy.</td></tr>
     <tr><td><a href="https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/">DBOSDurability</a> <span class="pkg">core</span></td><td>Runs that survive restarts (Part 3).</td></tr>
+    <tr><td><a href="https://pydantic.dev/docs/ai/core-concepts/workspace/">Workspaces</a> <span class="pkg">core + harness</span></td><td>An environment for the agent to run commands and edit files in: a folder on your machine (<code>LocalWorkspace</code>) or an isolated sandbox (Docker, E2B, Modal and others in the harness). Tools reach it through <code>ctx.workspace</code>, so the same tool runs locally and in a sandbox.</td></tr>
   </tbody>
 </table>
         </div>
@@ -298,7 +298,7 @@ builtins = [
       <section id="blocks">
         <h2>Building blocks for your own</h2>
         <div class="prose measure">
-          <p>Three ways in, from least to most code. <code>Capability(...)</code> with decorators, as above. <code>Hooks()</code> with <code>@hooks.on.&lt;event&gt;</code>, for one lifecycle hook, like an audit log on the reminders agent only. And your own class that inherits from <code>AbstractCapability</code> when the rule needs configuration, tests or a package of its own: here the close rule, as a class that hides every writing tool.</p>
+          <p>There are three ways to build one: use <code>Capability(...)</code> with decorators; use <code>Hooks()</code> and <code>@hooks.on.&lt;event&gt;</code> for a lifecycle hook, such as an audit log on one agent; or inherit from <code>AbstractCapability</code> when a rule needs configuration, tests, or its own package. Here, a class hides every writing tool during close.</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/billing_world.py" data-run="uv run code/part2/billing_world.py"><div class="code-head"><span class="file">code/part2/billing_world.py, a hook</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">import logging
 
@@ -335,13 +335,13 @@ class ReadOnlyDuringClose(AbstractCapability[Deps]):
         if not ctx.deps.closing:  # which tools this request offers
             return tool_defs
         return [t for t in tool_defs if t.name not in self.writing_tools]</pre></div>
-        <p class="measure">If you subclassed or wrapped an agent to add logging or guards, a <code>Hooks</code> capability replaces it, and works on every agent. Any capability, yours included, can load on demand: give it an <code>id</code> and <code>defer_loading=True</code>, as in the recipe table above.</p>
+        <p class="measure">A <code>Hooks</code> capability can replace an agent subclass or wrapper used for logging or guards, and works on every agent. Any capability can load on demand with an <code>id</code> and <code>defer_loading=True</code>.</p>
       </section>
 
       <section id="coder">
         <h2>Coder is capabilities: no magic</h2>
         <div class="prose measure">
-          <p>The Harness also ships whole agents built the same way. <code>Coder</code> is a coding agent in two lines: <code>LocalWorkspace('.')</code> (or a sandbox) for where it works, and <code>Coder()</code>. Taking it apart shows five capabilities and some plumbing:</p>
+          <p>The Harness also ships agents built from capabilities. Create a coding agent with <code>LocalWorkspace('.')</code> (or a sandbox) and <code>Coder()</code>. It combines five capabilities and some plumbing:</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch6_capabilities.py" data-run="uv run code/part2/ch6_capabilities.py"><div class="code-head"><span class="file">code/part2/ch6_capabilities.py, taking Coder apart · pydantic-ai-harness 0.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai_harness.coder import Coder  # uv add &quot;pydantic-ai-harness[coder]&quot;
 
@@ -359,7 +359,7 @@ a cleared file read becomes: &#x27;[tool result cleared]&#x27;, past 70% of the 
           <div class="blk5"><b>ClearToolResults</b><span>chapter 4, at 70% of the window</span></div>
           <div class="blk5 plumb"><b>plumbing</b><span>its instructions, output limits, argument repair, caching</span></div>
         </div>
-        <p class="measure">An hour into a session, where a file read was, the model reads chapter 4's placeholder; the read call stays, so it knows to read the file again. Your own agent can pick the same pieces: a code reviewer with no file-writing tools and a shell limited to git and pytest takes five lines of code (<code>reviewer</code> in <code>code/part2/ch6_capabilities.py</code>, and in the <a href="../reference/capabilities.html#coder">gallery</a>). That's a guardrail against accidents, not a guarantee: git and pytest can both write. For a hard guarantee, run it in a sandbox. Every part of <code>Coder</code>, what it adds to the request and how to swap it, and the order several capabilities combine in: <a href="../reference/composing-harnesses.html">How harnesses are composed</a>.</p>
+        <p class="measure">After a file read is cleared, the model sees chapter 4's placeholder; the read call stays, so it knows to fetch the file again. You can reuse these pieces: a code reviewer with no file-writing tools and a shell limited to git and pytest takes five lines (<code>reviewer</code> in <code>code/part2/ch6_capabilities.py</code> and in the <a href="../reference/capabilities.html#coder">gallery</a>). This guards against accidents, but git and pytest can write. Use a sandbox for a hard guarantee. See <a href="../reference/composing-harnesses.html">How harnesses are composed</a> for each part of <code>Coder</code>, what it adds to the request, how to swap it, and how capabilities combine.</p>
         <div class="tok-says"><div class="tk" data-tok="11" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>Same backpack, different contents. A coding agent is built from the same pieces as any other agent.</p></div></div>
       </section>
 

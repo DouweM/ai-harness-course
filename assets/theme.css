@@ -788,3 +788,10 @@ body.talk .fine:not(.talk-keep) { display: none; }
 .getcode-cmd { margin: 0; padding: 10px 14px; background: var(--code-bg); color: var(--code-text); border-radius: 8px; font: .875rem/1.5 var(--font-mono); overflow-x: auto; }
 .run .getcode-link { font-size: .8125rem; color: var(--text-muted); margin-left: 6px; }
 .run .getcode-link:hover { color: var(--accent-strong); }
+
+/* Still by default (reader feedback, 11/17): nothing near the text loops. Tok and the diagrams sit still; a one-shot
+   animation on a state change (a stage reveal, a hop, a part appearing, a single wave) still plays. */
+.tok-svg .eyes, .p1tok.st1 .eyes, .tok-svg .antenna-on .bulb, .p1tok .antenna .bulb-ring, .p1tok .caret0,
+.p1tok .nexttok .ghost, .p1tok .nexttok .bar, .p1tok .ears .v, .p1tok .log .newest, .p1tok .rarm.waving,
+.caret, .zstep pre.doc .cur, .loop .flow, .lp-arc { animation: none !important; }
+.p1tok .nexttok .ghost { opacity: .6; }

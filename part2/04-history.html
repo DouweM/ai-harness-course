@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>History · Harness engineering</title>
-<meta name="description" content="The agent keeps nothing between runs; you store the conversation and pass it back. When the thread gets long, cutting old messages loses what the customer said. Clearing old tool results keeps every message and leaves a note on how to get the result back.">
+<meta name="description" content="Store and pass back conversation history. When it gets long, clear old tool results and leave a note on how to retrieve them.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
@@ -23,7 +23,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 2 &middot; Building it with Pydantic AI</p>
         <h1>History</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">Part 1 showed that the model knows only the history you send it. <b>In code, that history is a list you store and pass back, and when it gets too long, how you make room decides what the model still knows.</b></p>
+        <p class="point">The model knows only the history you send it. <b>Store and pass back that history as a list. When it gets long, how you make room decides what the model still knows.</b></p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -37,10 +37,10 @@
     <div class="wrap" data-chapter-end>
 
       <section id="store">
-        <h2>Tuesday to Thursday, stored</h2>
+        <h2>Store the conversation</h2>
         <aside class="notes"><p>The point: you own the list. Store the whole conversation; when it gets long, clear tool results with a stub instead of cutting messages. The prediction shows what cutting loses.</p></aside>
         <div class="prose measure">
-          <p>Each run starts from what you pass it. Save <code>result.conversation</code> under the conversation's id, load it when the next email arrives, maybe in another process, and pass it back. Three days of Dana's thread:</p>
+          <p>Each run starts with the history you pass in. Save <code>result.conversation</code> by conversation id, then load it for the next email, even in another process:</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch4_history.py" data-run="uv run code/part2/ch4_history.py"><div class="code-head"><span class="file">code/part2/ch4_history.py · pydantic-ai 2.55+</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai import ConversationTypeAdapter
 
@@ -57,13 +57,13 @@ with agent.override(model=FunctionModel(looks_up_then_answers)):
 
 print(&#x27;stored messages by Thursday night:&#x27;, len(result.all_messages()))</pre></div>
         <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>stored messages by Thursday night: 16</pre></div>
-        <p class="small muted measure">In production: key it by conversation id, check the caller may see that conversation before loading it, and use a database lock or a version number, so two of Dana's emails processed at once don't both continue Tuesday's copy.</p>
+        <p class="small muted measure">In production, verify access before loading the conversation. Use a lock or version number to prevent concurrent emails continuing from the same copy.</p>
       </section>
 
       <section id="room">
-        <h2>Friday: making room</h2>
+        <h2>Making room</h2>
         <div class="prose measure">
-          <p class="story"><span class="when">Friday 20 Nov, 10:30</span>Dana writes that the first half is on its way. In production the thread is now long, and every request pays for all of it. Something has to be removed or shortened. The old workaround is a history processor, a function that keeps only the last few messages. <code>ClearToolResults</code> blanks old tool results instead; it comes from <code>pydantic-ai-harness</code>, Pydantic AI Harness for short: a package of ready-made capabilities on top of Pydantic AI, from the same team (chapter 6 opens it up). The <code>exclude_tools</code> setting names results that are never cleared: the agent reads Dana's emails with the <code>read_email</code> tool, so they are tool results, and they can't be fetched back the way a lookup can.</p>
+          <p class="story">Dana says the first half of INV-2041 is on its way. Long threads make every request carry more history. A history processor can keep only the last few messages; <code>ClearToolResults</code> blanks old tool results instead. It comes from <code>pydantic-ai-harness</code> (Pydantic AI Harness), a package of ready-made capabilities from the same team (chapter 6 introduces it). The <code>exclude_tools</code> setting protects results from clearing. Use it for <code>read_email</code>: the agent cannot fetch Dana's emails again like it can look up an invoice.</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch4_history.py" data-run="uv run code/part2/ch4_history.py"><div class="code-head"><span class="file">code/part2/ch4_history.py, the old way</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import ProcessHistory
 
@@ -81,18 +81,18 @@ clear_old_results = ClearToolResults(
           <div class="pz-grid">
             <div class="transcript" aria-label="The stored thread">
               <div class="tr-title">// the stored thread, oldest first (abridged)</div>
-              <div class="msg user"><span class="who">user, Tuesday</span><div class="body">New email 881 from dana@example.com. Read it and handle it.</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">New email 881 from dana@example.com. Read it and handle it.</div></div>
               <div class="msg tool"><span class="who">tool result: read_email</span><div class="body">Hi, INV-2041 will be paid this Friday. Thanks, Dana</div></div>
               <div class="msg tool"><span class="who">tool result: lookup_invoice</span><div class="body mono">INV-2041: 4120.00 USD, open</div></div>
-              <div class="msg user"><span class="who">user, Wednesday</span><div class="body">New email 884 from dana@example.com. Read it and handle it.</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">New email 884 from dana@example.com. Read it and handle it.</div></div>
               <div class="msg tool"><span class="who">tool result: read_email</span><div class="body"><mark>Correction on INV-2041: we'll pay half this Friday and the rest by the 30th.</mark></div></div>
               <div class="msg tool"><span class="who">tool result: lookup_invoice</span><div class="body mono">INV-2041: 4120.00 USD, open</div></div>
-              <div class="msg user"><span class="who">user, Thursday</span><div class="body">Is INV-2041 still open?</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">Is INV-2041 still open?</div></div>
               <div class="msg tool"><span class="who">tool result: lookup_invoice</span><div class="body mono">INV-2041: 4120.00 USD, open</div></div>
-              <div class="msg user"><span class="who">user, Friday</span><div class="body">New email 887 from dana@example.com. Read it and handle it.</div></div>
+              <div class="msg user"><span class="who">user</span><div class="body">New email 887 from dana@example.com. Read it and handle it.</div></div>
             </div>
             <div class="pz-ask">
-              <p class="q">Dana's emails are tool results too (the agent reads them with <code>read_email</code>). Which way of making room keeps Wednesday's correction on Friday's page?</p>
+              <p class="q">Dana's emails are tool results too. Which way of making room keeps her correction in the history?</p>
               <div class="choices" role="radiogroup" aria-label="Your prediction">
                 <button class="choice" role="radio" aria-checked="false" data-choice="a" type="button"><span class="key">A</span><span>Both</span></button>
                 <button class="choice" role="radio" aria-checked="false" data-choice="b" type="button"><span class="key">B</span><span>Only keeping the last four messages</span></button>
@@ -106,7 +106,7 @@ clear_old_results = ClearToolResults(
           </div>
           <div class="stage" data-label="What Friday's page holds" hidden>
             <p class="eyebrow"><span class="dia"></span>What Friday's page holds</p>
-            <p class="headline">Keeping only the last messages lost the correction, and the page now starts in the middle of a tool call. Clearing kept every message.</p>
+            <p class="headline">Keeping only the last messages loses the correction and starts the page in the middle of a tool call. Clearing keeps every message.</p>
             <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>Friday, cut to the last four messages:
   messages on the page:  4
   Wednesday&#x27;s correction: GONE
@@ -117,12 +117,12 @@ Friday, old tool results cleared:
   Wednesday&#x27;s correction: there
   starts with:            ModelRequest [&#x27;UserPromptPart&#x27;]
   oldest lookup result:   [Cleared to save space. Call lookup_invoice again if you n</pre></div>
-            <p class="measure">Cut to the last four, the page opens on a tool call the model made with no request before it, which some providers refuse with an error, and the model no longer knows the payment is split: Friday's 2,060 looks like a short payment. Cleared, every message stays, Dana's emails stay because <code>exclude_tools</code> names <code>read_email</code>, and the old lookups become a note saying how to get them back. Without that one line, clearing would have blanked the correction too.</p>
+            <p class="measure">Keeping the last four can leave a tool call without its request, which some providers reject, and lose the split payment: 2,060 appears short. Clearing preserves every message, protects Dana's emails through <code>exclude_tools</code>, and replaces old lookups with notes on retrieving them. Without <code>exclude_tools</code>, it would clear the correction too.</p>
             <p class="source"><b>Offline, deterministic.</b> Both pages are what Pydantic AI 2.68 and the Harness 0.68 actually send. How models treat a missing result is measured: whether it was deleted or replaced by a stub, four hosted models looked the fact up again, 160 times out of 160; deleting without a stub also made the Claude models disown its own earlier answers (Part 1 chapter 2). A smaller open-weight model is another story; Part 3 chapter 2 measures it.</p>
           </div>
           <div class="stage" data-label="Why" hidden>
             <p class="eyebrow"><span class="dia"></span>Why</p>
-            <div class="measure"><p>Tool results are most of a long agent's context and the cheapest thing to drop: the agent can fetch them again. The customer's words are the opposite: small, and impossible to fetch again. So make room by clearing what a tool can fetch again, and keep what the customer wrote.</p></div>
+            <div class="measure"><p>Tool results often fill much of a long context, and tools can fetch them again. Customer words are brief and cannot be fetched again. Clear retrievable results; keep what the customer wrote.</p></div>
             <div class="tok-says"><div class="tk" data-tok="9" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>A page in my logbook that says "cleared, look it up again" is fine. A logbook that starts in the middle is not.</p></div></div>
           </div>
           <aside class="notes"><p>Expect C, then show why it is C only because of one line: exclude_tools. The cut page starts with a tool call and has lost the correction.</p></aside>
@@ -132,7 +132,7 @@ Friday, old tool results cleared:
       <section id="compaction">
         <h2>When clearing isn't enough: compaction</h2>
         <div class="prose measure">
-          <p><code>TieredCompaction</code>, the compaction (making the history shorter) Pydantic AI Harness recommends by default, clears tool results first and only summarizes older turns with a model call when clearing doesn't free enough. A summary is the one step that can drop what the customer said, so tell the summarizer what to keep. In Part 1 chapter 4 a summary that dropped the user's rule led every model to break it, 80 times out of 80; the same summary with the rule carried over verbatim fixed it on all four models, 40 of 40. The prompt below does that for Dana's promises. Writing your own summary prompt replaces the default prompt, including its rule about keeping track of who said what, so this one states that rule too: Dana's words arrive as <code>read_email</code> results, and a summary that turns them into "the customer requires" has made the customer's words sound like an instruction from your team.</p>
+          <p><code>TieredCompaction</code> (shortening history), recommended by Pydantic AI Harness, clears tool results first. If that is not enough, it summarizes older turns with a model call. Summaries can drop customer statements, so specify what to keep. In Part 1 chapter 4, every model broke a user's rule when the summary omitted it (80 of 80); carrying the rule over verbatim fixed it on all four models (40 of 40). The prompt below preserves Dana's promises. A custom <code>summary_prompt</code> replaces the default, including its rule to track who said what. This prompt keeps that rule because Dana's words arrive as <code>read_email</code> results; summarizing them as "the customer requires" makes them sound like a team instruction.</p>
         </div>
         <div class="code" data-lines="30" data-src="code/part2/ch4_history.py" data-run="uv run code/part2/ch4_history.py"><div class="code-head"><span class="file">code/part2/ch4_history.py, compaction · pydantic-ai-harness 0.68</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai_harness.compaction import SummarizingCompaction, TieredCompaction
 
@@ -161,13 +161,14 @@ compaction = TieredCompaction(
             <tr><td>Summarize with a generic prompt</td><td>A <code>summary_prompt</code> that names what must survive</td></tr>
           </tbody>
         </table></div>
+        <div class="prose measure"><p>Compaction itself is largely solved: Pydantic AI has provider-native compaction, and the harness has clearing, sliding-window and summarizing strategies. What you still decide is how full you let the page get. Keep it in the range where the model still reads it well, which differs per model, rather than filling the context window to the limit.</p></div>
       </section>
 
       <section id="now">
         <div class="rule">
           <p class="eyebrow">What you can do now</p>
-          <p>Find where your agent trims history. Replace cutting with clearing old tool results, give the cleared result a note that says how to get it back, and write your summary prompt around what your customers say.</p>
-          <p class="see-lf"><b>See it in Logfire.</b> The request after clearing or compaction shows the history the model actually got: old lookups replaced by their notes, Dana's emails still there, and any summary in place of the older turns.</p>
+          <p>Find where your agent trims history. Clear old tool results with retrieval notes, and write a summary prompt that preserves what customers say.</p>
+          <p class="see-lf"><b>See it in Logfire.</b> Inspect the request after clearing or compaction: it shows lookup notes, Dana's emails, and summaries replacing older turns.</p>
         </div>
         <div class="inpai">
           <p class="eyebrow"><span class="dia"></span>In the docs</p>

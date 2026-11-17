@@ -20,7 +20,7 @@
         <p class="eyebrow"><span class="dia"></span>Part 3 &middot; Production, and measuring what works</p>
         <h1>Models and trade-offs</h1>
         <p class="meta-row" data-auto></p>
-        <p class="point">A model and its harness affect each other, so test them as one configuration. <b>Save what works for each model family as a fixed configuration, and change the model or the harness only after running your eval set (your test cases, chapter 3).</b></p>
+        <p class="point">A model and harness affect each other, so test them as one configuration. <b>Save what works for each model family. Change the model or harness only after running your eval set (test cases, chapter 3).</b></p>
       </div>
       <div class="tok-box">
         <button class="tok-btn" type="button" aria-label="Tok. Tap to hear from it."
@@ -37,7 +37,7 @@
       <section id="predict">
         <h2>How much harness does a model need?</h2>
         <div class="prose measure">
-          <p>Take away something the task needs and compare how each model handles it. Here the harness cleared an invoice the agent had fetched, as Part 2 chapter 4's <code>ClearToolResults</code> does; the tool to fetch it again was still there. This result comes from our world model bench, a test set with made-up customers, invoices and billing tasks, not Dana's thread.</p>
+          <p>Compare how models handle a missing task fact. Here, the harness cleared a fetched invoice, as Part 2 chapter 4's <code>ClearToolResults</code> does, while leaving the fetch tool available. Results are from our world model bench: made-up customers, invoices and billing tasks, not Dana's thread.</p>
         </div>
         <article class="puzzle" id="p1" data-answer="d">
           <div class="pz-top"><p class="eyebrow"><span class="dia"></span>Predict &middot; The cleared result</p><div class="pz-tok" aria-hidden="true"></div></div>
@@ -85,7 +85,7 @@
           </div>
           <div class="stage" data-label="Why" hidden>
             <p class="eyebrow"><span class="dia"></span>Why it matters for choosing</p>
-            <div class="measure"><p>Clearing old tool results is a reasonable harness choice for the larger models: it notices the hole and fills it with a tool call. For the smaller model the same choice is a bug factory. Neither model is wrong; the configuration is. With the smaller model you keep the results, require the lookup before the write, or validate the value against the ledger, and you pay for that in harness work and in evals.</p></div>
+            <div class="measure"><p>Clearing old tool results works for the larger models: they notice the gap and fetch the data again. For the smaller model, keep results, require a lookup before writing, or validate values against the ledger. This takes more harness work and evals.</p></div>
             <div class="tok-says"><div class="tk" data-tok="current" data-crop="face" data-mood="worried" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>A smaller me fills holes with whatever fits. Don't leave holes.</p></div></div>
           </div>
           <aside class="notes"><p>The hosted models re-fetched every time; the 27B model got it right 0 of 10: half made up a balance or recipient, the rest asked. Land it: the cheaper model needed more harness, not a better prompt.</p></aside>
@@ -96,14 +96,14 @@
       <section id="hears">
         <h2>A harness line only some families hear</h2>
         <div class="prose measure">
-          <p>The same split shows up on a single line: the summary caveat in <a href="../part1/04-the-world-moved.html#compaction">Part 1 chapter 4</a> ("this summary may be incomplete") sent GPT-6.1 Sol and Gemini back to the full history, and neither Claude model. The fix that worked on all four didn't ask the model to notice anything: a summary that keeps the user's rules verbatim.</p>
+          <p>One summary caveat, <a href="../part1/04-the-world-moved.html#compaction">Part 1 chapter 4</a>'s "this summary may be incomplete", sent GPT-6.1 Sol and Gemini back to the full history, but neither Claude model. A summary that keeps the user's rules verbatim worked for all four.</p>
         </div>
       </section>
 
       <section id="tradeoff">
         <h2>Cost and quality move together</h2>
         <div class="prose measure">
-          <p>Put the four models on one chart, then flip the harness choice. The hosted models are fine either way. The cheap model is fine only with the harness doing more of the work. Click a dot to see the configuration you would freeze for that family.</p>
+          <p>Compare the four models, then change the harness choice. Hosted models work either way; the cheaper model needs more harness support. Click a dot to see the configuration to freeze for that family.</p>
         </div>
         <div class="scatter" data-scatter data-stop>
           <div>
@@ -150,16 +150,16 @@
       <section id="freeze">
         <h2>Freeze what works, per family</h2>
         <div class="prose measure">
-          <p>An instruction function can branch on <code>ctx.model</code>, but after a <code>ModelFallback</code> it still sees the model the step started on (<a href="https://github.com/pydantic/pydantic-ai/issues/12747">#12747</a>); first-class per-model instructions are being designed (<a href="https://github.com/pydantic/pydantic-ai/issues/12545">#12545</a>). Don't wait: keep one frozen (saved and tested) agent spec per family, and treat a new model as a candidate.</p>
+          <p>An instruction function can branch on <code>ctx.model</code>, but after <code>ModelFallback</code> it still sees the model the step started on (<a href="https://github.com/pydantic/pydantic-ai/issues/12747">#12747</a>). First-class per-model instructions are being designed (<a href="https://github.com/pydantic/pydantic-ai/issues/12545">#12545</a>). For now, keep one frozen (saved and tested) agent spec per family, and treat each new model as a candidate.</p>
         </div>
         <ol class="steps">
           <li>Copy the closest saved configuration (model, instructions, settings); change only the model.</li>
           <li>Run your eval set (chapter 3) and read what it gets wrong.</li>
           <li>Fix those cases for this family, one line at a time.</li>
-          <li>When it does as well as the saved configuration on the cases you care about, save it as this family's configuration.</li>
+          <li>When it matches the saved configuration on the cases you care about, save it for this family.</li>
           <li>Roll it out to part of the traffic, watch, then all of it.</li>
         </ol>
-        <p class="measure">The specs below are for the email classifier chapter 3 evaluates, <code>promise_router</code>: given one email, it fills Part 2's answer form plus two fields, <code>addressed_to_us</code> (is the promise made to us, not to someone else?) and <code>evidence</code> (the email's own words that back the answer).</p>
+        <p class="measure">The specs below are for chapter 3's email classifier, <code>promise_router</code>. For each email, it fills Part 2's answer form plus <code>addressed_to_us</code> (is the promise to us?) and <code>evidence</code> (the email's supporting words).</p>
         <details class="deeper"><summary>Go deeper: two saved configurations, for Claude and for GPT</summary>
           <div class="split">
             <div class="code"><div class="code-head"><span class="file">code/part3/configs/claude-5.yaml</span></div><pre data-lang="sh">name: promise_router
@@ -182,7 +182,7 @@ model_settings:
         </details>
         <div class="deeper measure">
           <p class="eyebrow">Go deeper: falling back per request, not per run</p>
-          <p><code>ModelFallback</code> retries one model request on the next model when it fails, is refused or is cut off, and the run carries on with everything the first model already did in its history. That's right for an outage. It doesn't cover the failures that show up later: an answer that fails your output validator, or a tool call with side effects that the first model already made. Those failures come back to your code, where you decide whether to rerun the whole run on another model. To stay on the model that answered for the rest of the run and the conversation's later runs, pass <code>sticky=True</code>.</p>
+          <p><code>ModelFallback</code> retries one request on the next model if it fails, is refused or is cut off. The run keeps the first model's history, so this suits outages. It does not handle later failures, such as output validation errors or side effects from a tool call. Your code handles those and decides whether to rerun on another model. Pass <code>sticky=True</code> to keep using the responding model for the rest of the run and later conversation runs.</p>
         </div>
         <p class="talk-only headline">A new model is a candidate, not an upgrade.</p>
       </section>
@@ -190,7 +190,7 @@ model_settings:
       <section id="rollout">
         <h2>Roll out without a redeploy</h2>
         <div class="prose measure">
-          <p><code>ManagedPrompt</code> (Pydantic AI Harness) reads the instructions from a Logfire-managed prompt: version and label it in Logfire, roll a change out to part of the traffic, roll it back from the UI. Every span records which label produced it.</p>
+          <p><code>ManagedPrompt</code> (Pydantic AI Harness) reads instructions from a Logfire-managed prompt. Version and label prompts in Logfire, roll changes out to part of the traffic, and roll them back from the UI. Each span records its label.</p>
         </div>
         <div class="code" data-keep data-run="uv run code/part3/ch2_model_configs.py">
           <div class="code-head"><span class="file">code/part3/ch2_model_configs.py &middot; pydantic-ai-harness[logfire]</span></div>
@@ -200,7 +200,7 @@ managed = Agent(
     capabilities=[ManagedPrompt('promise_router', default=str(claude_spec.instructions), label='production')],
 )</pre>
         </div>
-        <p class="fine">A pinned <code>label</code> stays fixed between rollouts and keeps the prompt cache warm. For a share-of-users rollout, leave <code>label</code> unset and pass a <code>targeting_key</code>, so each user always gets the same label. The default is used until a prompt is published.</p>
+        <p class="fine">A pinned <code>label</code> stays fixed between rollouts and keeps the prompt cache warm. For a share-of-users rollout, leave <code>label</code> unset and pass a <code>targeting_key</code> so each user gets the same label. The default applies until a prompt is published.</p>
         <ul class="docs">
           <li><a href="https://pydantic.dev/docs/ai/models/overview/">Models and providers</a></li>
           <li><a href="https://pydantic.dev/docs/ai/core-concepts/agent-spec/">Agent specs</a></li>
