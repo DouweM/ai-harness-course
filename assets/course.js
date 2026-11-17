@@ -68,7 +68,7 @@
     { path: 'part2/05-the-answer-form.html', part: 2, n: 5, title: 'The answer form', min: 6, evolve: 10,
       ask: ['Look at my output types: which real answers can\'t fit them? Propose a shape that holds them.',
         'Add an output validator that checks my agent\'s answer against our data and sends it back with ModelRetry.'] },
-    { path: 'part2/06-capabilities.html', part: 2, n: 6, title: 'Capabilities: what goes on the page, and when', min: 14, evolve: 11,
+    { path: 'part2/06-capabilities.html', part: 2, n: 6, title: 'Capabilities', min: 14, evolve: 11,
       ask: ['Group my agent\'s harness behavior into capabilities: what each would contribute, and which agents would share them.',
         'Which built-in capabilities would help my agent first, and what would each change in the request?',
         'Take Coder apart for my use case: which of its capabilities would I keep, swap or restrict?'] },
