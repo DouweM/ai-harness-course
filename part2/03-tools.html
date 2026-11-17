@@ -150,9 +150,9 @@ ledger down: failed  {&quot;error&quot;:&quot;Nothing was recorded: the ledger i
       </section>
 
       <section id="native">
-        <h2>Use the provider's own tool when there is one</h2>
+        <h2>Let the capability pick the provider's own tool</h2>
         <div class="prose measure">
-          <p>For web search, fetching a page or running code, providers run <b>native tools</b> on their side, and their models are trained to use them. Prefer those to writing your own. In Pydantic AI they are native tools such as <code>WebSearchTool</code> and <code>CodeExecutionTool</code>; the <code>WebSearch</code> and <code>WebFetch</code> capabilities use the native tool where the provider has one and a local version elsewhere. <a href="https://pydantic.dev/docs/ai/tools-toolsets/native-tools/">Native tools</a>.</p>
+          <p>For web search, fetching a page, generating images or connecting an MCP server, add the capability rather than writing the tool: <code>WebSearch</code>, <code>WebFetch</code>, <code>ImageGeneration</code> or <code>MCP</code>. Each uses the provider's own tool when the model has one, since models are trained on those, and can fall back to a local version on models that don't (for web search, <code>local='duckduckgo'</code>). Switching models then doesn't break the agent. <a href="https://pydantic.dev/docs/ai/capabilities/web-search/">Web search</a> shows the pattern.</p>
         </div>
       </section>
 
