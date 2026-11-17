@@ -101,5 +101,5 @@ def xray(messages: list[ModelMessage]) -> list[tuple[str, str, str]]:
 
 
 print()
-for voice, text, how in xray(page):
-    print(f'{voice:9}{text[:91]:93}{how}')
+for voice, text, _how in xray(page):
+    print(f'{voice:9}{text[:80]}')

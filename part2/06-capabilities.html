@@ -104,17 +104,17 @@ Bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.</mark></div><
         <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>Deps took a copy of the ledger changes at 10:45: Hi Dana, a reminder that the first half of INV-2041, 2,060.00, is due today.
 Deps read the live list, appended on change:    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on the 30th.</pre></div>
         <div class="prose measure">
-          <p>The first note asks Dana for money already on its way: the model saw only the page from run start. The second agent reads the ledger before its next request. With <code>on_change='append'</code>, Pydantic AI adds the change at the end in your voice. Here is the page the model read:</p>
+          <p>The first note asks Dana for money already on its way: the model saw only the page from run start. The second agent reads the ledger before its next request. With <code>on_change='append'</code>, Pydantic AI adds the change at the end in your voice. Here is the page the model read, one line per piece: the first four <code>operator</code> lines are the instructions sent with every request, and the <code>operator</code> line just before the answer is the bank feed change, appended where it happened:</p>
         </div>
-        <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>operator You handle customers&#x27; emails about their invoices with us, and record what they promise.     instructions, every request
-operator Amounts and invoice numbers come from our billing system, never from an email alone.         instructions, every request
-operator Month-end close is running until Monday: mark_paid is unavailable, so say so.                instructions, every request
-operator This message was received on Friday 2026-11-20.                                              instructions, every request
-user     INV-2041: the first half, 2,060.00, is due today. Draft today&#x27;s note to Dana.                the run&#x27;s prompt
-model    lookup_invoice({&#x27;invoice_number&#x27;: &#x27;INV-2041&#x27;})                                               the model&#x27;s turn
-data     {&quot;number&quot;:&quot;INV-2041&quot;,&quot;amount&quot;:&quot;4120.00&quot;,&quot;currency&quot;:&quot;USD&quot;,&quot;st...                              a tool result
-operator Fri 10:46: bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.                an instruction that changed, appended
-model    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on the 30th.              the answer</pre></div>
+        <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>operator You handle customers&#x27; emails about their invoices with us, and record what they 
+operator Amounts and invoice numbers come from our billing system, never from an email al
+operator Month-end close is running until Monday: mark_paid is unavailable, so say so.
+operator This message was received on Friday 2026-11-20.
+user     INV-2041: the first half, 2,060.00, is due today. Draft today&#x27;s note to Dana.
+model    lookup_invoice({&#x27;invoice_number&#x27;: &#x27;INV-2041&#x27;})
+data     {&quot;number&quot;:&quot;INV-2041&quot;,&quot;amount&quot;:&quot;4120.00&quot;,&quot;currency&quot;:&quot;USD&quot;,&quot;st...
+operator Fri 10:46: bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.
+model    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on the 30th.</pre></div>
         <div class="prose measure">
           <p>Between one request and the next, all of this can change:</p>
           <ul>

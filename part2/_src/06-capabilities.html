@@ -83,7 +83,7 @@ Bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.</mark></div><
         {{code ch6_page.py midrun "code/part2/ch6_page.py · pydantic-ai 2.68"}}
         {{out ch6_page 1-2}}
         <div class="prose measure">
-          <p>The first note asks Dana for money already on its way: the model saw only the page from run start. The second agent reads the ledger before its next request. With <code>on_change='append'</code>, Pydantic AI adds the change at the end in your voice. Here is the page the model read:</p>
+          <p>The first note asks Dana for money already on its way: the model saw only the page from run start. The second agent reads the ledger before its next request. With <code>on_change='append'</code>, Pydantic AI adds the change at the end in your voice. Here is the page the model read, one line per piece: the first four <code>operator</code> lines are the instructions sent with every request, and the <code>operator</code> line just before the answer is the bank feed change, appended where it happened:</p>
         </div>
         {{out ch6_page 4-12}}
         <div class="prose measure">
