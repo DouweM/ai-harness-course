@@ -106,8 +106,8 @@ Deps read the live list, appended on change:    Thank you, Dana: your 2,060.00 w
         <div class="prose measure">
           <p>The first note asks Dana for money already on its way: the model saw only the page from run start. The second agent reads the ledger before its next request. With <code>on_change='append'</code>, Pydantic AI adds the change at the end in your voice. Here is the page the model read, one line per piece: the first four <code>operator</code> lines are the instructions sent with every request, and the <code>operator</code> line just before the answer is the bank feed change, appended where it happened:</p>
         </div>
-        <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>operator You handle customers&#x27; emails about their invoices with us, and record what they 
-operator Amounts and invoice numbers come from our billing system, never from an email al
+        <div class="code out"><div class="code-head"><span class="file">// output</span></div><pre>operator You handle customers&#x27; emails about their invoices with us, and record what...
+operator Amounts and invoice numbers come from our billing system, never from an...
 operator Month-end close is running until Monday: mark_paid is unavailable, so say so.
 operator This message was received on Friday 2026-11-20.
 user     INV-2041: the first half, 2,060.00, is due today. Draft today&#x27;s note to Dana.

@@ -1,8 +1,8 @@
 Deps took a copy of the ledger changes at 10:45: Hi Dana, a reminder that the first half of INV-2041, 2,060.00, is due today.
 Deps read the live list, appended on change:    Thank you, Dana: your 2,060.00 wire is on its way. The rest is due on the 30th.
 
-operator You handle customers' emails about their invoices with us, and record what they 
-operator Amounts and invoice numbers come from our billing system, never from an email al
+operator You handle customers' emails about their invoices with us, and record what...
+operator Amounts and invoice numbers come from our billing system, never from an...
 operator Month-end close is running until Monday: mark_paid is unavailable, so say so.
 operator This message was received on Friday 2026-11-20.
 user     INV-2041: the first half, 2,060.00, is due today. Draft today's note to Dana.

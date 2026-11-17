@@ -102,4 +102,4 @@ def xray(messages: list[ModelMessage]) -> list[tuple[str, str, str]]:
 
 print()
 for voice, text, _how in xray(page):
-    print(f'{voice:9}{text[:80]}')
+    print(f'{voice:9}{text if len(text) <= 80 else text[:77].rsplit(" ", 1)[0] + "..."}')
