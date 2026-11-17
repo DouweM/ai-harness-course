@@ -82,12 +82,7 @@
       <div class="prose measure">
         <p>The list order is the composition order. All the capabilities on an agent become one <code>CombinedCapability</code> that follows middleware semantics, the way web framework middleware does: every <code>wrap_*</code> is entered before any <code>before_*</code> runs, <code>before_*</code> hooks fire first to last, <code>after_*</code> hooks fire last to first. Two traced capabilities, <code>A</code> then <code>B</code>:</p>
       </div>
-<div class="code" data-src="code/reference/composing_harnesses.py" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, two capabilities that record when they run</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import Hooks
-
-trace: list[str] = []
-
-
-def traced(name: str) -&gt; Hooks[Deps]:
+<div class="code" data-src="code/reference/composing_harnesses.py" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">Two capabilities that record when their hooks run, from composing_harnesses.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">def traced(name: str) -&gt; Hooks[Deps]:
     hooks = Hooks[Deps]()
 
     @hooks.on.model_request  # wrap_model_request
@@ -233,22 +228,7 @@ Coder(sub_agents=False, repo_context=False):
       <div class="prose measure">
         <p>Part 2's billing agent, packaged the way <code>Coder</code> is: a <code>CombinedCapability</code> whose parts are the billing world from <a href="../part2/06-capabilities.html">chapter 6</a>, a model setting, a history policy and an audit hook. Each part is one kind of contribution, and each flag is a swap.</p>
       </div>
-<div class="code" data-src="code/reference/composing_harnesses.py" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">code/reference/composing_harnesses.py, the collections harness</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic_ai.capabilities import AbstractCapability, CombinedCapability
-from pydantic_ai_harness.compaction import ClearToolResults
-
-
-@dataclass
-class Temperature(AbstractCapability[Any]):
-    &quot;&quot;&quot;Model settings, as a capability: one fixed id, so two of them on an agent merge.&quot;&quot;&quot;
-
-    temperature: float = 0.0
-    id: str | None = &#x27;temperature&#x27;
-
-    def get_model_settings(self) -&gt; ModelSettings:
-        return ModelSettings(temperature=self.temperature)
-
-
-class CollectionsHarness(CombinedCapability[Deps]):
+<div class="code" data-src="code/reference/composing_harnesses.py" data-run="uv run code/reference/composing_harnesses.py"><div class="code-head"><span class="file">The harness, and two agents that wear it, from composing_harnesses.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">class CollectionsHarness(CombinedCapability[Deps]):
     &quot;&quot;&quot;Every agent in the collections world gets this list. Change a piece by flag, or compose your own list.&quot;&quot;&quot;
 
     def __init__(self, *, audit_tools: bool = True, history: AbstractCapability[Deps] | None = None):

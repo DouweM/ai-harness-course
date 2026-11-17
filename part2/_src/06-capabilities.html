@@ -181,12 +181,13 @@ Fri 10:46: bank feed, INV-2041: incoming wire of 2,060.00, not yet confirmed.</m
       </section>
 
       <section id="world">
-        <h2>The collections world, packaged</h2>
+        <h2>The billing world, packaged</h2>
         <div class="prose measure">
-          <p><code>Capability</code> has the decorators an agent has, so moving the code over is a change of prefix. In it you will find one piece per chapter: the received date (chapter 2), the close notice and the hidden, gated <code>mark_paid</code> (chapter 3), and errors that say whose problem it is (chapter 3). And <code>record_payment</code> now waits for a person too, with its argument checks in <code>args_validator=</code>, so a person is never asked to approve a call that was going to be rejected. Chapters 7 to 9 and Part 3 import this file. A capability can also contribute model settings, a fallback model, history processing and hooks around every request and tool call.</p>
+          <p><code>Capability</code> has the decorators an agent has, so moving the code over is a change of prefix. Below are two pieces of it; the full file has one piece per chapter: the received date (chapter 2), the close notice and the hidden, gated <code>mark_paid</code> (chapter 3), and errors that say whose problem it is (chapter 3). And <code>record_payment</code> now waits for a person too, with its argument checks in <code>args_validator=</code>, so a person is never asked to approve a call that was going to be rejected. Chapters 7 to 9 and Part 3 import this file. A capability can also contribute model settings, a fallback model, history processing and hooks around every request and tool call.</p>
         </div>
-        {{code billing_world.py world "code/part2/billing_world.py · pydantic-ai 2.59+" keys="billing_world = Capability|name='received'|name='close'|return None if ctx.deps.closing|requires_approval=True, prepare|args_validator=valid_payment|raise ToolFailed"}}
-        {{code billing_world.py agents "code/part2/billing_world.py, two agents, one world" keys="output_type=\[ToolOutput|capabilities=\[billing_world|Caching\(\)"}}
+        {{code billing_world.py world_core "The capability and its first instructions, from billing_world.py"}}
+        {{code billing_world.py world_gate "A gated tool: the same decorator an agent has, on the capability"}}
+        {{code billing_world.py agents_core "Two agents wearing the same capability, from billing_world.py"}}
         <p class="measure">Two agents, one world: both read the same date, see the same close notice, and can't write during close. If your system today is a set of single model calls, each with its own copy of the prompt and its own idea of what the ledger says, this is the step that makes them agree.</p>
       </section>
 

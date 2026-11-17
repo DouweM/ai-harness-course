@@ -52,23 +52,7 @@
             <tr><td>An agent that delegates</td><td>The parent model</td><td>Self-contained sub-tasks with their own context</td><td>A tool that runs another agent; <a href="https://pydantic.dev/docs/ai/harness/subagents/"><code>SubAgents</code></a></td></tr>
           </tbody>
         </table></div>
-        <div class="code" data-lines="30" data-src="code/part2/ch7_multi.py" data-run="uv run code/part2/ch7_multi.py"><div class="code-head"><span class="file">code/part2/ch7_multi.py, delegating as a tool</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from pydantic import BaseModel
-
-from pydantic_ai import Agent, RunContext, ToolOutput, UsageLimits
-
-from billing_world import Deps, read_email  # chapter 1&#x27;s tool: the email is data, for both agents
-
-
-class DisputeCheck(BaseModel):
-    &quot;&quot;&quot;The classifier&#x27;s verdict: typed facts and doubts, so the parent&#x27;s code can act on them.&quot;&quot;&quot;
-
-    is_dispute: bool
-    invoice_number: str | None = None
-    claimed_amount: str | None = None
-    doubts: list[str] = []
-
-
-classifier = Agent(
+        <div class="code" data-lines="30" data-src="code/part2/ch7_multi.py" data-run="uv run code/part2/ch7_multi.py"><div class="code-head"><span class="file">The classifier, and the tool that calls it, from ch7_multi.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">classifier = Agent(
     &#x27;anthropic:claude-haiku-5-5&#x27;,
     deps_type=Deps,
     instructions=&#x27;Decide whether the email you are asked about disputes one of our invoices.&#x27;,

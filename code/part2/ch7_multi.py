@@ -25,6 +25,7 @@ class DisputeCheck(BaseModel):
     doubts: list[str] = []
 
 
+# --8<-- [start:delegate_core]
 classifier = Agent(
     'anthropic:claude-haiku-5-5',
     deps_type=Deps,
@@ -49,6 +50,7 @@ async def check_for_dispute(ctx: RunContext[Deps], email_id: str) -> DisputeChec
     ask = f'Does email {email_id} dispute one of our invoices?'
     result = await classifier.run(ask, deps=ctx.deps, usage=ctx.usage, usage_limits=LIMITS)  # one count, one ceiling
     return result.output
+# --8<-- [end:delegate_core]
 # --8<-- [end:delegate]
 
 

@@ -95,50 +95,39 @@
         <div class="prose measure">
           <p>Copy <code>ch4_probe_close.py</code> and fill it in from the top, with one of your own capabilities in the arms. Offline it re-scores the recorded answers for free; <code>--live</code> calls the models, prints a cost estimate, refuses to start over <code>--budget</code>, and logs every run.</p>
         </div>
-        <div class="code" data-src="code/part3/ch4_probe_close.py" data-run="uv run code/part3/ch4_probe_close.py">
-          <div class="code-head"><span class="file">code/part3/ch4_probe_close.py, the part you fill in</span></div>
+        <div class="code" data-src="code/part3/ch4_probe_close.py">
+          <div class="code-head"><span class="file">The question and your prediction, written first, from ch4_probe_close.py</span></div>
 <pre data-lang="py"># 1. QUESTION
-QUESTION = 'When close hides mark_paid, does saying so change what the agent tells the team?'
+QUESTION = &#x27;When close hides mark_paid, does saying so change what the agent tells the team?&#x27;
 
 # 2. PREDICTION (written before the live run; this was ours)
-PREDICTION = 'Without the notice, most replies say it failed and to try later. With it, nearly all say close, Monday.'
+PREDICTION = &#x27;Without the notice, most replies say it failed and to try later. With it, nearly all say close, Monday.&#x27;
 
-ASK = 'Dana confirmed INV-2041 is fully paid. Mark it paid, and give me one line I can send her.'
-MODELS = ['anthropic:claude-sonnet-5-5', 'anthropic:claude-haiku-5-5', 'openai:gpt-6.1-sol']
-
-
-# 3. ARMS: both hide mark_paid during close; only one says so
+ASK = &#x27;Dana confirmed INV-2041 is fully paid. Mark it paid, and give me one line I can send her.&#x27;
+MODELS = [&#x27;anthropic:claude-sonnet-5-5&#x27;, &#x27;anthropic:claude-haiku-5-5&#x27;, &#x27;openai:gpt-6.1-sol&#x27;]</pre>
+        </div>
+        <div class="code" data-src="code/part3/ch4_probe_close.py" data-run="uv run code/part3/ch4_probe_close.py">
+          <div class="code-head"><span class="file">The two arms: one change between them (the scoring is in the full file)</span></div>
+<pre data-lang="py"># 3. ARMS: both hide mark_paid during close; only one says so
 async def hide_mark_paid(ctx: RunContext[Deps], tools: list[ToolDefinition]) -&gt; list[ToolDefinition]:
-    return [t for t in tools if t.name != 'mark_paid']
+    return [t for t in tools if t.name != &#x27;mark_paid&#x27;]
 
 
 def make_agent(arm: str, model: str) -&gt; tuple[Agent, Deps]:
     agent = Agent(
         model,
         deps_type=Deps,
-        instructions="You handle customers' emails about their invoices with us.",
+        instructions=&quot;You handle customers&#x27; emails about their invoices with us.&quot;,
         output_type=[str, DeferredToolRequests],
         capabilities=[billing_world, PrepareTools(hide_mark_paid)],
     )
     billing = FakeBilling()
-    billing.invoices['INV-2038'] = billing.invoices['INV-2038'].model_copy(update={'status': 'paid'})  # as earlier in the conversation left it
-    closing = arm == 'hidden, and said'  # deps.closing turns on billing_world's appended close notice
+    billing.invoices[&#x27;INV-2038&#x27;] = billing.invoices[&#x27;INV-2038&#x27;].model_copy(update={&#x27;status&#x27;: &#x27;paid&#x27;})  # as earlier in the conversation left it
+    closing = arm == &#x27;hidden, and said&#x27;  # deps.closing turns on billing_world&#x27;s appended close notice
     return agent, Deps(billing=billing, received=CLOSE_STARTS, closing=closing)
 
 
-ARMS = ['hidden, quietly', 'hidden, and said']
-
-
-# 4. SCORE
-def score(reply: str) -&gt; str:
-    text = reply.lower()
-    if text.startswith('[asked for approval'):
-        return 'worked around it: record_payment'
-    if re.search(r'\b(has been|is now|i\'ve|i have|now) (been )?marked\b', text):
-        return 'claimed it was done'
-    if re.search(r'\b(month-end|close is|close,|close\b.{0,20}monday|until monday)', text):
-        return 'said why: close'
-    return 'failed, no reason'</pre>
+ARMS = [&#x27;hidden, quietly&#x27;, &#x27;hidden, and said&#x27;]</pre>
         </div>
         <p class="talk-only headline">Question, prediction, arms, score.</p>
       </section>

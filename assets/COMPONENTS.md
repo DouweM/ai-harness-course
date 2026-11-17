@@ -175,8 +175,13 @@ for the advanced reader who needs one more paragraph (when a variant is the righ
 
 **Code views:**
 
-- A card shows its whole snippet: the snippet markers in the source cut it to the lines that matter. No collapsed
-  regions, no dimmed lines, no unexplained highlights. `keys=` in `{{code ...}}` is accepted and ignored.
+- A card shows a short file (about 25 lines or fewer) in full. Anything longer shows one excerpt: the contiguous
+  lines the surrounding prose is about, usually the agent, capability or tool definition. If the prose needs two
+  separate parts, use two cards. Never collapsed regions, dimmed lines or highlights.
+- Excerpts are nested snippets in the code file (`# --8<-- [start:name]` ... `# --8<-- [end:name]` inside a longer
+  snippet). Marker lines are comments, never rendered, and change nothing at runtime; verify.py still runs the file.
+- The card's label is a one-line caption naming what it shows, for an excerpt "The capability, from
+  billing_world.py". `keys=` in `{{code ...}}` is accepted and ignored.
 - Each card links to the full file in the public repo ("Full file", when `REPO_URL` is set) and its run line links to
   "Get the code" on the home page.
 - Output cards are labelled "// output", without verification badges; verification lives in the verify scripts and

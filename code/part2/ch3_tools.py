@@ -24,6 +24,7 @@ class Deps:
     closing: bool = False  # month-end close is running
 
 
+# --8<-- [start:tools_core]
 agent = Agent(
     'anthropic:claude-sonnet-5-5',
     deps_type=Deps,
@@ -50,6 +51,7 @@ async def mark_paid(ctx: RunContext[Deps], invoice_number: str) -> str:
     """Mark one of our invoices as paid."""
     await ctx.deps.billing.mark_paid(invoice_number, idempotency_key=ctx.tool_call_id)  # safe to retry
     return f'{invoice_number} is marked as paid.'
+# --8<-- [end:tools_core]
 # --8<-- [end:tools]
 
 

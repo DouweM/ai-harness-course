@@ -44,22 +44,7 @@
           <p>Each rule is one line: <code>prepare=</code> decides per request whether a tool is offered, <code>requires_approval=True</code> turns a call into a question for a person, <code>ModelRetry</code> turns a bad argument into feedback, and <code>ctx.tool_call_id</code> makes the write safe to retry.</p>
         </div>
         <p class="talk-only headline">Offered or not: <code>prepare</code>. Runs or waits: <code>requires_approval</code>. Talks back: <code>ModelRetry</code>.</p>
-        <div class="code" data-lines="30" data-src="code/part2/ch3_tools.py" data-run="uv run code/part2/ch3_tools.py"><div class="code-head"><span class="file">code/part2/ch3_tools.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from dataclasses import dataclass
-from datetime import date
-
-from pydantic_ai import Agent, DeferredToolRequests, ModelRetry, RunContext, ToolDefinition
-
-from billing import FakeBilling, Invoice
-
-
-@dataclass
-class Deps:
-    billing: FakeBilling
-    received: date
-    closing: bool = False  # month-end close is running
-
-
-agent = Agent(
+        <div class="code" data-lines="30" data-src="code/part2/ch3_tools.py" data-run="uv run code/part2/ch3_tools.py"><div class="code-head"><span class="file">The agent and its three rules, from ch3_tools.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">agent = Agent(
     &#x27;anthropic:claude-sonnet-5-5&#x27;,
     deps_type=Deps,
     instructions=&quot;You handle customers&#x27; emails about their invoices with us.&quot;,

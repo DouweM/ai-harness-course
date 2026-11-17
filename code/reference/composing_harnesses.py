@@ -56,6 +56,7 @@ class Temperature(AbstractCapability[Any]):
         return ModelSettings(temperature=self.temperature)
 
 
+# --8<-- [start:harness_core]
 class CollectionsHarness(CombinedCapability[Deps]):
     """Every agent in the collections world gets this list. Change a piece by flag, or compose your own list."""
 
@@ -82,6 +83,7 @@ reminders = Agent(  # the same harness, one setting changed by adding a capabili
     instructions='Draft the reminder for this invoice, or say why none should go out.',
     capabilities=[CollectionsHarness(audit_tools=False), Temperature(temperature=0.4)],
 )
+# --8<-- [end:harness_core]
 # --8<-- [end:harness]
 
 section('one request from the collections agent, Thursday during close')
@@ -112,6 +114,7 @@ from pydantic_ai.capabilities import Hooks
 trace: list[str] = []
 
 
+# --8<-- [start:order_core]
 def traced(name: str) -> Hooks[Deps]:
     hooks = Hooks[Deps]()
 
@@ -141,6 +144,7 @@ def traced(name: str) -> Hooks[Deps]:
 
 
 ordered = Agent('anthropic:claude-sonnet-5-5', deps_type=Deps, capabilities=[traced('A'), traced('B'), billing_world])
+# --8<-- [end:order_core]
 # --8<-- [end:order]
 
 

@@ -47,7 +47,7 @@ description: A harness is the list of capabilities on an agent. What each capabi
       <div class="prose measure">
         <p>The list order is the composition order. All the capabilities on an agent become one <code>CombinedCapability</code> that follows middleware semantics, the way web framework middleware does: every <code>wrap_*</code> is entered before any <code>before_*</code> runs, <code>before_*</code> hooks fire first to last, <code>after_*</code> hooks fire last to first. Two traced capabilities, <code>A</code> then <code>B</code>:</p>
       </div>
-{{code order "code/reference/composing_harnesses.py, two capabilities that record when they run"}}
+{{code order_core "Two capabilities that record when their hooks run, from composing_harnesses.py"}}
 {{out 25-26}}
       <div class="prose measure">
         <p>So the first capability sees the request first and the response last. Put a guard or an audit log first when it must see everything the others do, including what they change. A capability that has to sit at one position wherever it's listed declares it with <code>get_ordering()</code>: <code>position='outermost'</code> or <code>'innermost'</code>, <code>wraps=[...]</code>, <code>wrapped_by=[...]</code>, and <code>requires=[...]</code> for a capability that must be present. <code>Hooks(ordering=...)</code> takes the same constraints.</p>
@@ -126,7 +126,7 @@ description: A harness is the list of capabilities on an agent. What each capabi
       <div class="prose measure">
         <p>Part 2's billing agent, packaged the way <code>Coder</code> is: a <code>CombinedCapability</code> whose parts are the billing world from <a href="../part2/06-capabilities.html">chapter 6</a>, a model setting, a history policy and an audit hook. Each part is one kind of contribution, and each flag is a swap.</p>
       </div>
-{{code harness "code/reference/composing_harnesses.py, the collections harness"}}
+{{code harness_core "The harness, and two agents that wear it, from composing_harnesses.py"}}
       <div class="prose measure">
         <p>Thursday during close, each agent's first request. The instructions follow the order from the <a href="#contributions">table above</a>; <code>mark_paid</code> is gone because the billing world's <code>prepare</code> hid it; and the reminders agent's <code>Temperature</code>, listed after the bundle, merged with the one inside it and won:</p>
       </div>

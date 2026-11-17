@@ -53,7 +53,9 @@ def snippet(name: str) -> str:
     m = re.search(rf'# --8<-- \[start:{re.escape(name)}\]\n(.*?)# --8<-- \[end:{re.escape(name)}\]', text, re.S)
     if not m:
         raise SystemExit(f'no snippet {name!r} in {MODULE}.py')
-    return m.group(1).rstrip('\n')
+    # Snippets may nest (an excerpt inside a longer snippet); marker lines never show on the page.
+    body = '\n'.join(line for line in m.group(1).split('\n') if not line.lstrip().startswith('# --8<-- ['))
+    return body.strip('\n')
 
 
 def code_card(m: re.Match[str]) -> str:

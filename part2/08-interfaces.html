@@ -42,19 +42,7 @@
         <div class="prose measure">
           <p class="story"><span class="when">Friday 20 Nov, 16:00</span>The billing team wants to ask the agent about Dana's invoices from their own app: a chat panel next to the invoice, in the browser. The agent doesn't change. Each door is a few lines around it:</p>
         </div>
-        <div class="code" data-lines="30" data-src="code/part2/ch8_interfaces.py" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">code/part2/ch8_interfaces.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from starlette.applications import Starlette
-from starlette.requests import Request
-from starlette.responses import Response
-from starlette.routing import Route
-
-from pydantic_ai.ui.ag_ui import AGUIAdapter
-from pydantic_ai.ui.vercel_ai import VercelAIAdapter
-
-from billing import WIRE_RECEIVED, FakeBilling
-from billing_world import Deps, collections  # chapter 6&#x27;s agent, unchanged
-
-
-def deps_for(request: Request) -&gt; Deps:
+        <div class="code" data-lines="30" data-src="code/part2/ch8_interfaces.py" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">Two web endpoints for the same agent, from ch8_interfaces.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">def deps_for(request: Request) -&gt; Deps:
     return Deps(billing=FakeBilling(), received=WIRE_RECEIVED)  # yours: the tenant, the user, the clock
 
 
@@ -162,16 +150,7 @@ ledger writes: []</pre></div>
         <div class="prose measure">
           <p><code>agent.to_web()</code> serves a local chat for trying an agent; <code>to_cli_sync()</code> a terminal one. An MCP server can expose the agent as a tool for other agents. And a phone call is a realtime session on the same agent, <code>collections</code> with <code>billing_world</code>: one session for the whole call, the same tools and capabilities, ordinary history at the end.</p>
         </div>
-        <div class="code" data-lines="30" data-src="code/part2/ch8_interfaces.py" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">code/part2/ch8_interfaces.py, a phone call</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from collections.abc import AsyncIterator
-
-from decimal import Decimal
-
-from pydantic_ai import DeferredToolRequests, DeferredToolResults, RunContext
-from pydantic_ai.capabilities import HandleDeferredToolCalls
-from pydantic_ai.messages import ModelMessage
-
-
-async def small_amounts(ctx: RunContext[Deps], requests: DeferredToolRequests) -&gt; DeferredToolResults | None:
+        <div class="code" data-lines="30" data-src="code/part2/ch8_interfaces.py" data-run="uv run code/part2/ch8_interfaces.py"><div class="code-head"><span class="file">A phone call on the same agent, from ch8_interfaces.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">async def small_amounts(ctx: RunContext[Deps], requests: DeferredToolRequests) -&gt; DeferredToolResults | None:
     &quot;&quot;&quot;A caller hears the silence while a person decides, so decide by policy: approve up to 1,000, refuse the rest.&quot;&quot;&quot;
     small = {c.tool_call_id: True for c in requests.approvals if Decimal(str(c.args_as_dict().get(&#x27;amount&#x27;, 0))) &lt;= 1000}
     return requests.build_results(approvals=small) if small else None  # refused: &quot;a colleague will confirm by email&quot;

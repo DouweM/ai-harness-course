@@ -59,7 +59,7 @@ runtime: 5
             <tr><td>all</td><td>No test reaches a real model</td><td><code>test_a_forgotten_override_fails_loudly</code></td></tr>
           </tbody>
         </table></div>
-        {{code test_billing_agent.py tests "code/part2/test_billing_agent.py" keys="ALLOW_MODEL_REQUESTS = False|def test_|assert 'mark_paid' not in|assert sum|endswith"}}
+        {{code test_billing_agent.py tests_core "The safety switch and the first two tests, from test_billing_agent.py"}}
         <p class="measure">What these can't tell you is whether the model's judgment is good: whether it reads Dana's email right. That needs real models and real cases, and it's Part 3.</p>
       </section>
 

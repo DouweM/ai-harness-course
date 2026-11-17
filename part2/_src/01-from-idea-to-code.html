@@ -43,7 +43,8 @@ uv sync</pre>
           <li><div class="msg sys"><span class="who">answer form</span><div class="body"><code>output_type=</code>: a Pydantic model; field docstrings become field descriptions. Chapter 5.</div></div><p>What the model fills in, checked before your code sees it.</p></li>
         </ol>
         <div class="prose measure"><p>Chapter 6 then packages all four as one capability, so a second agent gets the same world.</p></div>
-        {{code ch1_from_idea_to_code.py agent "code/part2/ch1_from_idea_to_code.py" keys="instructions=|@agent.instructions|@agent.tool|use_attribute_docstrings|Never trust|Args:|read_email"}}
+        {{code ch1_from_idea_to_code.py agent_core "The answer form, the facts it carries, and the agent, from ch1_from_idea_to_code.py"}}
+        {{code ch1_from_idea_to_code.py agent_tools "Its two tools: the email as data, and the invoice lookup"}}
       </section>
 
       <section id="reaches">

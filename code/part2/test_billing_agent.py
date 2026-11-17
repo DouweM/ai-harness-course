@@ -19,6 +19,7 @@ from pydantic_ai.models.test import TestModel
 from billing import CLOSE_STARTS, CORRECTION_ID, CORRECTION_RECEIVED, FakeBilling, new_email
 from billing_world import Deps, collections, reminders
 
+# --8<-- [start:tests_core]
 models.ALLOW_MODEL_REQUESTS = False  # a test can never reach a real model, even by accident
 
 
@@ -44,6 +45,7 @@ def test_close_hides_mark_paid_and_says_so():
         reminders.run_sync('INV-2041?', deps=Deps(billing=FakeBilling(), received=CLOSE_STARTS, closing=True))
     assert 'mark_paid' not in [t.name for t in seen[0].function_tools]
     assert 'close is running' in seen[0].instructions
+# --8<-- [end:tests_core]
 
 
 def test_installments_that_add_up_wrong_go_back():

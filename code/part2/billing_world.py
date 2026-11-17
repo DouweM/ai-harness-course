@@ -25,6 +25,7 @@ class Deps:
     ledger_changes: list[str] = field(default_factory=list)  # your sync job appends to this
 
 
+# --8<-- [start:world_core]
 billing_world = Capability[Deps](
     id='billing_world',  # names its instruction parts, so a change can be appended
     instructions='Amounts and invoice numbers come from our billing system, never from an email alone.',
@@ -41,6 +42,7 @@ def close_notice(ctx: RunContext[Deps]) -> str | None:
     if ctx.deps.closing:
         return 'Month-end close is running until Monday: mark_paid is unavailable, so say so.'
     return None
+# --8<-- [end:world_core]
 
 
 @billing_world.instructions(name='ledger', on_change='append')  # Part 1: say what changed, at the end
@@ -68,6 +70,7 @@ async def lookup_invoice(ctx: RunContext[Deps], invoice_number: str) -> Invoice:
     return invoice
 
 
+# --8<-- [start:world_gate]
 async def hide_during_close(ctx: RunContext[Deps], tool_def: ToolDefinition) -> ToolDefinition | None:
     return None if ctx.deps.closing else tool_def
 
@@ -77,6 +80,7 @@ async def mark_paid(ctx: RunContext[Deps], invoice_number: str) -> str:
     """Mark one of our invoices as paid."""
     await ctx.deps.billing.mark_paid(invoice_number, idempotency_key=ctx.tool_call_id)  # safe to retry
     return f'{invoice_number} is marked as paid.'
+# --8<-- [end:world_gate]
 
 
 async def valid_payment(ctx: RunContext[Deps], invoice_number: str, amount: Decimal) -> None:
@@ -129,6 +133,7 @@ class Promise(BaseModel, use_attribute_docstrings=True):  # chapter 5's answer f
     """Anything in the email that doesn't add up, in your own words."""
 
 
+# --8<-- [start:agents_core]
 collections = Agent(
     'anthropic:claude-sonnet-5-5',
     name='collections',
@@ -145,4 +150,5 @@ reminders = Agent(  # Friday's second job, in the same world
     output_type=[str, DeferredToolRequests],
     capabilities=[billing_world, audit, Caching()],  # the audit hook on this agent only
 )
+# --8<-- [end:agents_core]
 # --8<-- [end:agents]

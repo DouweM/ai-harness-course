@@ -37,6 +37,7 @@ from billing import FakeBilling
 from billing_world import read_email  # chapter 1's tool: Dana's email, as data
 
 
+# --8<-- [start:installments_form]
 class Installment(BaseModel):
     amount: Decimal
     due_date: date
@@ -47,6 +48,7 @@ class Promise(BaseModel, use_attribute_docstrings=True):
     invoice_number: str | None = None
     installments: list[Installment] = []
     """One per amount and date the customer promised. A single payment is one installment."""
+# --8<-- [end:installments_form]
 
 
 @dataclass
@@ -64,6 +66,7 @@ agent = Agent(
 )
 
 
+# --8<-- [start:installments_check]
 @agent.output_validator  # facts the form can't check on its own: they need your ledger
 async def matches_the_ledger(ctx: RunContext[Deps], promise: Promise) -> Promise:
     if promise.invoice_number:
@@ -74,6 +77,7 @@ async def matches_the_ledger(ctx: RunContext[Deps], promise: Promise) -> Promise
         if total > invoice.amount:
             raise ModelRetry(f'{invoice.number} is for {invoice.amount}; the installments add up to {total}.')
     return promise
+# --8<-- [end:installments_check]
 # --8<-- [end:installments]
 
 

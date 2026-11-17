@@ -94,15 +94,7 @@ installments claude-haiku-5-5   kept both halves 5/5  </pre></div>
           </div>
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix: a form that holds it, checked against the ledger</p>
-            <div class="code" data-lines="30" data-src="code/part2/ch5_answer_form.py" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">code/part2/ch5_answer_form.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">from dataclasses import dataclass
-
-from pydantic_ai import Agent, ModelRetry, RunContext, ToolOutput
-
-from billing import FakeBilling
-from billing_world import read_email  # chapter 1&#x27;s tool: Dana&#x27;s email, as data
-
-
-class Installment(BaseModel):
+            <div class="code" data-lines="30" data-src="code/part2/ch5_answer_form.py" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">The form: one row per installment, from ch5_answer_form.py</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">class Installment(BaseModel):
     amount: Decimal
     due_date: date
 
@@ -111,25 +103,8 @@ class Promise(BaseModel, use_attribute_docstrings=True):
     is_commitment: bool
     invoice_number: str | None = None
     installments: list[Installment] = []
-    &quot;&quot;&quot;One per amount and date the customer promised. A single payment is one installment.&quot;&quot;&quot;
-
-
-@dataclass
-class Deps:
-    billing: FakeBilling
-    received: date
-
-
-agent = Agent(
-    &#x27;anthropic:claude-sonnet-5-5&#x27;,
-    deps_type=Deps,
-    instructions=&#x27;Decide whether the customer email you are asked about commits to paying us, and record the promise.&#x27;,
-    output_type=ToolOutput(Promise),
-    tools=[read_email],
-)
-
-
-@agent.output_validator  # facts the form can&#x27;t check on its own: they need your ledger
+    &quot;&quot;&quot;One per amount and date the customer promised. A single payment is one installment.&quot;&quot;&quot;</pre></div>
+            <div class="code" data-lines="30" data-src="code/part2/ch5_answer_form.py" data-run="uv run code/part2/ch5_answer_form.py"><div class="code-head"><span class="file">The check against your ledger, on the same agent</span><button class="copy" type="button">Copy</button></div><pre data-lang="py">@agent.output_validator  # facts the form can&#x27;t check on its own: they need your ledger
 async def matches_the_ledger(ctx: RunContext[Deps], promise: Promise) -&gt; Promise:
     if promise.invoice_number:
         invoice = await ctx.deps.billing.get_invoice(promise.invoice_number)

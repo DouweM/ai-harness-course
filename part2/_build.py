@@ -32,13 +32,15 @@ def snippet(file: str, name: str) -> str:
     m = re.search(rf'# --8<-- \[start:{re.escape(name)}\]\n(.*?)# --8<-- \[end:{re.escape(name)}\]', text, re.S)
     if not m:
         raise SystemExit(f'no snippet {name!r} in {file}')
-    return m.group(1).rstrip('\n')
+    # Snippets may nest (an excerpt inside a longer snippet); marker lines never show on the page.
+    body = '\n'.join(line for line in m.group(1).split('\n') if not line.lstrip().startswith('# --8<-- ['))
+    return body.strip('\n')
 
 
 def code_card(m: re.Match[str]) -> str:
-    # One plain card per snippet: every line of the snippet shows, nothing is dimmed or highlighted (the snippet markers
-    # in the source already cut it to what matters). Long snippets show their first 30 lines and a "Show all" button,
-    # and every card links to the full file. `keys=` is accepted for older sources and ignored.
+    # One plain card per snippet: a short file in full, or one excerpt (a nested snippet) of what the prose is about.
+    # Every line of the snippet shows, nothing is dimmed, highlighted or collapsed; the label is a one-line caption
+    # naming what it shows, and the card links to the full file. `keys=` is accepted for older sources and ignored.
     file, name, label = m.group(1), m.group(2), m.group(3) or f'code/part2/{m.group(1)}'
     body = snippet(file, name)
     long = ''  # shown in full: a cut-off card hides the lines that matter behind the imports

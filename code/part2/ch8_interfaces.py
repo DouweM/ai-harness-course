@@ -21,6 +21,7 @@ from billing import WIRE_RECEIVED, FakeBilling
 from billing_world import Deps, collections  # chapter 6's agent, unchanged
 
 
+# --8<-- [start:doors_core]
 def deps_for(request: Request) -> Deps:
     return Deps(billing=FakeBilling(), received=WIRE_RECEIVED)  # yours: the tenant, the user, the clock
 
@@ -40,6 +41,7 @@ async def vercel_ai(request: Request) -> Response:  # for Vercel AI's useChat
 app = Starlette(routes=[Route('/ag-ui', ag_ui, methods=['POST']), Route('/chat', vercel_ai, methods=['POST'])])
 # and, from the same agent: collections.run() in a job, run_stream_events() to stream anywhere,
 # to_web() for a local browser chat, to_cli_sync() for a terminal chat.
+# --8<-- [end:doors_core]
 # --8<-- [end:doors]
 
 
@@ -134,6 +136,7 @@ from pydantic_ai.capabilities import HandleDeferredToolCalls
 from pydantic_ai.messages import ModelMessage
 
 
+# --8<-- [start:voice_core]
 async def small_amounts(ctx: RunContext[Deps], requests: DeferredToolRequests) -> DeferredToolResults | None:
     """A caller hears the silence while a person decides, so decide by policy: approve up to 1,000, refuse the rest."""
     small = {c.tool_call_id: True for c in requests.approvals if Decimal(str(c.args_as_dict().get('amount', 0))) <= 1000}
@@ -156,4 +159,5 @@ async def call(caller_audio: AsyncIterator[bytes], deps: Deps) -> list[ModelMess
             ...  # speech out (session.stream_audio() is the audio stream back), tool calls, turn boundaries
         listening.cancel()
         return session.all_messages()  # ordinary history: store it, or turn it into a typed Promise
+# --8<-- [end:voice_core]
 # --8<-- [end:voice]

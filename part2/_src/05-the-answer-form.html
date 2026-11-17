@@ -65,7 +65,8 @@ runtime: 6
           </div>
           <div class="stage" data-label="The fix" hidden>
             <p class="eyebrow"><span class="dia"></span>The fix: a form that holds it, checked against the ledger</p>
-            {{code ch5_answer_form.py installments "code/part2/ch5_answer_form.py" keys="class Installment|installments: list|One per amount|@agent.output_validator|raise ModelRetry\(f'\{invoice"}}
+            {{code ch5_answer_form.py installments_form "The form: one row per installment, from ch5_answer_form.py"}}
+            {{code ch5_answer_form.py installments_check "The check against your ledger, on the same agent"}}
             <p class="measure">The type catches shape. The output validator catches facts that need your systems, like installments that add up to more than the invoice, and sends the model back with the real balance. The error becomes the next message; nobody writes a retry loop:</p>
             {{out ch5_answer_form 7-8}}
             <div class="tok-says"><div class="tk" data-tok="10" data-crop="face" data-mood="happy" aria-hidden="true"></div><div><p class="eyebrow">From where Tok sits</p><p>You gave me one box, so I wrote one promise in it. A row per promise, and I wrote both.</p></div></div>
